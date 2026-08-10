@@ -1,10 +1,10 @@
-This suite consists of two minimal and optimized Bash scripts designed to be executed within Live Linux environments (such as GParted Live). They allow smart backup and restoration of system partitions (including Windows NTFS) by skipping unallocated free space and applying dynamic compression.
+This suite consists of system administration scripts for backup/restore, disk imaging, Google Drive mounting, and Windows display management. Designed for Live Linux environments (such as GParted Live) and Windows systems.
 
 Official documentation and updates: [http://ntgcorp.it/admin_scripts](https://github.com/ntgcorp/admin_scripts/)
 
 ---
 
-## 💾 1. Backup: `ntjobs_partclone_backup.sh`
+## 💾 1. Partition Backup: `ntjobs_partclone_backup.sh`
 
 This script analyzes the file system of the specified partition, backs up only the used data blocks (ignoring the empty space on the disk), compresses the data stream on the fly, and saves it into an image file inside the destination folder.
 
@@ -34,7 +34,7 @@ The final file is automatically named using the following schema:
 
 ---
 
-## 🔄 2. Restore: `ntjobs_partclone_restore.sh`
+## 🔄 2. Partition Restore: `ntjobs_partclone_restore.sh`
 
 This script performs the reverse process. It decompresses the generated backup file on the fly and streams it directly to the target partition, overwriting and formatting it completely.
 
@@ -53,7 +53,145 @@ sudo ./ntjobs_partclone_restore.sh /mnt/usb_storage/backup_ntfs_sda1_20260609_19
 
 ---
 
-## 🚀 3. How to Create the Bootable USB Drive
+## 💿 3. Full Disk Image Backup: `admin_disk_image.sh`
+
+Creates a complete disk image using a `dd | pv | gzip` pipeline. Unlike partition backup, this captures the entire disk including partition table, boot sectors, and all partitions.
+
+### Requirements
+- `dd`, `pv`, `gzip`, `blockdev` (standard on Linux)
+- `pv` is auto-installed via `apt` if missing (assumes Debian/Ubuntu-based live environment)
+- Log directory: `/home/ntjobsos/Log` (auto-created)
+
+### Execution Syntax
+```bash
+sudo ./admin_disk_image.sh <source_disk> <dest_folder> <base_name>
+```
+
+### Practical Example
+```bash
+sudo ./admin_disk_image.sh /dev/sda /mnt/backup server_disk
+```
+
+### Output
+File named: `<base_name>_<TIMESTAMP>.img.gz` (e.g., `server_disk_20260802120000.img.gz`)
+
+---
+
+## 🔁 4. Full Disk Image Restore: `admin_disk_restore.sh`
+
+Restores a disk image created by `admin_disk_image.sh` using a `gunzip | pv | dd` pipeline.
+
+### Safety Features
+- Verifies target disk is not mounted
+- 5-second cancellation window (Ctrl+C) before write begins
+- Log directory: `/home/ntjobsos/Log` (auto-created)
+
+### Execution Syntax
+```bash
+sudo ./admin_disk_restore.sh <image_file> <target_disk>
+```
+
+### Practical Example
+```bash
+sudo ./admin_disk_restore.sh /mnt/backup/server_disk_20260802120000.img.gz /dev/sdb
+```
+
+---
+
+## ☁️ 5. Google Drive Mount: `admin_gdrive_mount.sh`
+
+Mounts a pre-configured rclone remote named `gdrive` to `/mnt/gdrive` as a daemon.
+
+### Prerequisites
+- rclone installed and configured with a remote named `gdrive`
+- fusermount available
+
+### Execution Syntax
+```bash
+./admin_gdrive_mount.sh
+```
+
+### Mount Options
+- `--daemon` - runs in background
+- `--allow-other` - allows other users to access the mount
+- `--vfs-cache-mode writes` - recommended for better compatibility
+
+---
+
+## ☁️ 6. Google Drive Unmount: `admin_gdrive_umount.sh`
+
+Unmounts the Google Drive mount point.
+
+### Execution Syntax
+```bash
+./admin_gdrive_umount.sh
+```
+
+---
+
+## ⌨️ 7. Italian Keyboard Layout: `admin_keybit.sh`
+
+Sets the keyboard layout to Italian.
+
+### Execution Syntax
+```bash
+sudo ./admin_keybit.sh
+```
+
+### What it does
+```bash
+setxkbmap it
+```
+
+---
+
+## 🔆 8. Maximum Brightness: `admin_light_max.sh`
+
+Sets display brightness to maximum value (6000).
+
+### Execution Syntax
+```bash
+sudo ./admin_light_max.sh
+```
+
+### What it does
+```bash
+echo 6000 | sudo tee /sys/class/backlight/*/brightness
+```
+
+---
+
+## 🖥️ 9. Windows Screen Resolution: `ntsetres.ps1`
+
+Sets screen resolution via Win32 API (P/Invoke). Supports common resolutions.
+
+### Supported Resolutions
+- 1024x768
+- 1280x800
+- 1366x768
+- 1440x900
+- 1600x900
+- 1680x1050
+- 1920x1080
+
+### Execution Syntax
+```powershell
+.\ntsetres.ps1 <resolution>
+```
+
+### Practical Example
+```powershell
+.\ntsetres.ps1 1920x1080
+```
+
+### Wrapper CMD Files
+Pre-configured wrapper scripts are included for common resolutions:
+- `admin_setres_1368x768.cmd` (runs `ntsetres.ps1 1366x768`)
+- `admin_setres_1600x900.cmd` (runs `ntsetres.ps1 1600x900`)
+
+---
+
+## 🚀 10. How to Create the Bootable USB Drive
 
 You can easily build a minimal, dedicated live USB environment using Rufus and GParted Live (which natively includes `partclone`, `gzip`, and full exFAT/FAT32 support).
 
@@ -69,7 +207,7 @@ You can easily build a minimal, dedicated live USB environment using Rufus and G
 ### Adding the Scripts to the USB
 Once Rufus finishes, the USB drive remains accessible as a standard external drive in Windows:
 1. Create a folder named `ntjobs` in the root of the USB drive.
-2. Copy the files `ntjobs_partclone_backup.sh`, `ntjobs_partclone_restore.sh`, and this `ntjobs_partclone_readme.md` file into that folder.
+2. Copy all `.sh` and `.ps1` files into that folder.
 
 ---
 
@@ -97,6 +235,3 @@ sdelete64.exe -z C:
 ```
 
 For more info, troubleshooting, and updates, visit: http://www.ntgcorp.it
-
-## 💾 11. setres: `ntsetres.ps1`
-Setting Resolution using command line
