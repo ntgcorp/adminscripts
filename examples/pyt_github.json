@@ -1,0 +1,21 @@
+{
+  "settings": {
+    "log": "pyt_robocopy.log",
+    "err.exit": false
+  },
+  "actions": {
+    "copy_scripts": {
+      "path_source": "G:\\Il mio Drive\\Progetti\\adminscripts",
+      "path_dest": "G:\\Il mio Drive\\github\\adminscripts",
+      "mode": "overwrite",
+      "files": [
+        "pyt.cmd",
+        "pyn.cmd",
+        "admin*.sh",        		
+		"README.md",
+		"*.ps1",        		
+        "pyt.py"
+      ]
+    }
+  }
+}

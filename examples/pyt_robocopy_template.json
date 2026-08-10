@@ -1,0 +1,44 @@
+{
+  "settings": {
+    "log": "pyt_robocopy.log",
+    "err.exit": false
+  },
+  "actions": {
+    "copy_scripts": {
+      "path_source": "G:\\Il mio Drive\\Progetti\\pyt_pyn",
+      "path_dest": "k:\\tools",
+      "mode": "overwrite",
+      "files": [
+        "pyt.cmd",
+        "pyn.cmd",
+        "pyt.py"
+      ]
+    },
+    "copy_all_python": {
+      "path_source": "G:\\Il mio Drive\\Progetti\\pyt_pyn",
+      "path_dest": "k:\\tools\\python_scripts",
+      "mode": "overwrite",
+      "files": [
+        "*.py"
+      ]
+    },
+    "copy_all_cmd": {
+      "path_source": "G:\\Il mio Drive\\Progetti\\pyt_pyn",
+      "path_dest": "k:\\tools\\cmd_scripts",
+      "mode": "old",
+      "files": [
+        "*.cmd"
+      ]
+    },
+    "copy_mixed": {
+      "path_source": "G:\\Il mio Drive\\Progetti\\pyt_pyn",
+      "path_dest": "k:\\tools\\mixed",
+      "mode": "overwrite",
+      "files": [
+        "pyt.py",
+        "*.cmd",
+        "*.json"
+      ]
+    }
+  }
+}

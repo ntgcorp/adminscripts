@@ -1,21 +1,21 @@
-This suite consists of system administration scripts for backup/restore, disk imaging, Google Drive mounting, and Windows display management. Designed for Live Linux environments (such as GParted Live) and Windows systems.
+This suite consists of system administration scripts for backup/restore, disk imaging, Google Drive mounting, Windows display management, and Python-based automation tools. Designed for Live Linux environments (such as GParted Live) and Windows systems.
 
 Official documentation and updates: [http://ntgcorp.it/admin_scripts](https://github.com/ntgcorp/admin_scripts/)
 
 ---
 
-## 💾 1. Partition Backup: `ntjobs_partclone_backup.sh`
+## 💾 1. Partition Backup: `admin_partclone_backup.sh`
 
 This script analyzes the file system of the specified partition, backs up only the used data blocks (ignoring the empty space on the disk), compresses the data stream on the fly, and saves it into an image file inside the destination folder.
 
 ### Execution Syntax
 ```bash
-sudo ./ntjobs_partclone_backup.sh <source_partition> <destination_folder> <compression_level>
+sudo ./admin_partclone_backup.sh <source_partition> <destination_folder> <compression_level>
 ```
 
 ### Practical Example
 ```bash
-sudo ./ntjobs_partclone_backup.sh /dev/sda1 /mnt/usb_storage 6
+sudo ./admin_partclone_backup.sh /dev/sda1 /mnt/usb_storage 6
 ```
 
 ### 📊 Compression Levels Guide (gzip)
@@ -34,7 +34,7 @@ The final file is automatically named using the following schema:
 
 ---
 
-## 🔄 2. Partition Restore: `ntjobs_partclone_restore.sh`
+## 🔄 2. Partition Restore: `admin_partclone_restore.sh`
 
 This script performs the reverse process. It decompresses the generated backup file on the fly and streams it directly to the target partition, overwriting and formatting it completely.
 
@@ -43,12 +43,12 @@ Restoration is a **highly destructive operation**. The script includes a securit
 
 ### Execution Syntax
 ```bash
-sudo ./ntjobs_partclone_restore.sh <compressed_backup_file> <target_partition>
+sudo ./admin_partclone_restore.sh <compressed_backup_file> <target_partition>
 ```
 
 ### Practical Example
 ```bash
-sudo ./ntjobs_partclone_restore.sh /mnt/usb_storage/backup_ntfs_sda1_20260609_193000.img.gz /dev/sda1
+sudo ./admin_partclone_restore.sh /mnt/usb_storage/backup_ntfs_sda1_20260609_193000.img.gz /dev/sda1
 ```
 
 ---
@@ -191,7 +191,150 @@ Pre-configured wrapper scripts are included for common resolutions:
 
 ---
 
-## 🚀 10. How to Create the Bootable USB Drive
+## 🐍 10. Python Automation Toolkit: `pyt.py`
+
+A versatile Python command-line tool for executing various administrative directives. Features logging, directive file execution (`@`), and cross-platform support (Windows/Linux).
+
+### Purpose
+`pyt.py` is a multi-purpose administrative toolkit that provides a unified command interface for common system administration tasks including document conversion, disk imaging, folder synchronization, WSL/VM management, and archive operations. It is designed to be invoked through the `pyt.cmd` wrapper (which delegates to `pyn.cmd` for Python environment management) or directly via `pyn.cmd`.
+
+### Files
+- `pyt.py` - Main Python script containing all directive implementations
+- `pyt.cmd` - Windows wrapper that locates `pyn.cmd` (default: `k:\tools\pyn.cmd`) and passes all arguments to it with `pyt.py` as the script to execute
+- `pyn.cmd` - Universal Python launcher (manages virtual envs, pip, pandoc, podman, bash, chrome)
+
+### Prerequisites
+- Python 3.x (managed via `pyn.cmd` portable environments)
+- Optional dependencies per directive: `pypandoc`, `paramiko`, `markdown`, `requests`, `7-Zip`, `qemu-img`, `pandoc`
+
+### Execution Syntax
+Via `pyt.cmd` (recommended, auto-resolves Python environment):
+```cmd
+pyt.cmd <directive> [parameters...]
+```
+Or via directive file:
+```cmd
+pyt.cmd @ <directive_file>
+```
+Directly via `pyn.cmd` (explicit control over Python environment):
+```cmd
+pyn.cmd pyt.py <directive> [parameters...]
+pyn.cmd pyt.py @ <directive_file>
+```
+
+### Available Directives (from `pyt.py` help)
+
+| Directive | Syntax | Description |
+|-----------|--------|-------------|
+| `help`, `h` | `pyt.cmd help` | Shows this help |
+| `doc2md` | `pyt.cmd doc2md <file.docx>` | Converts DOCX to Markdown, extracts media to `resources/` (requires `pypandoc`) |
+| `md2html` | `pyt.cmd md2html <file.md> <file.html>` | Converts Markdown to HTML (requires `markdown` lib) |
+| `md2page` | `pyt.cmd md2page <file.md> <file.html>` | Converts Markdown to complete HTML page via OpenRouter API (requires `OPENROUTER_API` env var) |
+| `wsl_export` | `pyt.cmd wsl_export <container> <output.tar>` | Exports WSL container to tar file (Windows only) |
+| `vhdx2vmdk` | `pyt.cmd vhdx2vmdk <file.vhdx> <file.vmdk>` | Converts VHDX to VMDK using qemu-img (Windows only, requires `QEMU_IMG` path) |
+| `7z_ts` | `pyt.cmd 7z_ts <folder> [7z_path]` | Creates timestamped `.7z` archive with max compression (requires 7-Zip) |
+| `disk_check` | `pyt.cmd disk_check <disk> <report_file> <warning_pct>` | Checks disk space, folder sizes, generates report, creates warning flag if threshold exceeded |
+| `sync` | `pyt.cmd sync <config.json>` | Synchronizes folders per JSON config. Supports `file`, `filesync`, `ftp`, `ssh` types. Single job or catalog with `jobs` array. |
+| `sync_script` | `pyt.cmd sync_script [src] [dest] [output.cmd]` | Generates robocopy mirror batch script. Uses `SYNC_FOLDERS` env var or defaults (Windows only) |
+| `robocopy` | `pyt.cmd robocopy <config.json>` | Copies specific files per JSON with `settings` (log, err.exit) and `actions` (path_source, path_dest, mode: overwrite/old, files[]). Cross-platform (uses shutil). |
+
+### Directive File Format (`@`)
+Create a text file with one directive per line. Lines starting with `;` are comments.
+```
+doc2md "report.docx"
+md2html "report.md" "report.html"
+sync "sync_config.json"
+```
+
+### Example Usage
+```cmd
+REM Single directive
+pyt.cmd 7z_ts "C:\Data\Projects"
+
+REM With explicit 7z path
+pyt.cmd 7z_ts "C:\Data\Projects" "C:\Program Files\7-Zip\7z.exe"
+
+REM Directive file
+pyt.cmd @ my_directives.txt
+
+REM Disk check with 85% warning threshold
+pyt.cmd disk_check "C:" "disk_report.txt" 85
+
+REM Sync with JSON catalog
+pyt.cmd sync "sync_jobs.json"
+```
+
+---
+
+## 🚀 11. Python Launcher: `pyn.cmd`
+
+Universal portable Python environment launcher for Windows. Manages multiple Python versions (X32/X64/W64), virtual environments, pip operations, and external tools.
+
+### Purpose
+`pyn.cmd` is a **global Python launcher** that provides a single entry point to run Python scripts, manage virtual environments, and access external tools (Pandoc, Podman, Git-Bash, Chrome) without requiring Python to be in the system PATH. It auto-detects portable Python installations in standard locations and can be customized by:
+
+- **Editing the script**: Modify the hardcoded paths (`PATHP_01`, `PATHP_02`, `PATHP_03`, `PATHP_XX`) to point to your Python installation directories
+- **Environment variable `PATHP_ENV`**: Set `PATHP_ENV` to a custom path containing your Python installation (e.g., `SET PATHP_ENV=D:\MyPython`). This takes highest priority in the search order.
+
+### Key Features
+- **Portable Python**: Auto-detects Python installations in standard locations (D:\APPLIC, C:\APPLIC, K:\Tools, parent folder)
+- **Virtual Environments**: Create/switch via `x env <name>`
+- **Pip Management**: Install, upgrade, list, cache purge, requirements export/import
+- **External Tools**: Pandoc (docx2md, pdf2md, md2html), Podman, Git-Bash, Chrome debug mode
+
+### Environment Variables
+| Variable | Purpose | Default |
+|----------|---------|---------|
+| `PY_TYPE` | Python architecture: X32, X64, W64 | X64 |
+| `PY_ENV` | Virtual environment name | myenv |
+| `PY_PATH` | Override Python root path | auto-detect |
+| `POD_PATH` | Podman data path | c:\podman |
+| `POD_APP` | Podman container image | ntjobsos |
+
+### Commands
+| Command | Description |
+|---------|-------------|
+| `pyn.cmd <script.py> [args]` | Run Python script with active env |
+| `pyn.cmd x version` | Show Python version |
+| `pyn.cmd x env <name>` | Create/activate virtual environment |
+| `pyn.cmd x pip <cmd>` | Run pip command in active env |
+| `pyn.cmd x pip_check` | Verify installed packages |
+| `pyn.cmd x pip_pc` | Purge pip cache |
+| `pyn.cmd x pip_i <pkg...>` | Install packages (--only-binary) |
+| `pyn.cmd x pip_u <pkg>` | Dry-run upgrade single package |
+| `pyn.cmd x pip_ulist` | Generate `pipupgrade.txt` with outdated packages |
+| `pyn.cmd x pip_uexec` | Execute upgrades from `pipupgrade.txt` (logs to `pipupgrade.log`) |
+| `pyn.cmd x pip_re` | Export `requirements_<TYPE>.txt` and light version |
+| `pyn.cmd x pip_ri` | Import/install from `requirements_<TYPE>.txt` |
+| `pyn.cmd x mod <module> [args]` | Run Python module (`-m`) |
+| `pyn.cmd x script <script.exe> [args]` | Run script from env's Scripts folder |
+| `pyn.cmd pandoc doc2md\|pdf2md\|docx2md <file>` | Convert to Markdown via Pandoc |
+| `pyn.cmd pandoc md2html <file.md>` | Convert Markdown to HTML via Pandoc |
+| `pyn.cmd b <script.sh> [args]` | Run Bash script via Git-Bash |
+| `pyn.cmd chrome auto` | Launch Chrome with remote debugging (port 9222) |
+| `pyn.cmd pod <cmd>` | Podman wrapper (start, end, opt, run) |
+
+### Example Usage
+```cmd
+REM Run pyt.py via pyn (pyt.cmd does this automatically)
+pyn.cmd pyt.py 7z_ts "C:\Projects"
+
+REM Direct pyn usage
+pyn.cmd x env myproject
+pyn.cmd x pip_i requests paramiko pypandoc
+pyn.cmd x pip_ulist
+pyn.cmd x pip_uexec
+
+REM Pandoc conversion
+pyn.cmd pandoc doc2md "document.docx"
+
+REM Bash script
+pyn.cmd b "deploy.sh" arg1 arg2
+```
+
+---
+
+## 🚀 12. How to Create the Bootable USB Drive
 
 You can easily build a minimal, dedicated live USB environment using Rufus and GParted Live (which natively includes `partclone`, `gzip`, and full exFAT/FAT32 support).
 
@@ -207,7 +350,7 @@ You can easily build a minimal, dedicated live USB environment using Rufus and G
 ### Adding the Scripts to the USB
 Once Rufus finishes, the USB drive remains accessible as a standard external drive in Windows:
 1. Create a folder named `ntjobs` in the root of the USB drive.
-2. Copy all `.sh` and `.ps1` files into that folder.
+2. Copy all `.sh`, `.ps1`, `.py`, and `.cmd` files into that folder.
 
 ---
 

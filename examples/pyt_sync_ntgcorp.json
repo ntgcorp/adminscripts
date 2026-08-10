@@ -1,0 +1,10 @@
+{
+  "type": "ftp",
+  "source": "G:\\Il mio Drive\\Progetti\\ntgcorp\\ntgcorp_web",
+  "dest": "/htdocs",
+  "mode": "new",
+  "user": "xxxxxx",
+  "pwd": "xxxxxxx",
+  "host": "ftp.ntgcorp.it",
+  "log": "sync_ftp.log"
+}

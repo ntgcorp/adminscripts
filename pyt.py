@@ -8,6 +8,7 @@ import ftplib
 import stat
 import requests
 import tempfile
+import glob
 
 # Importazione opzionale per librerie di terze parti
 try:
@@ -1092,48 +1093,112 @@ def app_robocopy(params):
         
         # Processa ogni file
         for file_name in files:
-            src_file = os.path.join(path_source, file_name)
-            dest_file = os.path.join(path_dest, file_name)
-            
             robocopy_log(f"  Elaborazione: {file_name}")
             
-            if not os.path.exists(src_file):
-                robocopy_log(f"    SALTATO (non trovato in sorgente): {src_file}")
-                total_stats["skipped"] += 1
-                continue
+            # Controlla se il pattern contiene wildcard
+            has_wildcard = any(c in file_name for c in "*?[")
             
-            try:
-                # Se mode == "old" e il file di destinazione esiste, rinominalo in .old
-                if mode == "old" and os.path.exists(dest_file):
-                    old_file = dest_file + ".old"
-                    # Rimuovi eventuale .old precedente
-                    if os.path.exists(old_file):
-                        os.remove(old_file)
-                        robocopy_log(f"    Rimosso vecchio .old: {old_file}")
-                    os.rename(dest_file, old_file)
-                    robocopy_log(f"    RINOMINATO in .old: {dest_file} -> {old_file}")
+            if has_wildcard:
+                # Usa glob per trovare tutti i file che corrispondono al pattern
+                pattern = os.path.join(path_source, file_name)
+                matched_files = glob.glob(pattern)
                 
-                # Copia il file
-                shutil.copy2(src_file, dest_file)
+                if not matched_files:
+                    robocopy_log(f"    SALTATO (nessun file corrispondente al pattern): {file_name}")
+                    total_stats["skipped"] += 1
+                    continue
                 
-                if os.path.exists(dest_file):
-                    src_stat = os.stat(src_file)
-                    dest_stat = os.stat(dest_file)
-                    if src_stat.st_size == dest_stat.st_size and abs(src_stat.st_mtime - dest_stat.st_mtime) < 2:
-                        robocopy_log(f"    COPIATO: {file_name}")
-                        total_stats["copied"] += 1
-                    else:
-                        robocopy_log(f"    AGGIORNATO: {file_name}")
-                        total_stats["updated"] += 1
-                else:
-                    robocopy_log(f"    ERRORE: File non copiato: {file_name}")
-                    total_stats["errors"] += 1
+                robocopy_log(f"    Trovati {len(matched_files)} file(s) per pattern: {file_name}")
+                
+                for src_file in matched_files:
+                    # Calcola il percorso relativo rispetto a path_source
+                    try:
+                        rel_path = os.path.relpath(src_file, path_source)
+                    except ValueError:
+                        # Su Windows può fallire se path_source è su drive diverso
+                        rel_path = os.path.basename(src_file)
                     
-            except Exception as e:
-                robocopy_log(f"    ERRORE su {file_name}: {e}")
-                total_stats["errors"] += 1
-                if err_exit:
-                    raise RuntimeError(f"Errore durante copia di {file_name}: {e}")
+                    dest_file = os.path.join(path_dest, rel_path)
+                    
+                    robocopy_log(f"    Elaborazione: {rel_path}")
+                    
+                    try:
+                        # Se mode == "old" e il file di destinazione esiste, rinominalo in .old
+                        if mode == "old" and os.path.exists(dest_file):
+                            old_file = dest_file + ".old"
+                            # Rimuovi eventuale .old precedente
+                            if os.path.exists(old_file):
+                                os.remove(old_file)
+                                robocopy_log(f"      Rimosso vecchio .old: {old_file}")
+                            os.rename(dest_file, old_file)
+                            robocopy_log(f"      RINOMINATO in .old: {dest_file} -> {old_file}")
+                        
+                        # Crea directory di destinazione se non esiste
+                        os.makedirs(os.path.dirname(dest_file), exist_ok=True)
+                        
+                        # Copia il file
+                        shutil.copy2(src_file, dest_file)
+                        
+                        if os.path.exists(dest_file):
+                            src_stat = os.stat(src_file)
+                            dest_stat = os.stat(dest_file)
+                            if src_stat.st_size == dest_stat.st_size and abs(src_stat.st_mtime - dest_stat.st_mtime) < 2:
+                                robocopy_log(f"      COPIATO: {rel_path}")
+                                total_stats["copied"] += 1
+                            else:
+                                robocopy_log(f"      AGGIORNATO: {rel_path}")
+                                total_stats["updated"] += 1
+                        else:
+                            robocopy_log(f"      ERRORE: File non copiato: {rel_path}")
+                            total_stats["errors"] += 1
+                            
+                    except Exception as e:
+                        robocopy_log(f"      ERRORE su {rel_path}: {e}")
+                        total_stats["errors"] += 1
+                        if err_exit:
+                            raise RuntimeError(f"Errore durante copia di {rel_path}: {e}")
+            else:
+                # Comportamento originale per file singoli (senza wildcard)
+                src_file = os.path.join(path_source, file_name)
+                dest_file = os.path.join(path_dest, file_name)
+                
+                if not os.path.exists(src_file):
+                    robocopy_log(f"    SALTATO (non trovato in sorgente): {src_file}")
+                    total_stats["skipped"] += 1
+                    continue
+                
+                try:
+                    # Se mode == "old" e il file di destinazione esiste, rinominalo in .old
+                    if mode == "old" and os.path.exists(dest_file):
+                        old_file = dest_file + ".old"
+                        # Rimuovi eventuale .old precedente
+                        if os.path.exists(old_file):
+                            os.remove(old_file)
+                            robocopy_log(f"    Rimosso vecchio .old: {old_file}")
+                        os.rename(dest_file, old_file)
+                        robocopy_log(f"    RINOMINATO in .old: {dest_file} -> {old_file}")
+                    
+                    # Copia il file
+                    shutil.copy2(src_file, dest_file)
+                    
+                    if os.path.exists(dest_file):
+                        src_stat = os.stat(src_file)
+                        dest_stat = os.stat(dest_file)
+                        if src_stat.st_size == dest_stat.st_size and abs(src_stat.st_mtime - dest_stat.st_mtime) < 2:
+                            robocopy_log(f"    COPIATO: {file_name}")
+                            total_stats["copied"] += 1
+                        else:
+                            robocopy_log(f"    AGGIORNATO: {file_name}")
+                            total_stats["updated"] += 1
+                    else:
+                        robocopy_log(f"    ERRORE: File non copiato: {file_name}")
+                        total_stats["errors"] += 1
+                        
+                except Exception as e:
+                    robocopy_log(f"    ERRORE su {file_name}: {e}")
+                    total_stats["errors"] += 1
+                    if err_exit:
+                        raise RuntimeError(f"Errore durante copia di {file_name}: {e}")
     
     # Riepilogo finale
     robocopy_log(f"\n{'='*60}")
