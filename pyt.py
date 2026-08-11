@@ -29,7 +29,7 @@ except ImportError:
 # ==============================================================================
 # VARIABILI GLOBALI E COSTANTI
 # ==============================================================================
-PYT_VER = "20260808"
+PYT_VER = "20260811"
 QEMU_IMG = r"X:\_Applic\Qemu\qemu-img.exe"
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 LOG_FILE = os.path.join(SCRIPT_DIR, "pyt.log")
@@ -81,12 +81,15 @@ def parse_argv(argv):
                 if not line or line.startswith(";"):
                     continue
                 parts = line.split()
-                directives.append((parts[0].lower(), parts[1:]))
+                # Converte i punti in underscore per compatibilità con i nomi funzione
+                directives.append((parts[0].lower().replace(".", "_"), parts[1:]))
         return directives
     
     # 3. Singola direttiva - filtra stringhe vuote dai parametri
     filtered_params = [p for p in args[1:] if p and p.strip()]
-    return [(args[0].lower(), filtered_params)]
+    # Converte i punti in underscore per compatibilità con i nomi funzione
+    directive_name = args[0].lower().replace(".", "_")
+    return [(directive_name, filtered_params)]
 
 # ==============================================================================
 # FUNZIONI DIRETTIVE (app_*)
@@ -125,6 +128,16 @@ DIRETTIVE DISPONIBILI:
        Supporta settings globali (log, err.exit) e actions multiple con path_source, path_dest, mode (overwrite|old),
        files[].
        Funziona su Windows e Linux (usa shutil, non robocopy.exe).
+    git.push <config.json>
+       Esegue git push su GitHub autenticato con token.
+       JSON: repo_path, username, token, repo_name, branch, git_path, log.
+       Supporta variabili d'ambiente: "$VAR_NAME" per token/username.
+       Windows: git_path obbligatorio (es. "X:\\_Applic\\Bash\\bin\\git.exe").
+    git.pull <config.json>
+       Esegue git pull da GitHub autenticato con token.
+       JSON: repo_path, username, token, repo_name, branch, git_path, log.
+       Supporta variabili d'ambiente: "$VAR_NAME" per token/username.
+       Windows: git_path obbligatorio (es. "X:\\_Applic\\Bash\\bin\\git.exe").
     @ <nome_file>
        Esegue le direttive contenute nel file specificato
 """
@@ -1215,6 +1228,316 @@ def app_robocopy(params):
         robocopy_log("Operazione completata senza errori.")
 
 
+def _resolve_env_value(value):
+    """Se un valore inizia con $, lo risolve come variabile d'ambiente."""
+    if not isinstance(value, str):
+        return value
+    if value.startswith("$"):
+        var_name = value[1:]
+        env_value = os.environ.get(var_name)
+        if env_value is None or env_value == "":
+            raise ValueError(f"Variabile d'ambiente {var_name} non impostata o vuota")
+        return env_value
+    return value
+
+def _mask_token(token):
+    """Maschera il token per sicurezza."""
+    if not token:
+        return "***"
+    return "***"
+
+def app_git_push(params):
+    """Esegue un git push su GitHub autenticandosi tramite token personali."""
+    if len(params) != 1:
+        raise ValueError("Sintassi errata. Uso: git.push <config.json>")
+    
+    config_file = params[0].strip('"\'')
+    
+    if not os.path.exists(config_file):
+        raise FileNotFoundError(f"File di configurazione {config_file} non trovato.")
+    
+    # Fase 1: Verifica parametri e prerequisiti
+    pyt_Print(f"[{pyt_Timestamp()}] Fase 1: Verifica parametri e prerequisiti")
+    try:
+        with open(config_file, "r", encoding="utf-8") as f:
+            cfg = json.load(f)
+    except json.JSONDecodeError as e:
+        raise ValueError(f"JSON malformato: {e}")
+    
+    # Estrai parametri
+    repo_path = cfg.get("repo_path", "").strip()
+    username = _resolve_env_value(cfg.get("username", ""))
+    token = _resolve_env_value(cfg.get("token", ""))
+    repo_name = cfg.get("repo_name", "").strip()
+    branch = cfg.get("branch", "main").strip()
+    log_file = cfg.get("log", "").strip()
+    owner = cfg.get("owner", username).strip()
+    git_path = cfg.get("git_path", "").strip()
+    
+    # Validazione parametri obbligatori
+    if not repo_path:
+        raise ValueError("Parametro 'repo_path' obbligatorio")
+    if not username:
+        raise ValueError("Parametro 'username' obbligatorio")
+    if not token:
+        raise ValueError("Parametro 'token' obbligatorio")
+    if not repo_name:
+        raise ValueError("Parametro 'repo_name' obbligatorio")
+    if not log_file:
+        raise ValueError("Parametro 'log' obbligatorio")
+    if not os.path.isabs(log_file):
+        raise ValueError("Il parametro 'log' deve essere un percorso assoluto")
+    
+    # Verifica git_path su Windows (obbligatorio) vs Linux (opzionale)
+    if os.name == 'nt':
+        # Windows: git_path è obbligatorio
+        if not git_path:
+            raise ValueError("Parametro 'git_path' obbligatorio su Windows")
+        if not os.path.exists(git_path):
+            raise FileNotFoundError(f"Git eseguibile non trovato in: {git_path}")
+        if not git_path.lower().endswith(".exe"):
+            raise ValueError(f"Il parametro 'git_path' deve puntare a un file .exe su Windows")
+        git_exe = git_path
+    else:
+        # Linux: git_path è opzionale, cerca nel PATH se non specificato
+        if git_path:
+            if not os.path.exists(git_path):
+                raise FileNotFoundError(f"Git eseguibile non trovato in: {git_path}")
+            git_exe = git_path
+        else:
+            git_exe = shutil.which("git")
+            if not git_exe:
+                raise FileNotFoundError("Git non installato o non trovato nel PATH")
+    
+    # Verifica esistenza repository
+    if not os.path.exists(repo_path):
+        raise FileNotFoundError(f"Repository non trovato: {repo_path}")
+    
+    # Verifica esistenza file di log (crea directory se necessario)
+    log_dir = os.path.dirname(log_file)
+    if log_dir and not os.path.exists(log_dir):
+        os.makedirs(log_dir, exist_ok=True)
+    
+    # Stampa informazioni
+    pyt_Print(f"  Repository path: {repo_path}")
+    pyt_Print(f"  Username: {username}")
+    pyt_Print(f"  Repository: {owner}/{repo_name}")
+    pyt_Print(f"  Branch: {branch}")
+    pyt_Print(f"  Log file: {log_file}")
+    pyt_Print(f"  Git executable: {git_exe}")
+    pyt_Print(f"  Verifica esistenza cartella repository... OK")
+    pyt_Print(f"  Verifica presenza file di log... OK")
+    
+    # Fase 2: Esecuzione git push
+    pyt_Print(f"[{pyt_Timestamp()}] Fase 2: Esecuzione git push")
+    
+    remote_url = f"https://{username}:{token}@github.com/{owner}/{repo_name}.git"
+    masked_url = f"https://{username}:{_mask_token(token)}@github.com/{owner}/{repo_name}.git"
+    
+    pyt_Print(f"  Comando: git push {masked_url} {branch}")
+    
+    # Scrivi log
+    try:
+        with open(log_file, "w", encoding="utf-8") as lf:
+            lf.write(f"[{pyt_Timestamp()}] AVVIO GIT PUSH\n")
+            lf.write(f"Repository: {owner}/{repo_name}\n")
+            lf.write(f"Branch: {branch}\n")
+            lf.write(f"Remote: {masked_url}\n")
+            lf.write(f"Git executable: {git_exe}\n")
+    except Exception as e:
+        raise RuntimeError(f"Impossibile creare file di log {log_file}: {e}")
+    
+    # Esegui git push
+    try:
+        os.chdir(repo_path)
+        cmd = [git_exe, "push", remote_url, branch]
+        res = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
+        
+        if res.returncode != 0:
+            error_msg = f"Git push fallito: {res.stderr.strip()}"
+            pyt_Print(f"  [ERRORE] {error_msg}")
+            with open(log_file, "a", encoding="utf-8") as lf:
+                lf.write(f"[{pyt_Timestamp()}] ERRORE: {error_msg}\n")
+            raise RuntimeError(error_msg)
+        
+        pyt_Print(f"  [OK] Push completato con successo")
+        with open(log_file, "a", encoding="utf-8") as lf:
+            lf.write(f"[{pyt_Timestamp()}] SUCCESSO: Push completato\n")
+            
+    except subprocess.TimeoutExpired:
+        error_msg = "Timeout durante git push (120 secondi)"
+        pyt_Print(f"  [ERRORE] {error_msg}")
+        with open(log_file, "a", encoding="utf-8") as lf:
+            lf.write(f"[{pyt_Timestamp()}] ERRORE: {error_msg}\n")
+        raise RuntimeError(error_msg)
+    except Exception as e:
+        error_msg = f"Errore durante git push: {str(e)}"
+        pyt_Print(f"  [ERRORE] {error_msg}")
+        with open(log_file, "a", encoding="utf-8") as lf:
+            lf.write(f"[{pyt_Timestamp()}] ERRORE: {error_msg}\n")
+        raise RuntimeError(error_msg)
+    
+    # Fase 3: Riepilogo finale
+    pyt_Print(f"[{pyt_Timestamp()}] Fase 3: Riepilogo finale")
+    summary = f"""  Operazione: PUSH
+  Repository: {owner}/{repo_name}
+  Branch: {branch}
+  Esito: SUCCESSO
+  Log file: {log_file}"""
+    pyt_Print(summary)
+    with open(log_file, "a", encoding="utf-8") as lf:
+        lf.write(f"[{pyt_Timestamp()}] {summary}\n")
+
+def app_git_pull(params):
+    """Esegue un git pull da GitHub autenticandosi tramite token personali."""
+    if len(params) != 1:
+        raise ValueError("Sintassi errata. Uso: git.pull <config.json>")
+    
+    config_file = params[0].strip('"\'')
+    
+    if not os.path.exists(config_file):
+        raise FileNotFoundError(f"File di configurazione {config_file} non trovato.")
+    
+    # Fase 1: Verifica parametri e prerequisiti
+    pyt_Print(f"[{pyt_Timestamp()}] Fase 1: Verifica parametri e prerequisiti")
+    try:
+        with open(config_file, "r", encoding="utf-8") as f:
+            cfg = json.load(f)
+    except json.JSONDecodeError as e:
+        raise ValueError(f"JSON malformato: {e}")
+    
+    # Estrai parametri
+    repo_path = cfg.get("repo_path", "").strip()
+    username = _resolve_env_value(cfg.get("username", ""))
+    token = _resolve_env_value(cfg.get("token", ""))
+    repo_name = cfg.get("repo_name", "").strip()
+    branch = cfg.get("branch", "main").strip()
+    log_file = cfg.get("log", "").strip()
+    owner = cfg.get("owner", username).strip()
+    git_path = cfg.get("git_path", "").strip()
+    
+    # Validazione parametri obbligatori
+    if not repo_path:
+        raise ValueError("Parametro 'repo_path' obbligatorio")
+    if not username:
+        raise ValueError("Parametro 'username' obbligatorio")
+    if not token:
+        raise ValueError("Parametro 'token' obbligatorio")
+    if not repo_name:
+        raise ValueError("Parametro 'repo_name' obbligatorio")
+    if not log_file:
+        raise ValueError("Parametro 'log' obbligatorio")
+    if not os.path.isabs(log_file):
+        raise ValueError("Il parametro 'log' deve essere un percorso assoluto")
+    
+    # Verifica git_path su Windows (obbligatorio) vs Linux (opzionale)
+    if os.name == 'nt':
+        # Windows: git_path è obbligatorio
+        if not git_path:
+            raise ValueError("Parametro 'git_path' obbligatorio su Windows")
+        if not os.path.exists(git_path):
+            raise FileNotFoundError(f"Git eseguibile non trovato in: {git_path}")
+        if not git_path.lower().endswith(".exe"):
+            raise ValueError(f"Il parametro 'git_path' deve puntare a un file .exe su Windows")
+        git_exe = git_path
+    else:
+        # Linux: git_path è opzionale, cerca nel PATH se non specificato
+        if git_path:
+            if not os.path.exists(git_path):
+                raise FileNotFoundError(f"Git eseguibile non trovato in: {git_path}")
+            git_exe = git_path
+        else:
+            git_exe = shutil.which("git")
+            if not git_exe:
+                raise FileNotFoundError("Git non installato o non trovato nel PATH")
+    
+    # Verifica esistenza repository
+    if not os.path.exists(repo_path):
+        raise FileNotFoundError(f"Repository non trovato: {repo_path}")
+    
+    # Verifica esistenza file di log (crea directory se necessario)
+    log_dir = os.path.dirname(log_file)
+    if log_dir and not os.path.exists(log_dir):
+        os.makedirs(log_dir, exist_ok=True)
+    
+    # Stampa informazioni
+    pyt_Print(f"  Repository path: {repo_path}")
+    pyt_Print(f"  Username: {username}")
+    pyt_Print(f"  Repository: {owner}/{repo_name}")
+    pyt_Print(f"  Branch: {branch}")
+    pyt_Print(f"  Log file: {log_file}")
+    pyt_Print(f"  Git executable: {git_exe}")
+    pyt_Print(f"  Verifica esistenza cartella repository... OK")
+    pyt_Print(f"  Verifica presenza file di log... OK")
+    
+    # Fase 2: Esecuzione git pull
+    pyt_Print(f"[{pyt_Timestamp()}] Fase 2: Esecuzione git pull")
+    
+    remote_url = f"https://{username}:{token}@github.com/{owner}/{repo_name}.git"
+    masked_url = f"https://{username}:{_mask_token(token)}@github.com/{owner}/{repo_name}.git"
+    
+    pyt_Print(f"  Comando: git pull {masked_url} {branch}")
+    
+    # Scrivi log
+    try:
+        with open(log_file, "w", encoding="utf-8") as lf:
+            lf.write(f"[{pyt_Timestamp()}] AVVIO GIT PULL\n")
+            lf.write(f"Repository: {owner}/{repo_name}\n")
+            lf.write(f"Branch: {branch}\n")
+            lf.write(f"Remote: {masked_url}\n")
+            lf.write(f"Git executable: {git_exe}\n")
+    except Exception as e:
+        raise RuntimeError(f"Impossibile creare file di log {log_file}: {e}")
+    
+    # Esegui git pull
+    try:
+        os.chdir(repo_path)
+        cmd = [git_exe, "pull", remote_url, branch]
+        res = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
+        
+        if res.returncode != 0:
+            error_msg = f"Git pull fallito: {res.stderr.strip()}"
+            if "conflict" in error_msg.lower() or "merge conflict" in error_msg.lower():
+                error_msg = "Conflitti durante il merge. Risolvere i conflitti manualmente."
+            pyt_Print(f"  [ERRORE] {error_msg}")
+            with open(log_file, "a", encoding="utf-8") as lf:
+                lf.write(f"[{pyt_Timestamp()}] ERRORE: {error_msg}\n")
+            raise RuntimeError(error_msg)
+        
+        output = res.stdout.strip()
+        if output:
+            pyt_Print(f"  {output}")
+        else:
+            pyt_Print(f"  [OK] Pull completato con successo")
+        with open(log_file, "a", encoding="utf-8") as lf:
+            lf.write(f"[{pyt_Timestamp()}] SUCCESSO: Pull completato\n")
+            if output:
+                lf.write(f"Output: {output}\n")
+            
+    except subprocess.TimeoutExpired:
+        error_msg = "Timeout durante git pull (300 secondi)"
+        pyt_Print(f"  [ERRORE] {error_msg}")
+        with open(log_file, "a", encoding="utf-8") as lf:
+            lf.write(f"[{pyt_Timestamp()}] ERRORE: {error_msg}\n")
+        raise RuntimeError(error_msg)
+    except Exception as e:
+        error_msg = f"Errore durante git pull: {str(e)}"
+        pyt_Print(f"  [ERRORE] {error_msg}")
+        with open(log_file, "a", encoding="utf-8") as lf:
+            lf.write(f"[{pyt_Timestamp()}] ERRORE: {error_msg}\n")
+        raise RuntimeError(error_msg)
+    
+    # Fase 3: Riepilogo finale
+    pyt_Print(f"[{pyt_Timestamp()}] Fase 3: Riepilogo finale")
+    summary = f"""  Operazione: PULL
+  Repository: {owner}/{repo_name}
+  Branch: {branch}
+  Esito: SUCCESSO
+  Log file: {log_file}"""
+    pyt_Print(summary)
+    with open(log_file, "a", encoding="utf-8") as lf:
+        lf.write(f"[{pyt_Timestamp()}] {summary}\n")
+
 def app_7z_ts(params):
     if len(params) < 1 or len(params) > 2:
         raise ValueError("Sintassi errata. Uso: 7z_ts <pathsource> [path7z]")
@@ -1276,19 +1599,21 @@ def esegui_direttive(directives):
             app_help()
             continue
         
-        pyt_Print(f"PYT.START: {direttiva.upper()} {pyt_Timestamp()}")
+        # Converti underscore in punto per il display (es. git_push -> git.push)
+        display_name = direttiva.replace("_", ".")
+        pyt_Print(f"PYT.START: {display_name.upper()} {pyt_Timestamp()}")
         
         try:
             func_name = f"app_{direttiva}"
             if func_name in globals():
                 globals()[func_name](params)
             else:
-                pyt_Print(f"Errore: direttiva '{direttiva}' non riconosciuta.")
+                pyt_Print(f"Errore: direttiva '{display_name}' non riconosciuta.")
                 app_help()
         except Exception as e:
-            pyt_Print(f"ERRORE [{direttiva}]: {str(e)}")
+            pyt_Print(f"ERRORE [{display_name}]: {str(e)}")
         finally:
-            pyt_Print(f"PYT.END: {direttiva.upper()} {pyt_Timestamp()}")
+            pyt_Print(f"PYT.END: {display_name.upper()} {pyt_Timestamp()}")
 
 def main():
     pyt_Print(f"PYT.START: {PYT_VER} {pyt_Timestamp()}")
