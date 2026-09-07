@@ -130,14 +130,19 @@ DIRETTIVE DISPONIBILI:
        Funziona su Windows e Linux (usa shutil, non robocopy.exe).
     git.push <config.json>
        Esegue git push su GitHub autenticato con token.
-       JSON: repo_path, username, token, repo_name, branch, git_path, log.
+       JSON: repo_path, username, token, repo_name, branch, git_path, log, commit_message (opz), commit_all (opz).
        Supporta variabili d'ambiente: "$VAR_NAME" per token/username.
        Windows: git_path obbligatorio (es. "X:\\_Applic\\Bash\\bin\\git.exe").
-    git.pull <config.json>
+       Se commit_message è presente, esegue git add e git commit prima del push.
+git.pull <config.json>
        Esegue git pull da GitHub autenticato con token.
        JSON: repo_path, username, token, repo_name, branch, git_path, log.
        Supporta variabili d'ambiente: "$VAR_NAME" per token/username.
-       Windows: git_path obbligatorio (es. "X:\\_Applic\\Bash\\bin\\git.exe").
+    report <file_template> <file_json> <file_out_base>
+       Genera report da template e dati JSON (libreria pyt_report).
+       file_template: file template con segnaposto
+       file_json: file JSON con sezione "records" contenente ID e campi
+       file_out_base: base nome file output (verrà aggiunto ID + estensione)
     @ <nome_file>
        Esegue le direttive contenute nel file specificato
 """
@@ -1273,6 +1278,8 @@ def app_git_push(params):
     log_file = cfg.get("log", "").strip()
     owner = cfg.get("owner", username).strip()
     git_path = cfg.get("git_path", "").strip()
+    commit_message = cfg.get("commit_message", "").strip()
+    commit_all = cfg.get("commit_all", True)
     
     # Validazione parametri obbligatori
     if not repo_path:
@@ -1325,11 +1332,62 @@ def app_git_push(params):
     pyt_Print(f"  Branch: {branch}")
     pyt_Print(f"  Log file: {log_file}")
     pyt_Print(f"  Git executable: {git_exe}")
+    if commit_message:
+        pyt_Print(f"  Commit message: {commit_message}")
+        pyt_Print(f"  Commit all: {commit_all}")
+    else:
+        pyt_Print(f"  Commit: non eseguito (commit_message non specificato)")
     pyt_Print(f"  Verifica esistenza cartella repository... OK")
     pyt_Print(f"  Verifica presenza file di log... OK")
     
-    # Fase 2: Esecuzione git push
-    pyt_Print(f"[{pyt_Timestamp()}] Fase 2: Esecuzione git push")
+    # Fase 2: Esecuzione operazioni preliminari (commit se richiesto)
+    commit_executed = False
+    commit_hash = None
+    if commit_message:
+        pyt_Print(f"[{pyt_Timestamp()}] Fase 2: Esecuzione operazioni preliminari (commit se richiesto)")
+        try:
+            os.chdir(repo_path)
+            
+            # git add . se commit_all è True
+            if commit_all:
+                pyt_Print(f"  Esecuzione: git add .")
+                cmd = [git_exe, "add", "."]
+                res = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
+                if res.returncode != 0:
+                    pyt_Print(f"  [ATTENZIONE] git add ha restituito: {res.stderr.strip()}")
+            
+            # git commit
+            pyt_Print(f'  Esecuzione: git commit -m "{commit_message}"')
+            cmd = [git_exe, "commit", "-m", commit_message]
+            res = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
+            
+            if res.returncode == 0:
+                commit_executed = True
+                # Estrai l'hash del commit (prima riga dell'output)
+                output_lines = res.stdout.strip().split('\n')
+                if output_lines:
+                    first_line = output_lines[0]
+                    if '[' in first_line and ']' in first_line:
+                        hash_start = first_line.index('[') + 1
+                        hash_end = first_line.index(']')
+                        commit_hash = first_line[hash_start:hash_end][:7]
+                pyt_Print(f"  [OK] Commit creato: {commit_hash if commit_hash else 'N/A'}")
+            else:
+                # Commit fallito (es. nessun cambiamento)
+                pyt_Print(f"  [ATTENZIONE] Commit non eseguito: {res.stderr.strip()}")
+                pyt_Print(f"  [INFO] Procedo con il push dei commit esistenti")
+                
+        except subprocess.TimeoutExpired:
+            pyt_Print(f"  [ERRORE] Timeout durante il commit")
+            raise RuntimeError("Timeout durante git commit")
+        except Exception as e:
+            pyt_Print(f"  [ERRORE] Errore durante commit: {str(e)}")
+            raise RuntimeError(f"Errore durante git commit: {str(e)}")
+    else:
+        pyt_Print(f"[{pyt_Timestamp()}] Fase 2: Preparazione per git push")
+    
+    # Fase 3: Esecuzione git push
+    pyt_Print(f"[{pyt_Timestamp()}] Fase 3: Esecuzione git push")
     
     remote_url = f"https://{username}:{token}@github.com/{owner}/{repo_name}.git"
     masked_url = f"https://{username}:{_mask_token(token)}@github.com/{owner}/{repo_name}.git"
@@ -1344,6 +1402,12 @@ def app_git_push(params):
             lf.write(f"Branch: {branch}\n")
             lf.write(f"Remote: {masked_url}\n")
             lf.write(f"Git executable: {git_exe}\n")
+            if commit_message:
+                lf.write(f"Commit message: {commit_message}\n")
+                lf.write(f"Commit all: {commit_all}\n")
+                lf.write(f"Commit eseguito: {'SI' if commit_executed else 'NO'}\n")
+                if commit_hash:
+                    lf.write(f"Commit hash: {commit_hash}\n")
     except Exception as e:
         raise RuntimeError(f"Impossibile creare file di log {log_file}: {e}")
     
@@ -1377,11 +1441,12 @@ def app_git_push(params):
             lf.write(f"[{pyt_Timestamp()}] ERRORE: {error_msg}\n")
         raise RuntimeError(error_msg)
     
-    # Fase 3: Riepilogo finale
-    pyt_Print(f"[{pyt_Timestamp()}] Fase 3: Riepilogo finale")
+    # Fase 4: Riepilogo finale
+    pyt_Print(f"[{pyt_Timestamp()}] Fase 4: Riepilogo finale")
     summary = f"""  Operazione: PUSH
   Repository: {owner}/{repo_name}
   Branch: {branch}
+  Commit eseguito: {'SI' if commit_executed else 'NO'}{f' ({commit_hash})' if commit_hash else ''}
   Esito: SUCCESSO
   Log file: {log_file}"""
     pyt_Print(summary)
@@ -1537,6 +1602,47 @@ def app_git_pull(params):
     pyt_Print(summary)
     with open(log_file, "a", encoding="utf-8") as lf:
         lf.write(f"[{pyt_Timestamp()}] {summary}\n")
+
+def app_report(params):
+    """Genera report da template e dati JSON usando la libreria esterna pyt_report."""
+    if len(params) != 3:
+        raise ValueError("Sintassi errata. Uso: report <file_template> <file_json> <file_out_base>")
+    
+    file_template = params[0].strip('"\'')
+    file_json = params[1].strip('"\'')
+    file_out_base = params[2].strip('"\'')
+    
+    pyt_Print(f"[{pyt_Timestamp()}] START: report")
+    pyt_Print(f"[{pyt_Timestamp()}] ARGS: template={file_template}, json={file_json}, out_base={file_out_base}")
+    
+    if not os.path.exists(file_template):
+        raise FileNotFoundError(f"File template {file_template} non trovato.")
+    if not os.path.exists(file_json):
+        raise FileNotFoundError(f"File JSON {file_json} non trovato.")
+    
+    try:
+        import pyt_report
+    except ImportError:
+        raise ImportError("Libreria pyt_report non installata. Installarla con: pip install pyt_report")
+    
+    try:
+        with open(file_json, "r", encoding="utf-8") as f:
+            json_data = json.load(f)
+    except json.JSONDecodeError as e:
+        raise ValueError(f"JSON malformato in {file_json}: {e}")
+    
+    records = json_data.get("records", {})
+    if not records:
+        raise ValueError("Nessun record trovato nella sezione 'records' del JSON")
+    
+    pyt_Print(f"[{pyt_Timestamp()}] Fase 1: Lettura template e file JSON completata. Trovati {len(records)} record.")
+    
+    for record_id, record_data in records.items():
+        outfile = f"{file_out_base}{record_id}{os.path.splitext(file_template)[1]}"
+        pyt_Print(f"[{pyt_Timestamp()}] Elaboro ID: {record_id}, file {outfile}")
+        pyt_report.process_record(file_template, record_data, outfile)
+    
+    pyt_Print(f"[{pyt_Timestamp()}] WRITE: Report generati con successo")
 
 def app_7z_ts(params):
     if len(params) < 1 or len(params) > 2:

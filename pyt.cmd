@@ -7,7 +7,7 @@ IF EXIST "%~1" (
     SET "PYN=%~1"
     SHIFT
 ) ELSE (
-    SET "PYN=k:\tools\pyn.cmd"
+    SET "PYN=pyn.cmd"
 )
 REM Build quoted parameter string for all remaining arguments
 SET "PARAMS="

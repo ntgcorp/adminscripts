@@ -4,6 +4,10 @@
 # Script per il backup di un'immagine disco compressa tramite pipeline dd | pv | gzip
 # Richiede 3 parametri posizionali: <disco_sorgente> <cartella_destinazione> <nome_file_base>
 #
+# Versione: 1.1
+#
+
+VERSION="1.1"
 
 # ------------------------------
 # Colori ANSI per output console
@@ -13,6 +17,23 @@ GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
 RED='\033[0;31m'
 NC='\033[0m' # No Color
+
+# ------------------------------
+# Determina directory dello script per log
+# ------------------------------
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+LOG_FILE="${SCRIPT_DIR}/admin_disk_image.log"
+
+# ------------------------------
+# Funzione di logging
+# ------------------------------
+log_message() {
+    local msg="$1"
+    if [ -w "$SCRIPT_DIR" ] 2>/dev/null; then
+        echo "$(date '+%Y-%m-%d %H:%M:%S') $msg" >> "$LOG_FILE"
+    fi
+    echo -e "$msg"
+}
 
 # ------------------------------
 # Funzione di uso / help
@@ -25,9 +46,17 @@ usage() {
 }
 
 # ------------------------------
+# Visualizza versione all'avvio o senza parametri
+# ------------------------------
+log_message "${CYAN}admin_disk_image.sh v${VERSION}${NC}"
+if [ $# -eq 0 ]; then
+    usage
+fi
+
+# ------------------------------
 # FASE 1: Verifica parametri obbligatori
 # ------------------------------
-echo -e "${CYAN}=== FASE 1: Verifica parametri ===${NC}"
+log_message "${CYAN}=== FASE 1: Verifica parametri ===${NC}"
 
 if [ $# -ne 3 ]; then
     usage
@@ -45,7 +74,7 @@ echo "  Nome base  : $BASE_NAME"
 # ------------------------------
 # FASE 2: Sanificazione percorso destinazione
 # ------------------------------
-echo -e "${CYAN}=== FASE 2: Sanificazione percorso destinazione ===${NC}"
+log_message "${CYAN}=== FASE 2: Sanificazione percorso destinazione ===${NC}"
 
 # Rimuovi eventuali slash o backslash finali
 DEST_DIR_CLEAN="$(echo "$DEST_DIR" | sed 's/[\/\\]$//')"
@@ -62,7 +91,7 @@ DEST_DIR="$DEST_DIR_CLEAN"  # aggiorniamo la variabile
 # ------------------------------
 # FASE 3: Controllo prerequisiti
 # ------------------------------
-echo -e "${CYAN}=== FASE 3: Controllo prerequisiti ===${NC}"
+log_message "${CYAN}=== FASE 3: Controllo prerequisiti ===${NC}"
 
 # 3.1 Verifica esistenza e integrità del device di blocco sorgente
 if [ ! -b "$SOURCE_DISK" ]; then
@@ -90,17 +119,11 @@ if [ ! -w "$DEST_DIR" ]; then
     exit 1
 fi
 
-# 3.3 Verifica cartella Log (come da specifica originale)
-LOG_DIR="/home/ntjobsos/Log"
-if [ ! -d "$LOG_DIR" ]; then
-    echo -e "${YELLOW}⚠ La cartella Log '$LOG_DIR' non esiste, verrà creata...${NC}"
-    mkdir -p "$LOG_DIR" || {
-        echo -e "${RED}✗ Impossibile creare la cartella Log '$LOG_DIR'.${NC}"
-        exit 1
-    }
-    echo -e "${GREEN}✓ Cartella Log creata: $LOG_DIR${NC}"
+# 3.3 Configurazione logging (nella cartella dello script)
+if [ -w "$SCRIPT_DIR" ] 2>/dev/null; then
+    log_message "${GREEN}✓ Logging su file: $LOG_FILE${NC}"
 else
-    echo -e "${GREEN}✓ Cartella Log esistente: $LOG_DIR${NC}"
+    log_message "${YELLOW}⚠ Cartella script non scrivibile, log solo su console${NC}"
 fi
 
 # 3.4 Verifica e installazione automatica di 'pv'
@@ -128,7 +151,7 @@ fi
 # ------------------------------
 # FASE 4: Preparazione ed esecuzione del backup
 # ------------------------------
-echo -e "${CYAN}=== FASE 4: Esecuzione backup ===${NC}"
+log_message "${CYAN}=== FASE 4: Esecuzione backup ===${NC}"
 
 # Ottieni dimensione del disco in byte
 DISK_SIZE=$(blockdev --getsize64 "$SOURCE_DISK" 2>/dev/null)
@@ -167,7 +190,7 @@ DURATION=$((END_TIME - START_TIME))
 # ------------------------------
 # FASE 5: Elaborazione risultati finali
 # ------------------------------
-echo -e "${CYAN}=== FASE 5: Risultati finali ===${NC}"
+log_message "${CYAN}=== FASE 5: Risultati finali ===${NC}"
 
 echo -e "Durata totale: ${GREEN}${DURATION}${NC} secondi"
 

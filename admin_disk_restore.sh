@@ -5,6 +5,10 @@
 # Richiede 2 parametri posizionali: <file_sorgente> <disco_destinazione>
 # Esempio: ./admin_disk_restore.sh /mnt/backup/server_disk_20260802120000.img.gz /dev/sdb
 #
+# Versione: 1.1
+#
+
+VERSION="1.1"
 
 # ------------------------------
 # Colori ANSI per output console
@@ -14,6 +18,23 @@ GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
 RED='\033[0;31m'
 NC='\033[0m' # No Color
+
+# ------------------------------
+# Determina directory dello script per log
+# ------------------------------
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+LOG_FILE="${SCRIPT_DIR}/admin_disk_restore.log"
+
+# ------------------------------
+# Funzione di logging
+# ------------------------------
+log_message() {
+    local msg="$1"
+    if [ -w "$SCRIPT_DIR" ] 2>/dev/null; then
+        echo "$(date '+%Y-%m-%d %H:%M:%S') $msg" >> "$LOG_FILE"
+    fi
+    echo -e "$msg"
+}
 
 # ------------------------------
 # Funzione di uso / help
@@ -26,9 +47,17 @@ usage() {
 }
 
 # ------------------------------
+# Visualizza versione all'avvio o senza parametri
+# ------------------------------
+log_message "${CYAN}admin_disk_restore.sh v${VERSION}${NC}"
+if [ $# -eq 0 ]; then
+    usage
+fi
+
+# ------------------------------
 # FASE 1: Verifica parametri obbligatori
 # ------------------------------
-echo -e "${CYAN}=== FASE 1: Verifica parametri ===${NC}"
+log_message "${CYAN}=== FASE 1: Verifica parametri ===${NC}"
 
 if [ $# -ne 2 ]; then
     usage
@@ -44,7 +73,7 @@ echo "  Disco destinazione: $DEST_DISK"
 # ------------------------------
 # FASE 2: Controllo prerequisiti
 # ------------------------------
-echo -e "${CYAN}=== FASE 2: Controllo prerequisiti ===${NC}"
+log_message "${CYAN}=== FASE 2: Controllo prerequisiti ===${NC}"
 
 # 2.1 Verifica esistenza e leggibilità del file sorgente
 if [ ! -f "$SOURCE_FILE" ]; then
@@ -77,17 +106,11 @@ if grep -q "^$DEST_DISK " /proc/mounts; then
 fi
 echo -e "${GREEN}✓ Device destinazione valido e non montato: $DEST_DISK${NC}"
 
-# 2.4 Verifica cartella Log (come per backup)
-LOG_DIR="/home/ntjobsos/Log"
-if [ ! -d "$LOG_DIR" ]; then
-    echo -e "${YELLOW}⚠ La cartella Log '$LOG_DIR' non esiste, verrà creata...${NC}"
-    mkdir -p "$LOG_DIR" || {
-        echo -e "${RED}✗ Impossibile creare la cartella Log '$LOG_DIR'.${NC}"
-        exit 1
-    }
-    echo -e "${GREEN}✓ Cartella Log creata: $LOG_DIR${NC}"
+# 2.3 Configurazione logging (nella cartella dello script)
+if [ -w "$SCRIPT_DIR" ] 2>/dev/null; then
+    log_message "${GREEN}✓ Logging su file: $LOG_FILE${NC}"
 else
-    echo -e "${GREEN}✓ Cartella Log esistente: $LOG_DIR${NC}"
+    log_message "${YELLOW}⚠ Cartella script non scrivibile, log solo su console${NC}"
 fi
 
 # 2.5 Verifica e installazione automatica di 'pv'

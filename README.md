@@ -377,4 +377,40 @@ To maximize compression efficiency and speed, boot into Windows before running t
 sdelete64.exe -z C:
 ```
 
+---
+
+## 📋 Script Reference (from AGENTS.md)
+
+### Linux Backup/Restore (partclone)
+- `admin_partclone_backup.sh` - Smart partition backup using partclone + gzip (skips free space)
+  - Usage: `sudo ./admin_partclone_backup.sh <partition> <dest_folder> <compression_1-9>`
+  - Requires: partclone, gzip, lsblk
+- `admin_partclone_restore.sh` - Restore backup to partition (destructive, requires "SI" confirmation)
+  - Usage: `sudo ./admin_partclone_restore.sh <backup_file> <target_partition>`
+
+### Linux Disk Imaging (dd/pv/gzip)
+- `admin_disk_image.sh` - Full disk image via `dd | pv | gzip`
+  - Usage: `./admin_disk_image.sh <source_disk> <dest_folder> <base_name>`
+  - Requires: dd, pv, gzip, blockdev (auto-installs pv via apt)
+  - Log dir: `/home/ntjobsos/Log` (auto-created)
+- `admin_disk_restore.sh` - Restore disk image via `gunzip | pv | dd`
+  - Usage: `./admin_disk_restore.sh <image_file> <target_disk>`
+  - Safety: checks target not mounted, 5s cancel window
+
+### Google Drive (rclone)
+- `admin_gdrive_mount.sh` - Mounts `gdrive` remote to `/mnt/gdrive` (daemon, --allow-other, vfs-cache-mode writes)
+- `admin_gdrive_umount.sh` - Unmounts via `fusermount -u /mnt/gdrive`
+
+### Windows Display Management
+- `ntsetres.ps1` - Sets screen resolution via Win32 API (P/Invoke)
+  - Supported: 1024x768, 1280x800, 1366x768, 1440x900, 1600x900, 1680x1050, 1920x1080
+  - Usage: `.\ntsetres.ps1 <resolution>`
+- `admin_setres_*.cmd` - Wrapper CMD files calling ntsetres.ps1
+
+### Linux Utilities
+- `admin_keybit.sh` - Sets Italian keyboard layout: `setxkbmap it`
+- `admin_light_max.sh` - Sets max brightness: `echo 6000 | sudo tee /sys/class/backlight/*/brightness`
+
+---
+
 For more info, troubleshooting, and updates, visit: http://www.ntgcorp.it
