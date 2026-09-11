@@ -1,0 +1,1 @@
+c:\applic\pyn pathbackup.py test_pathbackup.ini

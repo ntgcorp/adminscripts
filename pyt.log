@@ -1,105 +1,33 @@
-PYT.START: 20260811 20260911:234045
-PYT.START: ROBOCOPY 20260911:234045
-[20260911:234045] Fase 1: Lettura e validazione del file di configurazione JSON
-[20260911:234045] Configurazione letta: 6 action(s) trovate
-[20260911:234045] 
+PYT.START: 20260811 20260912:001647
+PYT.START: ROBOCOPY 20260912:001647
+[20260912:001647] Fase 1: Lettura e validazione del file di configurazione JSON
+ERRORE [robocopy]: JSON malformato: Illegal trailing comma before end of array: line 19 column 10 (char 420)
+PYT.END: ROBOCOPY 20260912:001647
+END: 20260912:001647
+PYT.START: 20260811 20260912:001751
+PYT.START: ROBOCOPY 20260912:001751
+[20260912:001751] Fase 1: Lettura e validazione del file di configurazione JSON
+ERRORE [robocopy]: JSON malformato: Illegal trailing comma before end of array: line 19 column 10 (char 420)
+PYT.END: ROBOCOPY 20260912:001751
+END: 20260912:001751
+PYT.START: 20260811 20260912:001831
+PYT.START: ROBOCOPY 20260912:001831
+[20260912:001831] Fase 1: Lettura e validazione del file di configurazione JSON
+[20260912:001831] Configurazione letta: 2 action(s) trovate
+[20260912:001831] 
 ============================================================
-[20260911:234045] AZIONE: copy_k
-[20260911:234045] ============================================================
-[20260911:234045]   path_source: G:\Il mio Drive\Progetti\pyt_pyn
-[20260911:234045]   path_dest:   k:\tools
-[20260911:234045]   mode:        overwrite
-[20260911:234045]   files:       2 file(s)
-[20260911:234045]   Elaborazione: pyt.*
-[20260911:234045]     Trovati 4 file(s) per pattern: pyt.*
-[20260911:234045]     Elaborazione: pyt.cmd
-[20260911:234045]       COPIATO: pyt.cmd
-[20260911:234045]     Elaborazione: pyt.py
-[20260911:234045]       COPIATO: pyt.py
-[20260911:234045]     Elaborazione: pyt.sh
-[20260911:234045]       COPIATO: pyt.sh
-[20260911:234045]     Elaborazione: pyt.log
-[20260911:234045]       COPIATO: pyt.log
-[20260911:234045]   Elaborazione: pyn.*
-[20260911:234045]     Trovati 4 file(s) per pattern: pyn.*
-[20260911:234045]     Elaborazione: pyn.cmd - collegamento.lnk
-[20260911:234045]       COPIATO: pyn.cmd - collegamento.lnk
-[20260911:234045]     Elaborazione: pyn.cmd - LINK MASTER GOMERA.lnk
-[20260911:234045]       COPIATO: pyn.cmd - LINK MASTER GOMERA.lnk
-[20260911:234045]     Elaborazione: pyn.cmd
-[20260911:234045]       COPIATO: pyn.cmd
-[20260911:234045]     Elaborazione: pyn.sh
-[20260911:234045]       COPIATO: pyn.sh
-[20260911:234045] 
-============================================================
-[20260911:234045] AZIONE: copy_scripts
-[20260911:234045] ============================================================
-[20260911:234045]   path_source: G:\Il mio Drive\Progetti\pyt_pyn
-[20260911:234045]   path_dest:   G:\Il mio Drive\Scripts
-[20260911:234045]   mode:        overwrite
-[20260911:234045]   files:       2 file(s)
-[20260911:234045]   Elaborazione: pyt.*
-[20260911:234045]     Trovati 4 file(s) per pattern: pyt.*
-[20260911:234045]     Elaborazione: pyt.cmd
-[20260911:234046]       COPIATO: pyt.cmd
-[20260911:234046]     Elaborazione: pyt.py
-[20260911:234047]       COPIATO: pyt.py
-[20260911:234047]     Elaborazione: pyt.sh
-[20260911:234047]       COPIATO: pyt.sh
-[20260911:234047]     Elaborazione: pyt.log
-[20260911:234047]       COPIATO: pyt.log
-[20260911:234047]   Elaborazione: pyn.*
-[20260911:234047]     Trovati 4 file(s) per pattern: pyn.*
-[20260911:234047]     Elaborazione: pyn.cmd - collegamento.lnk
-[20260911:234047]       COPIATO: pyn.cmd - collegamento.lnk
-[20260911:234047]     Elaborazione: pyn.cmd - LINK MASTER GOMERA.lnk
-[20260911:234047]       COPIATO: pyn.cmd - LINK MASTER GOMERA.lnk
-[20260911:234047]     Elaborazione: pyn.cmd
-[20260911:234048]       COPIATO: pyn.cmd
-[20260911:234048]     Elaborazione: pyn.sh
-[20260911:234049]       COPIATO: pyn.sh
-[20260911:234049] 
-============================================================
-[20260911:234049] AZIONE: copy_adminscripts
-[20260911:234049] ============================================================
-[20260911:234049]   path_source: G:\Il mio Drive\Progetti\pyt_pyn
-[20260911:234049]   path_dest:   G:\Il mio Drive\Progetti\adminscripts
-[20260911:234049]   mode:        overwrite
-[20260911:234049]   files:       2 file(s)
-[20260911:234049]   Elaborazione: pyt.*
-[20260911:234049]     Trovati 4 file(s) per pattern: pyt.*
-[20260911:234049]     Elaborazione: pyt.cmd
-[20260911:234049]       COPIATO: pyt.cmd
-[20260911:234049]     Elaborazione: pyt.py
-[20260911:234049]       COPIATO: pyt.py
-[20260911:234049]     Elaborazione: pyt.sh
-[20260911:234050]       COPIATO: pyt.sh
-[20260911:234050]     Elaborazione: pyt.log
-[20260911:234050]       COPIATO: pyt.log
-[20260911:234050]   Elaborazione: pyn.*
-[20260911:234050]     Trovati 4 file(s) per pattern: pyn.*
-[20260911:234050]     Elaborazione: pyn.cmd - collegamento.lnk
-[20260911:234050]       COPIATO: pyn.cmd - collegamento.lnk
-[20260911:234050]     Elaborazione: pyn.cmd - LINK MASTER GOMERA.lnk
-[20260911:234050]       COPIATO: pyn.cmd - LINK MASTER GOMERA.lnk
-[20260911:234050]     Elaborazione: pyn.cmd
-[20260911:234050]       COPIATO: pyn.cmd
-[20260911:234050]     Elaborazione: pyn.sh
-[20260911:234050]       COPIATO: pyn.sh
-[20260911:234050] 
-============================================================
-[20260911:234050] AZIONE: copy_git
-[20260911:234050] ============================================================
-[20260911:234050]   path_source: G:\Il mio Drive\Progetti\pyt_pyn
-[20260911:234050]   path_dest:   G:\Il mio Drive\gitgub\adminscripts
-[20260911:234050]   mode:        overwrite
-[20260911:234050]   files:       2 file(s)
-[20260911:234050]   Elaborazione: pyt.*
-[20260911:234050]     Trovati 4 file(s) per pattern: pyt.*
-[20260911:234050]     Elaborazione: pyt.cmd
-[20260911:234050]       COPIATO: pyt.cmd
-[20260911:234050]     Elaborazione: pyt.py
-[20260911:234050]       COPIATO: pyt.py
-[20260911:234050]     Elaborazione: pyt.sh
-[20260911:234050]       COPIATO: pyt.sh
-[20260911:234050]     Elaborazione: pyt.log
+[20260912:001831] AZIONE: root
+[20260912:001831] ============================================================
+[20260912:001832]   path_source: G:\Il mio Drive\Progetti\adminscripts
+[20260912:001832]   path_dest:   G:\Il mio Drive\github\adminscripts
+[20260912:001832]   mode:        overwrite
+[20260912:001832]   files:       8 file(s)
+[20260912:001832]   Elaborazione: pyt.*
+[20260912:001832]     Trovati 4 file(s) per pattern: pyt.*
+[20260912:001832]     Elaborazione: pyt.cmd
+[20260912:001832]       COPIATO: pyt.cmd
+[20260912:001832]     Elaborazione: pyt.py
+[20260912:001832]       COPIATO: pyt.py
+[20260912:001832]     Elaborazione: pyt.sh
+[20260912:001832]       COPIATO: pyt.sh
+[20260912:001832]     Elaborazione: pyt.log
