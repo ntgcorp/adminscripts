@@ -1,5 +1,7 @@
-@ECHO OFF
+REM @ECHO OFF
 REM ORIGINALE SU PC GOMERA - LAUNCHER PYTHON / PODMAN / ALTRO VIA CMD - BASH
+REM VERSIONE 20260911 - Corretto launcher in calcolo py_path
+REM VERSIONE 20260830 - Corretto launcher scegliendo path python accellerando
 REM VERSIONE 20260810 - REFACTOR: Corretti bug critici (delayed expansion, doppia exec, path hardcoded).
 REM                     Aggiunte uscite OS-specifiche per comandi Windows-only.
 REM                     Aggiunta variabile ambiente PYTHON per lancio da esterno
@@ -21,7 +23,7 @@ REM VERSIONE 20250405 - CORREZIONI - INSTALLAZIONE CRYPTOGRAFY - FORSE PSUTIL
 REM VERSIONE 20250203 - DEFAULT X64
 REM VERSIONE 20250130 - GESTIONE MIGLIORE RUNTIME
 
-SET PYN_VER=20260810
+SET PYN_VER=20260911
 
 REM PER PRIMO
 :SETUP
@@ -40,24 +42,45 @@ IF "%1"=="b"      GOTO :BASH
 IF "%1"==""       GOTO :SINTASSI
 IF "%1"=="chrome" GOTO :CHROME
 
-REM POSSIBILI PATH
-SET PATHP_01=D:\APPLIC\PYTHON%PY_TYPE%
-SET PATHP_XX=%PATH_PADRE%\TOOLS\PYTHON%PY_TYPE%
-SET PATHP_02=C:\APPLIC\PYTHON%PY_TYPE%
-SET PATHP_03=K:\Tools\Python%PY_TYPE%
-SET PATHP_ENV=%PATHP_ENV%
+REM POSSIBILI PATH - ordine documentato: K: (se MACH0) > D: > C: > XX (TOOLS locale)
 for %%I in ("%~dp0..") do set "PATH_PADRE=%%~fI"
 
-REM CASO VDI.MACH0
-IF EXIST "K:\MACH0_PROD.TXT" SET PY_PATH=%PATHP_MACH0%
+SET "PATHP_01=D:\APPLIC\PYTHON%PY_TYPE%"
+SET "PATHP_02=C:\APPLIC\PYTHON%PY_TYPE%"
+SET "PATHP_03=K:\Tools\Python%PY_TYPE%"
+SET "PATHP_XX=%PATH_PADRE%\TOOLS\PYTHON%PY_TYPE%"
 
-FOR %%A IN ("%PATHP_ENV%" "%PATHP_01%" "%PATHP_02%" "%PATHP_03%" "%PATHP_XX%") DO (
-    IF EXIST %%~A\*.* SET "PY_PATH=%%~A"
+REM CASO VDI.MACH0 - priorita' assoluta a K: se flag esiste e path e' valido
+IF EXIST "K:\MACH0_PROD.TXT" (
+    IF EXIST "%PATHP_03%\python.exe" SET "PY_PATH=%PATHP_03%" & GOTO :PYN_1
+    IF EXIST "%PATHP_03%\App\python.exe" SET "PY_PATH=%PATHP_03%" & GOTO :PYN_1
+    IF EXIST "%PATHP_03%\*.*" SET "PY_PATH=%PATHP_03%" & GOTO :PYN_1
+)
+
+REM Ricerca in ordine: eventuale PATHP_ENV (override esterno) poi D:, C:, K:, XX
+IF DEFINED PATHP_ENV (
+    IF EXIST "%PATHP_ENV%\python.exe" SET "PY_PATH=%PATHP_ENV%" & GOTO :PYN_1
+    IF EXIST "%PATHP_ENV%\App\python.exe" SET "PY_PATH=%PATHP_ENV%" & GOTO :PYN_1
+    IF EXIST "%PATHP_ENV%\*.*" SET "PY_PATH=%PATHP_ENV%" & GOTO :PYN_1
+)
+FOR %%A IN ("%PATHP_01%" "%PATHP_02%" "%PATHP_03%" "%PATHP_XX%") DO (
+    IF EXIST "%%~A\python.exe" (
+        SET "PY_PATH=%%~A"
+        GOTO :PYN_1
+    )
+    IF EXIST "%%~A\App\python.exe" (
+        SET "PY_PATH=%%~A"
+        GOTO :PYN_1
+    )
+    IF EXIST "%%~A\*.*" (
+        SET "PY_PATH=%%~A"
+        GOTO :PYN_1
+    )
 )
 
 :PYN_1
 @ECHO LAUNCHER PYTHON PORTABLE NTGCORP %PYN_VER%: Tipo %PY_TYPE%: Path: %PY_PATH% Env: %PY_ENV%
-ECHO Python Path: %PY_PATH%
+IF DEFINED PY_PATH ECHO Python Path: %PY_PATH%
 IF "%PY_PATH%"=="" GOTO :ERR
 
 REM PY_CMD

@@ -10,6 +10,8 @@ import platform
 import subprocess
 import configparser
 import zipfile
+import json
+import stat
 
 from pathlib import Path
 from datetime import datetime
@@ -21,6 +23,79 @@ from datetime import datetime
 
 def sanitize_filename(name):
     return re.sub(r'[<>:"/\\|?*]', "_", name)
+
+
+# ----------------------------------------------------------------------
+# Incremental Backup Utilities
+# ----------------------------------------------------------------------
+
+def get_metadata_file(backup_folder, entry_name):
+    """Get path to metadata file for tracking incremental backups."""
+    safe_name = sanitize_filename(entry_name)
+    return os.path.join(backup_folder, f".{safe_name}_metadata.json")
+
+
+def load_last_backup_time(backup_folder, entry_name):
+    """Load the timestamp of the last successful backup for this entry."""
+    metadata_file = get_metadata_file(backup_folder, entry_name)
+    if os.path.exists(metadata_file):
+        try:
+            with open(metadata_file, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                return data.get('last_backup_time', 0)
+        except Exception:
+            pass
+    return 0
+
+
+def save_last_backup_time(backup_folder, entry_name, timestamp):
+    """Save the timestamp of the current backup."""
+    metadata_file = get_metadata_file(backup_folder, entry_name)
+    try:
+        with open(metadata_file, 'w', encoding='utf-8') as f:
+            json.dump({'last_backup_time': timestamp}, f)
+    except Exception as e:
+        logging.getLogger("path_backup").warning(f"Failed to save metadata: {e}")
+
+
+def has_archive_flag(filepath):
+    """Check if file has archive attribute set (Windows)."""
+    try:
+        attrs = os.stat(filepath).st_file_attributes if hasattr(os.stat(filepath), 'st_file_attributes') else 0
+        return bool(attrs & 0x20)  # FILE_ATTRIBUTE_ARCHIVE = 0x20
+    except Exception:
+        return False
+
+
+def clear_archive_flag(filepath):
+    """Clear the archive attribute on Windows after backup."""
+    if platform.system() != "Windows":
+        return
+    try:
+        import ctypes
+        kernel32 = ctypes.windll.kernel32
+        FILE_ATTRIBUTE_ARCHIVE = 0x20
+        attrs = kernel32.GetFileAttributesW(filepath)
+        if attrs != -1 and (attrs & FILE_ATTRIBUTE_ARCHIVE):
+            kernel32.SetFileAttributesW(filepath, attrs & ~FILE_ATTRIBUTE_ARCHIVE)
+    except Exception:
+        pass
+
+
+def should_backup_file(filepath, last_backup_time):
+    """Determine if a file should be backed up in incremental mode."""
+    system = platform.system()
+    
+    if system == "Windows":
+        # On Windows, use archive flag: back up if flag is set
+        return has_archive_flag(filepath)
+    else:
+        # On Linux/Unix, use mtime: back up if modified since last backup
+        try:
+            mtime = os.path.getmtime(filepath)
+            return mtime > last_backup_time
+        except Exception:
+            return True  # If we can't determine, back it up to be safe
 
 
 def find_7z():
@@ -133,68 +208,127 @@ def run_tar(output_archive, source):
     return cmd, result
 
 
-def run_zip(output_archive, source, subdirs, logger):
+def run_zip(output_archive, source, subdirs, logger, incremental=False, last_backup_time=0):
+    import glob
     file_falliti = []
     file_successo = 0
+    files_backed_up = []  # Track files that were backed up to clear archive flag
 
     source = source.strip().strip('"')
 
+    has_wildcard = '*' in source or '?' in source
+
+    def should_include(filepath):
+        if not incremental:
+            return True
+        return should_backup_file(filepath, last_backup_time)
+
+    def process_file(filepath, arcname):
+        nonlocal file_successo
+        try:
+            zipf.write(filepath, arcname=arcname)
+            file_successo += 1
+            files_backed_up.append(filepath)
+        except Exception as e:
+            file_falliti.append({
+                "file": filepath,
+                "errore": str(e)
+            })
+
+    def clear_flags_and_return(code):
+        """Clear archive flags on Windows for successfully backed up files, then return."""
+        if incremental and platform.system() == "Windows":
+            for f in files_backed_up:
+                clear_archive_flag(f)
+        return code, file_falliti, file_successo
+
+    if has_wildcard:
+        matches = glob.glob(source)
+        if not matches:
+            logger.warning(f"No files matched wildcard pattern: {source}")
+            return clear_flags_and_return(1)
+
+        try:
+            with zipfile.ZipFile(output_archive, 'w', zipfile.ZIP_DEFLATED) as zipf:
+                for match in matches:
+                    match = match.strip().strip('"')
+                    if os.path.isfile(match):
+                        if should_include(match):
+                            process_file(match, os.path.basename(match))
+                    elif os.path.isdir(match):
+                        folder_name = os.path.basename(match.rstrip(os.sep))
+                        if subdirs:
+                            for root, dirs, files in os.walk(match):
+                                for file in files:
+                                    percorso_assoluto = os.path.join(root, file)
+                                    percorso_relativo = os.path.relpath(percorso_assoluto, match)
+                                    arcname = os.path.join(folder_name, percorso_relativo)
+                                    if should_include(percorso_assoluto):
+                                        process_file(percorso_assoluto, arcname)
+                        else:
+                            for item in os.listdir(match):
+                                percorso_assoluto = os.path.join(match, item)
+                                if os.path.isfile(percorso_assoluto) and should_include(percorso_assoluto):
+                                    arcname = os.path.join(folder_name, item)
+                                    process_file(percorso_assoluto, arcname)
+
+        except Exception as e:
+            logger.error(f"Error creating ZIP archive: {e}")
+            return clear_flags_and_return(1)
+
+        if file_falliti:
+            return clear_flags_and_return(1)
+        return clear_flags_and_return(0)
+
     if not os.path.exists(source):
         logger.warning(f"Source path does not exist: {source}")
-        return 1, file_falliti, file_successo
+        return clear_flags_and_return(1)
 
     if os.path.isfile(source):
+        if not should_include(source):
+            logger.info(f"Skipping unchanged file: {source}")
+            return clear_flags_and_return(0)
         try:
             with zipfile.ZipFile(output_archive, 'w', zipfile.ZIP_DEFLATED) as zipf:
                 zipf.write(source, arcname=os.path.basename(source))
             file_successo = 1
-            return 0, file_falliti, file_successo
+            files_backed_up.append(source)
+            return clear_flags_and_return(0)
         except Exception as e:
             file_falliti.append({
                 "file": source,
                 "errore": str(e)
             })
-            return 1, file_falliti, file_successo
+            return clear_flags_and_return(1)
 
     if os.path.isdir(source):
         try:
             with zipfile.ZipFile(output_archive, 'w', zipfile.ZIP_DEFLATED) as zipf:
+                folder_name = os.path.basename(source.rstrip(os.sep))
                 if subdirs:
                     for root, dirs, files in os.walk(source):
                         for file in files:
                             percorso_assoluto = os.path.join(root, file)
                             percorso_relativo = os.path.relpath(percorso_assoluto, source)
-
-                            try:
-                                zipf.write(percorso_assoluto, arcname=percorso_relativo)
-                                file_successo += 1
-                            except Exception as e:
-                                file_falliti.append({
-                                    "file": percorso_assoluto,
-                                    "errore": str(e)
-                                })
+                            arcname = os.path.join(folder_name, percorso_relativo)
+                            if should_include(percorso_assoluto):
+                                process_file(percorso_assoluto, arcname)
                 else:
                     for item in os.listdir(source):
                         percorso_assoluto = os.path.join(source, item)
-                        if os.path.isfile(percorso_assoluto):
-                            try:
-                                zipf.write(percorso_assoluto, arcname=item)
-                                file_successo += 1
-                            except Exception as e:
-                                file_falliti.append({
-                                    "file": percorso_assoluto,
-                                    "errore": str(e)
-                                })
+                        if os.path.isfile(percorso_assoluto) and should_include(percorso_assoluto):
+                            arcname = os.path.join(folder_name, item)
+                            process_file(percorso_assoluto, arcname)
 
             if file_falliti:
-                return 1, file_falliti, file_successo
-            return 0, file_falliti, file_successo
+                return clear_flags_and_return(1)
+            return clear_flags_and_return(0)
 
         except Exception as e:
             logger.error(f"Error creating ZIP archive: {e}")
-            return 1, file_falliti, file_successo
+            return clear_flags_and_return(1)
 
-    return 1, file_falliti, file_successo
+    return clear_flags_and_return(1)
 
 
 # ----------------------------------------------------------------------
@@ -253,7 +387,7 @@ def merge_ini_files(ini_files):
             if not merged_config.has_section(section_upper):
                 merged_config.add_section(section_upper)
             for key, value in temp_config.items(section):
-                merged_config.set(section_upper, key, value)
+                merged_config.set(section_upper, key, value.strip().strip('"'))
 
     return merged_config
 
@@ -298,7 +432,7 @@ def main():
     backup_folder = os.path.join(output_root, day_folder)
     os.makedirs(backup_folder, exist_ok=True)
 
-    log_file = os.path.join(backup_folder, "backup_log.log")
+    log_file = os.path.join(backup_folder, f"backup_{day_folder}.log")
     logger = setup_logger(log_file)
 
     logger.info("====================================================")
@@ -326,6 +460,7 @@ def main():
                 source = source.strip().strip('"')
                 safe_name = sanitize_filename(entry_name)
                 timestamp = datetime.now().strftime("%Y%m%d%H%M")
+                current_time = datetime.now().timestamp()
 
                 if engine == "7Z":
                     archive_name = f"{safe_name}_{timestamp}.7z"
@@ -341,7 +476,15 @@ def main():
                 logger.info(f"SOURCE     : {source}")
                 logger.info(f"ARCHIVE    : {archive_path}")
 
+                is_incremental = (mode == "INCREMENTAL")
+                last_backup_time = 0
+                if is_incremental:
+                    last_backup_time = load_last_backup_time(backup_folder, entry_name)
+                    logger.info(f"MODE       : INCREMENTAL (last backup: {datetime.fromtimestamp(last_backup_time) if last_backup_time else 'never'})")
+
                 if engine == "7Z":
+                    if is_incremental:
+                        logger.warning("Incremental mode not fully supported for 7Z engine, falling back to full backup")
                     cmd, result = run_7z(archiver, archive_path, source)
                     logger.info("COMMAND    : %s", " ".join(cmd))
                     logger.info("RETURNCODE : %s", result.returncode)
@@ -353,15 +496,20 @@ def main():
 
                     if result.returncode == 0:
                         logger.info("SUCCESS")
+                        if is_incremental:
+                            save_last_backup_time(backup_folder, entry_name, current_time)
                     elif result.returncode == 1:
                         logger.warning("SUCCESS WITH WARNINGS")
+                        if is_incremental:
+                            save_last_backup_time(backup_folder, entry_name, current_time)
                     else:
                         raise RuntimeError(f"7z return code={result.returncode}")
 
                 elif engine == "ZIP":
-                    logger.info(f"Creating ZIP archive with subdirs={subdirs}")
+                    logger.info(f"Creating ZIP archive with subdirs={subdirs}" + (" (INCREMENTAL)" if is_incremental else ""))
                     returncode, file_falliti, file_successo = run_zip(
-                        archive_path, source, subdirs, logger
+                        archive_path, source, subdirs, logger,
+                        incremental=is_incremental, last_backup_time=last_backup_time
                     )
 
                     if file_falliti:
@@ -373,16 +521,22 @@ def main():
 
                     if returncode == 0:
                         logger.info(f"SUCCESS ({file_successo} files archived)")
+                        if is_incremental:
+                            save_last_backup_time(backup_folder, entry_name, current_time)
                     else:
                         if file_successo > 0:
                             logger.warning(
                                 f"PARTIAL SUCCESS ({file_successo} files archived, "
                                 f"{len(file_falliti)} failed)"
                             )
+                            if is_incremental:
+                                save_last_backup_time(backup_folder, entry_name, current_time)
                         else:
                             raise RuntimeError("ZIP archive creation failed")
 
                 else:
+                    if is_incremental:
+                        logger.warning("Incremental mode not fully supported for TAR engine, falling back to full backup")
                     cmd, result = run_tar(archive_path, source)
                     logger.info("COMMAND    : %s", " ".join(cmd))
                     logger.info("RETURNCODE : %s", result.returncode)
@@ -394,6 +548,8 @@ def main():
 
                     if result.returncode == 0:
                         logger.info("SUCCESS")
+                        if is_incremental:
+                            save_last_backup_time(backup_folder, entry_name, current_time)
                     else:
                         raise RuntimeError(f"TAR return code={result.returncode}")
 
