@@ -31,3 +31,121 @@ PYT.START: ROBOCOPY 20260912:001831
 [20260912:001832]     Elaborazione: pyt.sh
 [20260912:001832]       COPIATO: pyt.sh
 [20260912:001832]     Elaborazione: pyt.log
+[20260912:001832]       COPIATO: pyt.log
+[20260912:001832]   Elaborazione: pyn.*
+[20260912:001832]     Trovati 2 file(s) per pattern: pyn.*
+[20260912:001832]     Elaborazione: pyn.cmd
+[20260912:001832]       COPIATO: pyn.cmd
+[20260912:001832]     Elaborazione: pyn.sh
+[20260912:001832]       COPIATO: pyn.sh
+[20260912:001832]   Elaborazione: pathbackup*.*
+[20260912:001832]     Trovati 2 file(s) per pattern: pathbackup*.*
+[20260912:001832]     Elaborazione: pathbackup_man.md
+[20260912:001832]       COPIATO: pathbackup_man.md
+[20260912:001832]     Elaborazione: pathbackup.py
+[20260912:001832]       COPIATO: pathbackup.py
+[20260912:001832]   Elaborazione: test_pathbackup*.*
+[20260912:001832]     Trovati 2 file(s) per pattern: test_pathbackup*.*
+[20260912:001832]     Elaborazione: test_pathbackup.cmd
+[20260912:001832]       COPIATO: test_pathbackup.cmd
+[20260912:001832]     Elaborazione: test_pathbackup.ini
+[20260912:001832]       COPIATO: test_pathbackup.ini
+[20260912:001832]   Elaborazione: admin*.sh
+[20260912:001832]     Trovati 8 file(s) per pattern: admin*.sh
+[20260912:001832]     Elaborazione: admin_partclone_backup.sh
+[20260912:001832]       COPIATO: admin_partclone_backup.sh
+[20260912:001832]     Elaborazione: admin_disk_image.sh
+[20260912:001832]       COPIATO: admin_disk_image.sh
+[20260912:001832]     Elaborazione: admin_disk_restore.sh
+[20260912:001832]       COPIATO: admin_disk_restore.sh
+[20260912:001832]     Elaborazione: admin_gdrive_mount.sh
+[20260912:001832]       COPIATO: admin_gdrive_mount.sh
+[20260912:001832]     Elaborazione: admin_gdrive_umount.sh
+[20260912:001832]       COPIATO: admin_gdrive_umount.sh
+[20260912:001833]     Elaborazione: admin_keybit.sh
+[20260912:001833]       COPIATO: admin_keybit.sh
+[20260912:001833]     Elaborazione: admin_light_max.sh
+[20260912:001833]       COPIATO: admin_light_max.sh
+[20260912:001833]     Elaborazione: admin_partclone_restore.sh
+[20260912:001833]       COPIATO: admin_partclone_restore.sh
+[20260912:001833]   Elaborazione: README.md
+[20260912:001833]     COPIATO: README.md
+[20260912:001833]   Elaborazione: LICENSE
+[20260912:001833]     COPIATO: LICENSE
+[20260912:001833]   Elaborazione: *.ps1
+[20260912:001833]     Trovati 1 file(s) per pattern: *.ps1
+[20260912:001833]     Elaborazione: ntsetres.ps1
+[20260912:001833]       COPIATO: ntsetres.ps1
+[20260912:001833] 
+============================================================
+[20260912:001833] AZIONE: examples
+[20260912:001833] ============================================================
+[20260912:001833]   path_source: G:\Il mio Drive\Progetti\adminscripts\examples
+[20260912:001833]   path_dest:   G:\Il mio Drive\github\adminscripts\examples
+[20260912:001833]   mode:        overwrite
+[20260912:001833]   files:       3 file(s)
+[20260912:001833]   Elaborazione: pyt_github.json
+[20260912:001833]     COPIATO: pyt_github.json
+[20260912:001833]   Elaborazione: pyt_sync_ntgcorp.json
+[20260912:001833]     COPIATO: pyt_sync_ntgcorp.json
+[20260912:001833]   Elaborazione: pyt_robocopy_template.json
+[20260912:001833]     COPIATO: pyt_robocopy_template.json
+[20260912:001833] 
+============================================================
+[20260912:001833] RIEPILOGO FINALE
+[20260912:001833] ============================================================
+[20260912:001833] File copiati   : 24
+[20260912:001833] File aggiornati: 0
+[20260912:001833] File saltati   : 0
+[20260912:001833] Errori         : 0
+[20260912:001833] Operazione completata senza errori.
+PYT.END: ROBOCOPY 20260912:001833
+END: 20260912:001833
+PYT.START: 20260811 20260912:001840
+PYT.START: GIT.PUSH 20260912:001840
+[20260912:001840] Fase 1: Verifica parametri e prerequisiti
+  Repository path: G:\Il mio Drive\Github\adminscripts
+  Username: ntgcorp
+  Repository: ntgcorp/adminscripts
+  Branch: main
+  Log file: G:\Il mio Drive\Github\git_pyt_adminscripts.log
+  Git executable: X:\_Applic\Bash\bin\git.exe
+  Commit message: Update
+  Commit all: True
+  Verifica esistenza cartella repository... OK
+  Verifica presenza file di log... OK
+[20260912:001840] Fase 2: Esecuzione operazioni preliminari (commit se richiesto)
+  Esecuzione: git add .
+  Esecuzione: git commit -m "Update"
+  [OK] Commit creato: main 3a
+[20260912:001845] Fase 3: Esecuzione git push
+  Comando: git push https://ntgcorp:***@github.com/ntgcorp/adminscripts.git main
+  [ERRORE] Git push fallito: remote: Invalid username or token. Password authentication is not supported for Git operations.
+fatal: Authentication failed for 'https://github.com/ntgcorp/adminscripts.git/'
+  [ERRORE] Errore durante git push: Git push fallito: remote: Invalid username or token. Password authentication is not supported for Git operations.
+fatal: Authentication failed for 'https://github.com/ntgcorp/adminscripts.git/'
+ERRORE [git.push]: Errore durante git push: Git push fallito: remote: Invalid username or token. Password authentication is not supported for Git operations.
+fatal: Authentication failed for 'https://github.com/ntgcorp/adminscripts.git/'
+PYT.END: GIT.PUSH 20260912:001849
+END: 20260912:001849
+PYT.START: 20260811 20260912:001953
+PYT.START: ROBOCOPY 20260912:001953
+[20260912:001953] Fase 1: Lettura e validazione del file di configurazione JSON
+[20260912:001953] Configurazione letta: 2 action(s) trovate
+[20260912:001953] 
+============================================================
+[20260912:001953] AZIONE: root
+[20260912:001953] ============================================================
+[20260912:001953]   path_source: G:\Il mio Drive\Progetti\adminscripts
+[20260912:001953]   path_dest:   G:\Il mio Drive\github\adminscripts
+[20260912:001953]   mode:        overwrite
+[20260912:001953]   files:       8 file(s)
+[20260912:001953]   Elaborazione: pyt.*
+[20260912:001953]     Trovati 4 file(s) per pattern: pyt.*
+[20260912:001953]     Elaborazione: pyt.cmd
+[20260912:001953]       COPIATO: pyt.cmd
+[20260912:001953]     Elaborazione: pyt.py
+[20260912:001953]       COPIATO: pyt.py
+[20260912:001953]     Elaborazione: pyt.sh
+[20260912:001953]       COPIATO: pyt.sh
+[20260912:001953]     Elaborazione: pyt.log
