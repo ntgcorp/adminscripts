@@ -1,5 +1,7 @@
 REM @ECHO OFF
 REM ORIGINALE SU PC GOMERA - LAUNCHER PYTHON / PODMAN / ALTRO VIA CMD - BASH
+REM VERSIONE 20260928 - Aggiunto dominio ps per esecuzione script PowerShell (.ps1), logica da ps_start.cmd
+REM VERSIONE 20260921 - Aggiunto comando j per esecuzione Java (.java/.class/.jar)
 REM VERSIONE 20260911 - Corretto launcher in calcolo py_path
 REM VERSIONE 20260830 - Corretto launcher scegliendo path python accellerando
 REM VERSIONE 20260810 - REFACTOR: Corretti bug critici (delayed expansion, doppia exec, path hardcoded).
@@ -23,7 +25,7 @@ REM VERSIONE 20250405 - CORREZIONI - INSTALLAZIONE CRYPTOGRAFY - FORSE PSUTIL
 REM VERSIONE 20250203 - DEFAULT X64
 REM VERSIONE 20250130 - GESTIONE MIGLIORE RUNTIME
 
-SET PYN_VER=20260911
+SET PYN_VER=20260928
 
 REM PER PRIMO
 :SETUP
@@ -39,14 +41,16 @@ REM ALTRI COMANDI ESTESI
 IF "%1"=="pod"    GOTO :POD
 IF "%1"=="pandoc" GOTO :PANDOC
 IF "%1"=="b"      GOTO :BASH
+IF "%1"=="j"      GOTO :JAVA
+IF "%1"=="ps"     GOTO :PS
 IF "%1"==""       GOTO :SINTASSI
 IF "%1"=="chrome" GOTO :CHROME
 
 REM POSSIBILI PATH - ordine documentato: K: (se MACH0) > D: > C: > XX (TOOLS locale)
 for %%I in ("%~dp0..") do set "PATH_PADRE=%%~fI"
 
-SET "PATHP_01=D:\APPLIC\PYTHON%PY_TYPE%"
-SET "PATHP_02=C:\APPLIC\PYTHON%PY_TYPE%"
+SET "PATHP_01=V:\Tools\PYTHON%PY_TYPE%"
+SET "PATHP_02=D:\APPLIC\PYTHON%PY_TYPE%"
 SET "PATHP_03=K:\Tools\Python%PY_TYPE%"
 SET "PATHP_XX=%PATH_PADRE%\TOOLS\PYTHON%PY_TYPE%"
 
@@ -102,6 +106,7 @@ GOTO :END
 ECHO Attivazione ambiente Python
 IF "%3"=="" goto :SINTASSI
 SET PY_ENV=%3
+SET PATHP_ENV=%3
 IF EXIST "%PY_PATH%\%PY_ENV%\*.*" (
     echo Ambiente %PY_ENV% trovato.
     GOTO :END
@@ -338,6 +343,109 @@ ECHO Esecuzione: "%SH_EXEC%" "%SH_NAME%" %SH_PARAMS%
 "%SH_EXEC%" "%SH_NAME%" %SH_PARAMS%
 GOTO :END
 
+REM ----------------------------------------------- JAVA -------------------------------
+:JAVA
+@ECHO LAUNCHER JAVA %PYN_VER%
+REM Risolve JAVANTG_PATH (rispetta valore gia' impostato, altrimenti versione corrente)
+IF NOT DEFINED JAVANTG_PATH CALL "%~dp0java_start.cmd"
+IF NOT DEFINED JAVANTG_PATH (
+    ECHO [ERRORE] JAVANTG_PATH non definita. Esegui Scripts\java_start.cmd [version].
+    GOTO :END
+)
+
+REM Cerca java.exe (bin\ o root ambiente)
+SET "JAVA_EXE=%JAVANTG_PATH%\bin\java.exe"
+IF NOT EXIST "%JAVA_EXE%" SET "JAVA_EXE=%JAVANTG_PATH%\java.exe"
+IF NOT EXIST "%JAVA_EXE%" (
+    ECHO [ERRORE] java.exe non trovato in: %JAVANTG_PATH%\bin o %JAVANTG_PATH%
+    GOTO :END
+)
+SET "JAVAC_EXE=%JAVANTG_PATH%\bin\javac.exe"
+IF NOT EXIST "%JAVAC_EXE%" SET "JAVAC_EXE=%JAVANTG_PATH%\javac.exe"
+
+SET "JAVA_FILE=%~2"
+IF "%JAVA_FILE%"=="" (
+    ECHO [ERRORE] Manca il file .java / .class / .jar da eseguire.
+    GOTO :SINTASSI
+)
+IF NOT EXIST "%JAVA_FILE%" (
+    ECHO [ERRORE] File non trovato: "%JAVA_FILE%"
+    GOTO :END
+)
+FOR /F "delims=" %%I IN ("%JAVA_FILE%") DO SET "JAVA_EXT=%%~xI"
+SHIFT
+SHIFT
+
+REM Raccoglie parametri successivi (da %3 in poi) preservando gli spazi
+SET "JAVA_PARAMS="
+:JAVA_COLLECT
+IF "%~1"=="" GOTO :JAVA_RUN
+SET "JAVA_PARAMS=%JAVA_PARAMS% "%~1""
+SHIFT
+GOTO :JAVA_COLLECT
+
+:JAVA_RUN
+IF /I "%JAVA_EXT%"==".java" GOTO :JAVA_SRC
+IF /I "%JAVA_EXT%"==".class" GOTO :JAVA_CLASS
+IF /I "%JAVA_EXT%"==".jar" GOTO :JAVA_JAR
+ECHO [ERRORE] Estensione non supportata (uso .java .class .jar): "%JAVA_FILE%"
+GOTO :END
+
+:JAVA_SRC
+IF NOT EXIST "%JAVAC_EXE%" (
+    ECHO [ERRORE] javac.exe non trovato in: %JAVANTG_PATH%. Serve un JDK per compilare i .java.
+    GOTO :END
+)
+ECHO Compilazione: "%JAVAC_EXE%" "%JAVA_FILE%"
+"%JAVAC_EXE%" "%JAVA_FILE%"
+IF ERRORLEVEL 1 (
+    ECHO [ERRORE] Compilazione fallita: "%JAVA_FILE%"
+    GOTO :END
+)
+
+:JAVA_CLASS
+FOR /F "delims=" %%I IN ("%JAVA_FILE%") DO SET "JAVA_DIR=%%~dpI"
+FOR /F "delims=" %%I IN ("%JAVA_FILE%") DO SET "JAVA_CN=%%~nI"
+ECHO Esecuzione: "%JAVA_EXE%" -cp "%JAVA_DIR%" %JAVA_CN%%JAVA_PARAMS%
+"%JAVA_EXE%" -cp "%JAVA_DIR%" %JAVA_CN%%JAVA_PARAMS%
+GOTO :END
+
+:JAVA_JAR
+ECHO Esecuzione: "%JAVA_EXE%" -jar "%JAVA_FILE%"%JAVA_PARAMS%
+"%JAVA_EXE%" -jar "%JAVA_FILE%"%JAVA_PARAMS%
+GOTO :END
+
+REM ----------------------------------------------- PS (PowerShell) -------------------------------
+:PS
+@ECHO LAUNCHER POWERSHELL %PYN_VER%
+REM Logica da ps_start.cmd: se %2 e' un .ps1 lo esegue con i parametri da %3 in poi,
+REM altrimenti esegue ps_start.ps1 (stessa cartella di pyn.cmd) con tutti i parametri da %2 in poi
+IF "%~2"=="" GOTO :PS_DEFAULT
+IF /I "%~x2"==".ps1" GOTO :PS_CUSTOM
+:PS_DEFAULT
+SET "PS_SCRIPT=%~dp0ps_start.ps1"
+SHIFT
+GOTO :PS_COLLECT_ARGS
+:PS_CUSTOM
+SET "PS_SCRIPT=%~f2"
+SHIFT
+SHIFT
+:PS_COLLECT_ARGS
+SET "PS_ARGS="
+:PS_LOOP_ARGS
+IF "%~1"=="" GOTO :PS_RUN
+SET "PS_ARGS=%PS_ARGS% "%~1""
+SHIFT
+GOTO :PS_LOOP_ARGS
+:PS_RUN
+IF EXIST "%PS_SCRIPT%" GOTO :PS_EXEC
+ECHO [ERRORE] Script PowerShell non trovato: "%PS_SCRIPT%"
+GOTO :END
+:PS_EXEC
+ECHO Esecuzione dello script PowerShell: "%PS_SCRIPT%"
+powershell -ExecutionPolicy Bypass -File "%PS_SCRIPT%" %PS_ARGS%
+GOTO :END
+
 REM ----------------------------------------------- CHROME -------------------------------
 :CHROME
 @ECHO LAUNCHER CHROME %PYN_VER%
@@ -428,7 +536,7 @@ GOTO :END
 REM ----------------------------------------- SINTASSI -------------------------------
 :SINTASSI
 @ECHO OFF
-ECHO SCRIPT PYN.CMD di lancio PYTHON PORTABLE. X64 o X32 / PODMAN / CHROME / BASH / PANDOC - %PYN_VER%
+ECHO SCRIPT PYN.CMD di lancio PYTHON PORTABLE. X64 o X32 / PODMAN / CHROME / BASH / PANDOC / JAVA / PS - %PYN_VER%
 ECHO Sintassi PYN.CMD script.py [parametri] oppure PYN.CMD dominio comando parametri
 ECHO ----- Comandi Dominio Python (Dominio Base), x
 ECHO PYN.CMD x [comando esteso]
@@ -449,7 +557,7 @@ ECHO PYN.CMD x pip_ri file Importa requirements.txt
 ECHO PYN.CMD x mod modulo richiamo mod specifico
 ECHO PYN.CMD %CD%\test_python.py (Esecuzione script di test)
 ECHO PY_TYPE=Variabile d'ambiente per forzare 32 o 64bit (SET PY_TYPE=X32 o PY_TYPE=X64)
-ECHO ----- Comandi POD/PANDOC/BASH/CHROME/PIP
+ECHO ----- Comandi POD/PANDOC/BASH/CHROME/JAVA/PS/PIP
 ECHO PYN.CMD pip [comando pip]
 ECHO PYN.CMD chrome auto. Esecuzione Chrome in modalità AUTO
 ECHO PYN.CMD pod comando script . Devono essere impostate le ENV POD_PATH e POD_APP(ntjobsos default)
@@ -459,6 +567,8 @@ ECHO PYN.CMD pandoc doc2md file.doc
 ECHO PYN.CMD pandoc pdf2md file.doc
 ECHO PYN.CMD pandoc md2html file.md file.html
 ECHO PYN.CMD b script.sh parametri
+ECHO PYN.CMD j script.java/script.class/script.jar parametri (i .java vengono compilati con javac)
+ECHO PYN.CMD ps [script.ps1] parametri (senza .ps1 esegue ps_start.ps1 con tutti i parametri)
 GOTO :END
 
 :END

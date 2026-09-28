@@ -16,9 +16,13 @@ Official documentation and updates: [http://ntgcorp.it/adminscripts](https://git
 | admin_gdrive_umount.sh | Unmount Google Drive mount point via fusermount |
 | admin_keybit.sh | Set Italian keyboard layout using setxkbmap it |
 | admin_light_max.sh | Set display brightness to maximum value (6000) |
+| admin_folders_size.sh | Lists subfolder sizes in descending order with MB filter |
 | admin_setres_1368x768.cmd | Windows wrapper to set 1366x768 resolution via ntsetres.ps1 |
 | admin_setres_1600x900.cmd | Windows wrapper to set 1600x900 resolution via ntsetres.ps1 |
 | ntsetres.ps1 | PowerShell script to set screen resolution via Win32 API (P/Invoke) |
+| selenium_driver_download.cmd | Downloads SeleniumBasic + ChromeDriver to C:\seleniumbasic via ps_start.cmd |
+| selenium_driver_download.ps1 | PowerShell script to download/extract SeleniumBasic and ChromeDriver |
+| ps_start.cmd | Generic CMD wrapper to execute PowerShell scripts with parameter forwarding |
 | opencode_start.cmd | Launch opencode from V:\tools or X:\_applic with OPENROUTER_API_KEY |
 | pyn.cmd | Universal Windows Python launcher (portable envs, venv, pip, pandoc, podman, bash, chrome) |
 | pyn.sh | Linux counterpart of pyn.cmd (Python launcher, pandoc, podman, bash, chrome) |
@@ -225,7 +229,51 @@ Pre-configured wrapper scripts are included for common resolutions:
 
 ---
 
-## 📁 10. Path Backup: `pathbackup.py`
+## 🌐 10. Selenium Drivers Download: `selenium_driver_download.ps1` / `.cmd`
+
+Downloads and installs **SeleniumBasic** (COM library for VBA/Excel automation) and **ChromeDriver** to a target folder (default: `C:\seleniumbasic`).
+
+### Files
+- `selenium_driver_download.ps1` — Main PowerShell script that:
+  1. Downloads and extracts SeleniumBasic v2.0.9.0 (Selenium.dll, Selenium.pdb, Selenium32.tlb, Selenium64.tlb) if missing
+  2. Resolves the full ChromeDriver version from major version (e.g., `146` → `146.0.7100.0`) via Google's LATEST_RELEASE API
+  3. Downloads ChromeDriver ZIP from multiple mirror URLs (chrome-for-testing-public, legacy chromedriver.storage.googleapis.com)
+  4. Extracts `chromedriver.exe` to target folder
+  5. Verifies all 5 required files are present
+- `selenium_driver_download.cmd` — Batch wrapper calling `ps_start.cmd`:
+  ```cmd
+  call ps_start "selenium_driver_download.ps1" c:\seleniumbasic 146
+  ```
+- `ps_start.cmd` — Generic CMD wrapper to execute PowerShell scripts with parameter forwarding:
+  - If first arg is `.ps1`, runs that script with remaining args
+  - Otherwise runs same-named `.ps1` with all args
+  - Uses `-ExecutionPolicy Bypass`
+
+### Usage
+```cmd
+REM Via wrapper (uses C:\seleniumbasic, ChromeDriver major version 146)
+selenium_driver_download.cmd
+
+REM Direct PowerShell with custom path/version
+powershell -ExecutionPolicy Bypass -File selenium_driver_download.ps1 "C:\seleniumbasic" 146
+```
+
+### Parameters
+| Parameter | Description | Example |
+|-----------|-------------|---------|
+| TargetDir | Destination folder | `C:\seleniumbasic` |
+| ChromeDriverVersion | Major version (e.g., `146`) or full version (`146.0.7100.0`) | `146` |
+
+### Required Output Files (verified)
+1. `chromedriver.exe` — Chrome WebDriver binary
+2. `Selenium.dll` — SeleniumBasic COM library
+3. `Selenium.pdb` — Debug symbols
+4. `Selenium32.tlb` — 32-bit Type Library
+5. `Selenium64.tlb` — 64-bit Type Library
+
+---
+
+## 📁 11. Path Backup: `pathbackup.py`
 
 Python script for backing up files and folders to compressed archives (7z, ZIP, TAR.GZ) driven by INI configuration files.
 
@@ -571,6 +619,30 @@ sdelete64.exe -z C:
 ### Linux Utilities
 - `admin_keybit.sh` - Sets Italian keyboard layout: `setxkbmap it`
 - `admin_light_max.sh` - Sets max brightness: `echo 6000 | sudo tee /sys/class/backlight/*/brightness`
+- `admin_folders_size.sh` - Lists subfolder sizes in descending order with MB filter
+  - Usage: `./admin_folders_size.sh <start_folder> <mbfilter>`
+  - Example: `./admin_folders_size.sh /home/user/data 100`
+  - Special case: `./admin_folders_size.sh / 100` scans predefined system folders
+  - Output: Formatted table with SIZE and FOLDER columns
+  - **Prompt for regeneration**: See [admin_folders_size.sh Prompt](#admin_folders_size-sh-regeneration-prompt)
+
+---
+
+## 📝 admin_folders_size.sh Regeneration Prompt
+
+Use this prompt with an AI assistant to regenerate or modify `admin_folders_size.sh`:
+
+> Create a bash script `admin_folders_size.sh` that:
+> - Takes 2 parameters: `<start_folder> <mbfilter>` (minimum size in MB)
+> - Shows usage if called without parameters
+> - If `start_folder` is `/`, scans only these predefined system folders that exist:
+>   `/bin /etc /lib /lost+found /proc /run /snap /tmp /var /boot /home /lib64 /media /opt /root /sbin /srv /sys /usr`
+> - Otherwise scans first-level subfolders of `start_folder`
+> - Displays progress: "Starting scan from: X" then "Checking: folder" for each folder examined
+> - Filters folders ≥ mbfilter MB
+> - Outputs results in descending order as formatted table with SIZE and FOLDER columns
+> - Uses `du -BM -s` for individual folder sizes
+> - Italian messages for errors/usage, English for technical output
 
 ---
 
