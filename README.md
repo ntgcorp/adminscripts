@@ -1,6 +1,6 @@
 This suite consists of system administration scripts for backup/restore, disk imaging, Google Drive mounting, Windows display management, and Python-based automation tools. Designed for Live Linux environments (such as GParted Live) and Windows systems.
 
-Official documentation and updates: [http://ntgcorp.it/admin_scripts](https://github.com/ntgcorp/admin_scripts/)
+Official documentation and updates: [http://ntgcorp.it/adminscripts](https://github.com/ntgcorp/adminscripts/)
 
 ---
 
@@ -93,7 +93,7 @@ Creates a complete disk image using a `dd | pv | gzip` pipeline. Unlike partitio
 ### Requirements
 - `dd`, `pv`, `gzip`, `blockdev` (standard on Linux)
 - `pv` is auto-installed via `apt` if missing (assumes Debian/Ubuntu-based live environment)
-- Log directory: `/home/ntjobsos/Log` (auto-created)
+- Log file: `<dest_folder>/<base_name>_<TIMESTAMP>.log` (created in the same output folder as the backup, with the same timestamp as the `.img.gz` file)
 
 ### Execution Syntax
 ```bash
@@ -107,6 +107,7 @@ sudo ./admin_disk_image.sh /dev/sda /mnt/backup server_disk
 
 ### Output
 File named: `<base_name>_<TIMESTAMP>.img.gz` (e.g., `server_disk_20260802120000.img.gz`)
+Log file in the same output folder: `<base_name>_<TIMESTAMP>.log` (same timestamp as the image)
 
 ---
 
@@ -117,7 +118,7 @@ Restores a disk image created by `admin_disk_image.sh` using a `gunzip | pv | dd
 ### Safety Features
 - Verifies target disk is not mounted
 - 5-second cancellation window (Ctrl+C) before write begins
-- Log directory: `/home/ntjobsos/Log` (auto-created)
+- Log file: `<image_folder>/<image_name>_restore_<TIMESTAMP>.log` (created in the same folder as the source `.img.gz`)
 
 ### Execution Syntax
 ```bash
@@ -552,7 +553,7 @@ sdelete64.exe -z C:
 - `admin_disk_image.sh` - Full disk image via `dd | pv | gzip`
   - Usage: `./admin_disk_image.sh <source_disk> <dest_folder> <base_name>`
   - Requires: dd, pv, gzip, blockdev (auto-installs pv via apt)
-  - Log dir: `/home/ntjobsos/Log` (auto-created)
+  - Log file: `<dest_folder>/<base_name>_<TIMESTAMP>.log` (same output folder as the `.img.gz`)
 - `admin_disk_restore.sh` - Restore disk image via `gunzip | pv | dd`
   - Usage: `./admin_disk_restore.sh <image_file> <target_disk>`
   - Safety: checks target not mounted, 5s cancel window

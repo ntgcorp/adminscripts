@@ -4,10 +4,11 @@
 # Script per il backup di un'immagine disco compressa tramite pipeline dd | pv | gzip
 # Richiede 3 parametri posizionali: <disco_sorgente> <cartella_destinazione> <nome_file_base>
 #
-# Versione: 1.1
+# Versione: 1.2
+# Log: stessa cartella di output del backup (<base>_<timestamp>.log)
 #
 
-VERSION="1.1"
+VERSION="1.2"
 
 # ------------------------------
 # Colori ANSI per output console
@@ -19,18 +20,22 @@ RED='\033[0;31m'
 NC='\033[0m' # No Color
 
 # ------------------------------
-# Determina directory dello script per log
+# Logging: il file di log viene creato nella stessa
+# cartella di output del backup (*.img.gz), non in
+# /home/ntjobsos né nella cartella dello script.
+# Fino a quando DEST_DIR non è validata, si logga solo su console.
 # ------------------------------
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-LOG_FILE="${SCRIPT_DIR}/admin_disk_image.log"
+LOG_FILE=""
+LOG_ACTIVE=0
 
 # ------------------------------
 # Funzione di logging
 # ------------------------------
 log_message() {
     local msg="$1"
-    if [ -w "$SCRIPT_DIR" ] 2>/dev/null; then
-        echo "$(date '+%Y-%m-%d %H:%M:%S') $msg" >> "$LOG_FILE"
+    # Su file: rimuovi i codici ANSI per un log pulito
+    if [ "$LOG_ACTIVE" -eq 1 ] && [ -n "$LOG_FILE" ]; then
+        echo "$(date '+%Y-%m-%d %H:%M:%S') $(echo -e "$msg" | sed -r 's/\x1B\[[0-9;]*[mK]//g')" >> "$LOG_FILE" 2>/dev/null
     fi
     echo -e "$msg"
 }
@@ -119,33 +124,42 @@ if [ ! -w "$DEST_DIR" ]; then
     exit 1
 fi
 
-# 3.3 Configurazione logging (nella cartella dello script)
-if [ -w "$SCRIPT_DIR" ] 2>/dev/null; then
+# 3.3 Configurazione logging nella stessa cartella di output del backup
+# Genera subito il TIMESTAMP così log e immagine condividono lo stesso nome base
+TIMESTAMP=$(date +%Y%m%d%H%M%S)
+LOG_FILE="${DEST_DIR}/${BASE_NAME}_${TIMESTAMP}.log"
+if touch "$LOG_FILE" 2>/dev/null; then
+    LOG_ACTIVE=1
     log_message "${GREEN}✓ Logging su file: $LOG_FILE${NC}"
+    log_message "Sorgente   : $SOURCE_DISK"
+    log_message "Destinazione: $DEST_DIR"
+    log_message "Nome base  : $BASE_NAME"
 else
-    log_message "${YELLOW}⚠ Cartella script non scrivibile, log solo su console${NC}"
+    LOG_ACTIVE=0
+    LOG_FILE=""
+    echo -e "${YELLOW}⚠ Cartella di destinazione non scrivibile per il log, log solo su console${NC}"
 fi
 
 # 3.4 Verifica e installazione automatica di 'pv'
 if ! command -v pv &>/dev/null; then
-    echo -e "${YELLOW}⚠ 'pv' non trovato, tentativo di installazione via apt...${NC}"
+    log_message "${YELLOW}⚠ 'pv' non trovato, tentativo di installazione via apt...${NC}"
     # Si assume che apt sia disponibile (Debian/Ubuntu)
     sudo apt update &>/dev/null && sudo apt install -y pv &>/dev/null
     if ! command -v pv &>/dev/null; then
-        echo -e "${RED}✗ Installazione di 'pv' fallita. Impossibile procedere.${NC}"
+        log_message "${RED}✗ Installazione di 'pv' fallita. Impossibile procedere.${NC}"
         exit 1
     fi
-    echo -e "${GREEN}✓ 'pv' installato con successo.${NC}"
+    log_message "${GREEN}✓ 'pv' installato con successo.${NC}"
 else
-    echo -e "${GREEN}✓ 'pv' già presente nel sistema.${NC}"
+    log_message "${GREEN}✓ 'pv' già presente nel sistema.${NC}"
 fi
 
 # 3.5 Verifica presenza di gzip (normalmente sempre presente)
 if ! command -v gzip &>/dev/null; then
-    echo -e "${RED}✗ 'gzip' non trovato. Installarlo prima di procedere.${NC}"
+    log_message "${RED}✗ 'gzip' non trovato. Installarlo prima di procedere.${NC}"
     exit 1
 else
-    echo -e "${GREEN}✓ 'gzip' disponibile.${NC}"
+    log_message "${GREEN}✓ 'gzip' disponibile.${NC}"
 fi
 
 # ------------------------------
@@ -156,21 +170,22 @@ log_message "${CYAN}=== FASE 4: Esecuzione backup ===${NC}"
 # Ottieni dimensione del disco in byte
 DISK_SIZE=$(blockdev --getsize64 "$SOURCE_DISK" 2>/dev/null)
 if [ -z "$DISK_SIZE" ] || [ "$DISK_SIZE" -eq 0 ]; then
-    echo -e "${RED}✗ Impossibile determinare la dimensione del disco.${NC}"
+    log_message "${RED}✗ Impossibile determinare la dimensione del disco.${NC}"
     exit 1
 fi
-echo -e "Dimensione disco: ${GREEN}$DISK_SIZE${NC} byte"
+log_message "Dimensione disco: $DISK_SIZE byte"
 
-# Genera nome file con timestamp
-TIMESTAMP=$(date +%Y%m%d%H%M%S)
+# Genera nome file con lo stesso timestamp del log (vedi FASE 3)
+# così immagine e log restano accoppiati nella stessa cartella di output
 OUTPUT_FILE="${DEST_DIR}/${BASE_NAME}_${TIMESTAMP}.img.gz"
-echo -e "File di output: ${GREEN}$OUTPUT_FILE${NC}"
+log_message "File di output: $OUTPUT_FILE"
+log_message "File di log   : $LOG_FILE"
 
 # Avvia cronometro
 START_TIME=$(date +%s)
 
-echo -e "${YELLOW}Avvio pipeline: dd | pv | gzip ...${NC}"
-echo -e "Premere Ctrl+C per interrompere."
+log_message "${YELLOW}Avvio pipeline: dd | pv | gzip ...${NC}"
+log_message "Premere Ctrl+C per interrompere."
 
 # Esegue la pipeline; utilizziamo bs=1M per prestazioni migliori
 # Nota: gli errori di dd vengono silenziati (2>/dev/null) per non intasare l'output,
@@ -192,24 +207,24 @@ DURATION=$((END_TIME - START_TIME))
 # ------------------------------
 log_message "${CYAN}=== FASE 5: Risultati finali ===${NC}"
 
-echo -e "Durata totale: ${GREEN}${DURATION}${NC} secondi"
+log_message "Durata totale: ${DURATION} secondi"
 
 # Verifica il codice di uscita del comando dd (PIPESTATUS[0])
 if [ $DD_EXIT -eq 0 ] && [ $GZIP_EXIT -eq 0 ] && [ $PV_EXIT -eq 0 ]; then
-    echo -e "${GREEN}✓ Backup completato con successo!${NC}"
-    echo -e "File creato: $OUTPUT_FILE"
+    log_message "${GREEN}✓ Backup completato con successo!${NC}"
+    log_message "File creato: $OUTPUT_FILE"
     # Opzionale: calcola e mostra la dimensione del file generato
     if [ -f "$OUTPUT_FILE" ]; then
         FILE_SIZE=$(du -h "$OUTPUT_FILE" | cut -f1)
-        echo -e "Dimensione file compresso: ${GREEN}$FILE_SIZE${NC}"
+        log_message "Dimensione file compresso: $FILE_SIZE"
     fi
     exit 0
 else
-    echo -e "${RED}✗ Backup fallito.${NC}"
-    echo -e "Codici di uscita: dd=$DD_EXIT, pv=$PV_EXIT, gzip=$GZIP_EXIT"
+    log_message "${RED}✗ Backup fallito.${NC}"
+    log_message "Codici di uscita: dd=$DD_EXIT, pv=$PV_EXIT, gzip=$GZIP_EXIT"
     # Rimuovere eventuale file parziale?
     if [ -f "$OUTPUT_FILE" ]; then
-        echo -e "${YELLOW}⚠ Il file di output potrebbe essere incompleto.${NC}"
+        log_message "${YELLOW}⚠ Il file di output potrebbe essere incompleto.${NC}"
     fi
     exit 1
 fi

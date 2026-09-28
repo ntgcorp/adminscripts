@@ -5,10 +5,10 @@
 # Richiede 2 parametri posizionali: <file_sorgente> <disco_destinazione>
 # Esempio: ./admin_disk_restore.sh /mnt/backup/server_disk_20260802120000.img.gz /dev/sdb
 #
-# Versione: 1.1
-#
+# Versione: 1.2
+# Log: stessa cartella del file immagine sorgente (<nome>_restore_<timestamp>.log)
 
-VERSION="1.1"
+VERSION="1.2"
 
 # ------------------------------
 # Colori ANSI per output console
@@ -20,18 +20,22 @@ RED='\033[0;31m'
 NC='\033[0m' # No Color
 
 # ------------------------------
-# Determina directory dello script per log
+# Logging: il file di log viene creato nella stessa
+# cartella del file immagine sorgente (*.img.gz), non in
+# /home/ntjobsos né nella cartella dello script.
+# Fino a quando SOURCE_FILE non è validato, si logga solo su console.
 # ------------------------------
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-LOG_FILE="${SCRIPT_DIR}/admin_disk_restore.log"
+LOG_FILE=""
+LOG_ACTIVE=0
 
 # ------------------------------
 # Funzione di logging
 # ------------------------------
 log_message() {
     local msg="$1"
-    if [ -w "$SCRIPT_DIR" ] 2>/dev/null; then
-        echo "$(date '+%Y-%m-%d %H:%M:%S') $msg" >> "$LOG_FILE"
+    # Su file: rimuovi i codici ANSI per un log pulito
+    if [ "$LOG_ACTIVE" -eq 1 ] && [ -n "$LOG_FILE" ]; then
+        echo "$(date '+%Y-%m-%d %H:%M:%S') $(echo -e "$msg" | sed -r 's/\x1B\[[0-9;]*[mK]//g')" >> "$LOG_FILE" 2>/dev/null
     fi
     echo -e "$msg"
 }
@@ -86,72 +90,84 @@ if [ ! -r "$SOURCE_FILE" ]; then
 fi
 echo -e "${GREEN}✓ File sorgente valido: $SOURCE_FILE${NC}"
 
-# 2.2 Verifica che il file sia compresso con gzip (estensione .gz o .img.gz)
-#     Se non termina con .gz, avvisiamo ma procediamo lo stesso (potrebbe essere raw)
-if [[ ! "$SOURCE_FILE" =~ \.gz$ ]]; then
-    echo -e "${YELLOW}⚠ Attenzione: il file non termina con .gz. Verrà usato 'gunzip' che potrebbe fallire.${NC}"
+# 2.2 Configurazione logging nella stessa cartella del file immagine sorgente
+# Nome: <nome_immagine_senza_.gz/img>_restore_<TIMESTAMP>.log
+SOURCE_DIR="$(dirname "$SOURCE_FILE")"
+IMAGE_BASENAME="$(basename "$SOURCE_FILE")"
+STRIPPED="${IMAGE_BASENAME%.gz}"
+STRIPPED="${STRIPPED%.img}"
+TIMESTAMP=$(date +%Y%m%d%H%M%S)
+LOG_FILE="${SOURCE_DIR}/${STRIPPED}_restore_${TIMESTAMP}.log"
+if touch "$LOG_FILE" 2>/dev/null; then
+    LOG_ACTIVE=1
+    log_message "${GREEN}✓ Logging su file: $LOG_FILE${NC}"
+    log_message "File sorgente   : $SOURCE_FILE"
+    log_message "Disco destinazione: $DEST_DISK"
+else
+    LOG_ACTIVE=0
+    LOG_FILE=""
+    echo -e "${YELLOW}⚠ Cartella immagine non scrivibile per il log, log solo su console${NC}"
 fi
 
-# 2.3 Verifica esistenza e scrivibilità del device di blocco destinazione
+# 2.3 Verifica che il file sia compresso con gzip (estensione .gz o .img.gz)
+#     Se non termina con .gz, avvisiamo ma procediamo lo stesso (potrebbe essere raw)
+if [[ ! "$SOURCE_FILE" =~ \.gz$ ]]; then
+    log_message "${YELLOW}⚠ Attenzione: il file non termina con .gz. Verrà usato 'gunzip' che potrebbe fallire.${NC}"
+fi
+
+# 2.4 Verifica esistenza e scrivibilità del device di blocco destinazione
 if [ ! -b "$DEST_DISK" ]; then
-    echo -e "${RED}✗ Errore: '$DEST_DISK' non è un device a blocchi valido.${NC}"
+    log_message "${RED}✗ Errore: '$DEST_DISK' non è un device a blocchi valido.${NC}"
     exit 1
 fi
 
 # Controllo se il device è montato (per evitare sovrascrittura accidentale)
 # Verifica semplice: se il device appare in /proc/mounts
 if grep -q "^$DEST_DISK " /proc/mounts; then
-    echo -e "${RED}✗ Errore: il device '$DEST_DISK' è attualmente montato. Smontarlo prima di procedere.${NC}"
+    log_message "${RED}✗ Errore: il device '$DEST_DISK' è attualmente montato. Smontarlo prima di procedere.${NC}"
     exit 1
 fi
-echo -e "${GREEN}✓ Device destinazione valido e non montato: $DEST_DISK${NC}"
-
-# 2.3 Configurazione logging (nella cartella dello script)
-if [ -w "$SCRIPT_DIR" ] 2>/dev/null; then
-    log_message "${GREEN}✓ Logging su file: $LOG_FILE${NC}"
-else
-    log_message "${YELLOW}⚠ Cartella script non scrivibile, log solo su console${NC}"
-fi
+log_message "${GREEN}✓ Device destinazione valido e non montato: $DEST_DISK${NC}"
 
 # 2.5 Verifica e installazione automatica di 'pv'
 if ! command -v pv &>/dev/null; then
-    echo -e "${YELLOW}⚠ 'pv' non trovato, tentativo di installazione via apt...${NC}"
+    log_message "${YELLOW}⚠ 'pv' non trovato, tentativo di installazione via apt...${NC}"
     sudo apt update &>/dev/null && sudo apt install -y pv &>/dev/null
     if ! command -v pv &>/dev/null; then
-        echo -e "${RED}✗ Installazione di 'pv' fallita. Impossibile procedere.${NC}"
+        log_message "${RED}✗ Installazione di 'pv' fallita. Impossibile procedere.${NC}"
         exit 1
     fi
-    echo -e "${GREEN}✓ 'pv' installato con successo.${NC}"
+    log_message "${GREEN}✓ 'pv' installato con successo.${NC}"
 else
-    echo -e "${GREEN}✓ 'pv' già presente nel sistema.${NC}"
+    log_message "${GREEN}✓ 'pv' già presente nel sistema.${NC}"
 fi
 
 # 2.6 Verifica presenza di gzip (per decompressione)
 if ! command -v gzip &>/dev/null; then
-    echo -e "${RED}✗ 'gzip' non trovato. Installarlo prima di procedere.${NC}"
+    log_message "${RED}✗ 'gzip' non trovato. Installarlo prima di procedere.${NC}"
     exit 1
 else
-    echo -e "${GREEN}✓ 'gzip' disponibile.${NC}"
+    log_message "${GREEN}✓ 'gzip' disponibile.${NC}"
 fi
 
 # ------------------------------
 # FASE 3: Esecuzione del ripristino
 # ------------------------------
-echo -e "${CYAN}=== FASE 3: Esecuzione ripristino ===${NC}"
+log_message "${CYAN}=== FASE 3: Esecuzione ripristino ===${NC}"
 
 # Ottieni dimensione del file sorgente per pv
 FILE_SIZE=$(stat -c %s "$SOURCE_FILE" 2>/dev/null)
 if [ -z "$FILE_SIZE" ] || [ "$FILE_SIZE" -eq 0 ]; then
-    echo -e "${YELLOW}⚠ Impossibile determinare la dimensione del file. pv procederà senza barra di avanzamento.${NC}"
+    log_message "${YELLOW}⚠ Impossibile determinare la dimensione del file. pv procederà senza barra di avanzamento.${NC}"
     PV_OPTS=""
 else
     PV_OPTS="-s $FILE_SIZE"
-    echo -e "Dimensione file sorgente: ${GREEN}$FILE_SIZE${NC} byte"
+    log_message "Dimensione file sorgente: $FILE_SIZE byte"
 fi
 
-echo -e "${YELLOW}Avvio pipeline: gunzip -c | pv | dd of=$DEST_DISK bs=1M ...${NC}"
-echo -e "${RED}ATTENZIONE: Questa operazione sovrascriverà completamente il disco '$DEST_DISK'!${NC}"
-echo -e "Premere Ctrl+C per annullare (hai 5 secondi)..."
+log_message "${YELLOW}Avvio pipeline: gunzip -c | pv | dd of=$DEST_DISK bs=1M ...${NC}"
+log_message "${RED}ATTENZIONE: Questa operazione sovrascriverà completamente il disco '$DEST_DISK'!${NC}"
+log_message "Premere Ctrl+C per annullare (hai 5 secondi)..."
 sleep 5
 
 # Avvia cronometro
@@ -174,16 +190,16 @@ DURATION=$((END_TIME - START_TIME))
 # ------------------------------
 # FASE 4: Risultati finali
 # ------------------------------
-echo -e "${CYAN}=== FASE 4: Risultati finali ===${NC}"
+log_message "${CYAN}=== FASE 4: Risultati finali ===${NC}"
 
-echo -e "Durata totale: ${GREEN}${DURATION}${NC} secondi"
+log_message "Durata totale: ${DURATION} secondi"
 
 if [ $GUNZIP_EXIT -eq 0 ] && [ $PV_EXIT -eq 0 ] && [ $DD_EXIT -eq 0 ]; then
-    echo -e "${GREEN}✓ Ripristino completato con successo!${NC}"
-    echo -e "Il disco $DEST_DISK è stato sovrascritto con l'immagine."
+    log_message "${GREEN}✓ Ripristino completato con successo!${NC}"
+    log_message "Il disco $DEST_DISK è stato sovrascritto con l'immagine."
     exit 0
 else
-    echo -e "${RED}✗ Ripristino fallito.${NC}"
-    echo -e "Codici di uscita: gunzip=$GUNZIP_EXIT, pv=$PV_EXIT, dd=$DD_EXIT"
+    log_message "${RED}✗ Ripristino fallito.${NC}"
+    log_message "Codici di uscita: gunzip=$GUNZIP_EXIT, pv=$PV_EXIT, dd=$DD_EXIT"
     exit 1
 fi
