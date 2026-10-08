@@ -1,0 +1,11 @@
+REM @ECHO OFF
+ECHO Access 2 Other %1
+for %%F in (%0) do set "PYSCRIPT=%%~dp0%%~nF.py"
+
+REM IMPOSTARE LAUNCHER PYTHON 
+SET "PYN=k:\Tools\pyn.cmd"
+
+REM ESECUZIONE - PARAMETRO OPENROUTER KEY FACOLTATIVA
+CALL "%PYN%" acc2oth.py %1 %2
+
+PAUSE
