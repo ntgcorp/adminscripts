@@ -6,11 +6,16 @@ import datetime
 import json
 import ftplib
 import stat
-import requests
 import tempfile
 import glob
+import importlib.metadata
 
 # Importazione opzionale per librerie di terze parti
+try:
+    import requests
+except ImportError:
+    requests = None
+
 try:
     import pypandoc
 except ImportError:
@@ -29,7 +34,7 @@ except ImportError:
 # ==============================================================================
 # VARIABILI GLOBALI E COSTANTI
 # ==============================================================================
-PYT_VER = "20260811"
+PYT_VER = "20261008"
 QEMU_IMG = r"X:\_Applic\Qemu\qemu-img.exe"
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 LOG_FILE = os.path.join(SCRIPT_DIR, "pyt.log")
@@ -128,6 +133,15 @@ DIRETTIVE DISPONIBILI:
        Supporta settings globali (log, err.exit) e actions multiple con path_source, path_dest, mode (overwrite|old),
        files[].
        Funziona su Windows e Linux (usa shutil, non robocopy.exe).
+     rightlist <path_sorgente> <path_verifica> <listfile.txt>
+        Elenca in listfile.txt (con path assoluti) i file e le cartelle
+        presenti in path_verifica ma assenti in path_sorgente.
+        Funziona su Windows e Linux.
+     delfiles <listfile.txt>
+        Cancella i file e le cartelle elencati in listfile.txt (output di rightlist),
+        usando i path assoluti scritti nelle voci. Prima i FILE, poi le DIR.
+        Le righe senza prefisso FILE/DIR vengono interpretate dal disco.
+        Funziona su Windows e Linux.
     git.push <config.json>
        Esegue git push su GitHub autenticato con token.
        JSON: repo_path, username, token, repo_name, branch, git_path, log, commit_message (opz), commit_all (opz).
@@ -138,11 +152,16 @@ git.pull <config.json>
        Esegue git pull da GitHub autenticato con token.
        JSON: repo_path, username, token, repo_name, branch, git_path, log.
        Supporta variabili d'ambiente: "$VAR_NAME" per token/username.
-    report <file_template> <file_json> <file_out_base>
-       Genera report da template e dati JSON (libreria pyt_report).
-       file_template: file template con segnaposto
-       file_json: file JSON con sezione "records" contenente ID e campi
-       file_out_base: base nome file output (verrà aggiunto ID + estensione)
+     report <file_template> <file_json> <file_out_base>
+        Genera report da template e dati JSON (libreria pyt_report).
+        file_template: file template con segnaposto
+        file_json: file JSON con sezione "records" contenente ID e campi
+        file_out_base: base nome file output (verrà aggiunto ID + estensione)
+     reqdoc <requirements.txt>
+        Genera file Markdown con stesso nome che documenta le librerie:
+        nome, versione, scopo, dipendenze, home-page.
+        Dati locali (importlib.metadata) + arricchimento PyPI online se disponibile.
+        Funziona su Windows e Linux.
     @ <nome_file>
        Esegue le direttive contenute nel file specificato
 """
@@ -231,6 +250,8 @@ def app_md2page(params):
     
     # Fase 2: Chiamata API OpenRouter
     pyt_Print(f"[{pyt_Timestamp()}] Fase 2: Chiamata API OpenRouter per generare pagina HTML completa")
+    if requests is None:
+        raise ImportError("Libreria requests non installata. Installarla con: pip install requests")
     prompt = f"""Converti il seguente contenuto markdown in una pagina HTML completa e ben strutturata.
 La pagina deve includere:
 - DOCTYPE HTML5
@@ -452,7 +473,8 @@ def app_sync(params):
     global_stats = {
         "jobs_ok": 0, "jobs_ko": 0,
         "total_copied": 0, "total_updated": 0,
-        "total_removed": 0, "total_errors": 0
+        "total_removed": 0, "total_errors": 0,
+        "total_skipped": 0
     }
     
     # Ciclo su tutti i job
@@ -485,6 +507,7 @@ def app_sync(params):
     pyt_Print(f"Totale file copiati         : {global_stats['total_copied']}")
     pyt_Print(f"Totale file aggiornati      : {global_stats['total_updated']}")
     pyt_Print(f"Totale file rimossi         : {global_stats['total_removed']}")
+    pyt_Print(f"Totale file saltati         : {global_stats['total_skipped']}")
     pyt_Print(f"Totale errori file          : {global_stats['total_errors']}")
 
 def _execute_single_sync(cfg, global_stats):
@@ -493,7 +516,7 @@ def _execute_single_sync(cfg, global_stats):
     req_keys = ["type", "source", "dest", "log"]
     if cfg.get("type") in ["ftp", "ssh"]:
         req_keys.extend(["user", "pwd", "host"])
-    if cfg.get("type") in ["file", "filesync"]:
+    if cfg.get("type") in ["file"]:
         req_keys.append("mode")
     
     for k in req_keys:
@@ -529,6 +552,66 @@ def _execute_single_sync(cfg, global_stats):
         except Exception as e:
             pyt_Print(f"  Impossibile scrivere sul log {log_file}: {e}")
     
+    def _tolerant_copy(src_file, dest_file):
+        """Copia src su dest. Se la destinazione e' read-only (tipico dei file
+        con attributi strani, es. i ._* su Windows), la rende scrivibile e
+        riprova. Ritorna None se ok, altrimenti l'eccezione."""
+        try:
+            os.makedirs(os.path.dirname(dest_file), exist_ok=True)
+            shutil.copy2(src_file, dest_file)
+            return None
+        except PermissionError as e:
+            try:
+                if os.path.exists(dest_file):
+                    os.chmod(dest_file, stat.S_IWRITE)
+                else:
+                    parent = os.path.dirname(dest_file)
+                    if parent:
+                        os.chmod(parent, stat.S_IWRITE)
+                shutil.copyfile(src_file, dest_file)
+                try:
+                    shutil.copystat(src_file, dest_file)
+                except OSError:
+                    pass
+                return None
+            except Exception as e2:
+                return e2
+        except Exception as e:
+            return e
+
+    def _tolerant_remove_file(dest_file):
+        """Rimuove un file, rendendolo scrivibile in caso di PermissionError."""
+        try:
+            os.remove(dest_file)
+            return None
+        except PermissionError:
+            try:
+                os.chmod(dest_file, stat.S_IWRITE)
+                os.remove(dest_file)
+                return None
+            except Exception as e2:
+                return e2
+        except Exception as e:
+            return e
+
+    def _rmtree_onerror(func, path, _exc_info):
+        try:
+            os.chmod(path, stat.S_IWRITE)
+            func(path)
+        except Exception:
+            pass
+
+    def _tolerant_rmtree(dest_dir):
+        """Rimuove una cartella (anche con file read-only dentro).
+        Ritorna None se ok, altrimenti l'eccezione."""
+        try:
+            shutil.rmtree(dest_dir, onerror=_rmtree_onerror)
+            if os.path.exists(dest_dir):
+                return OSError(f"impossibile rimuovere {dest_dir}")
+            return None
+        except Exception as e:
+            return e
+
     stype = cfg["type"]
     conn = None
     sftp = None
@@ -563,12 +646,16 @@ def _execute_single_sync(cfg, global_stats):
             except Exception as e:
                 raise ConnectionError(f"Connessione SSH/SFTP fallita: {e}")
         
-        stats = {"copied": 0, "updated": 0, "removed": 0, "errors": 0}
-        
+        stats = {"copied": 0, "updated": 0, "removed": 0, "errors": 0, "skipped": 0}
+
+        def _walk_error(err):
+            stats["errors"] += 1
+            sync_log(f"ERROR scansione: {err}")
+
         sync_log("Fase 4: Sincronizzazione file")
         verified_dirs = set()
-        
-        for root, dirs, files in os.walk(source):
+
+        for root, dirs, files in os.walk(source, onerror=_walk_error):
             rel_root = os.path.relpath(root, source)
             if rel_root == ".": rel_root = ""
             
@@ -603,11 +690,15 @@ def _execute_single_sync(cfg, global_stats):
             for file in files:
                 src_file = os.path.join(root, file)
                 rel_file = os.path.join(rel_root, file) if rel_root else file
-                src_stat = os.stat(src_file)
-                src_size = src_stat.st_size
-                src_mtime = src_stat.st_mtime
-                
+
                 try:
+                    # os.stat dentro il try: nomi non validi su Windows
+                    # (es. con "|", WinError 123) o permessi negati diventano
+                    # ERROR sul singolo file invece di far fallire l'intero job
+                    src_stat = os.stat(src_file)
+                    src_size = src_stat.st_size
+                    src_mtime = src_stat.st_mtime
+
                     needs_copy = False
                     action = "copied"
                     
@@ -622,8 +713,9 @@ def _execute_single_sync(cfg, global_stats):
                                 action = "updated"
                         
                         if needs_copy:
-                            os.makedirs(os.path.dirname(dest_file), exist_ok=True)
-                            shutil.copy2(src_file, dest_file)
+                            err = _tolerant_copy(src_file, dest_file)
+                            if err is not None:
+                                raise err
                     
                     elif stype == "ftp":
                         ftp_file = rel_file.replace("\\", "/")
@@ -667,31 +759,34 @@ def _execute_single_sync(cfg, global_stats):
             sync_log("Fase 5: Rimozione da dest dei file non presenti in source")
             
             if stype in ["file", "filesync"]:
-                for root, dirs, files in os.walk(dest, topdown=False):
+                for root, dirs, files in os.walk(dest, topdown=False, onerror=_walk_error):
                     rel_root = os.path.relpath(root, dest)
                     if rel_root == ".": rel_root = ""
                     src_root = os.path.join(source, rel_root) if rel_root else source
-                    
+
                     for file in files:
                         dest_file = os.path.join(root, file)
                         src_file = os.path.join(src_root, file)
                         if not os.path.exists(src_file):
-                            try:
-                                os.remove(dest_file)
+                            err = _tolerant_remove_file(dest_file)
+                            if err is None:
                                 stats["removed"] += 1
                                 sync_log(f"REMOVED: {os.path.relpath(dest_file, dest)}")
-                            except Exception as e:
+                            else:
                                 stats["errors"] += 1
-                    
+                                sync_log(f"ERROR removing {os.path.relpath(dest_file, dest)}: {str(err)}")
+
                     for d in dirs:
                         dest_dir = os.path.join(root, d)
                         src_dir = os.path.join(src_root, d)
                         if not os.path.exists(src_dir):
-                            try:
-                                shutil.rmtree(dest_dir)
+                            err = _tolerant_rmtree(dest_dir)
+                            if err is None:
+                                stats["removed"] += 1
                                 sync_log(f"REMOVED DIR: {os.path.relpath(dest_dir, dest)}")
-                            except Exception as e:
+                            else:
                                 stats["errors"] += 1
+                                sync_log(f"ERROR removing dir {os.path.relpath(dest_dir, dest)}: {str(err)}")
             
             elif stype == "ftp":
                 def ftp_walk_remover(ftp, remote_dir, local_dir):
@@ -760,14 +855,15 @@ def _execute_single_sync(cfg, global_stats):
                 ssh_walk_remover(sftp, base_dir, "")
         
         sync_log("Fase 6: Scrittura del riepilogo")
-        summary = f"Riepilogo - Copiati: {stats['copied']}, Aggiornati: {stats['updated']}, Rimossi: {stats['removed']}, Errori: {stats['errors']}"
+        summary = f"Riepilogo - Copiati: {stats['copied']}, Aggiornati: {stats['updated']}, Rimossi: {stats['removed']}, Saltati: {stats['skipped']}, Errori: {stats['errors']}"
         sync_log(summary)
-        
+
         # Aggiorno le statistiche globali
         global_stats["total_copied"] += stats["copied"]
         global_stats["total_updated"] += stats["updated"]
         global_stats["total_removed"] += stats["removed"]
         global_stats["total_errors"] += stats["errors"]
+        global_stats["total_skipped"] += stats["skipped"]
     
     finally:
         # Chiusura sicura delle connessioni
@@ -1693,6 +1789,345 @@ def app_7z_ts(params):
         raise RuntimeError(f"Errore durante la compressione 7z: {res.stderr}")
     
     pyt_Print(f"Creato: {archive_name}")
+
+def app_rightlist(params):
+    """Elenca in listfile.txt i file e le cartelle presenti in path_verifica
+    (destra) ma assenti in path_sorgente. Il confronto avviene per percorso
+    relativo, ma nella lista vengono scritti i path assoluti (di path_verifica).
+    Funziona su Windows e Linux (solo stdlib: os)."""
+    if len(params) != 3:
+        raise ValueError('Sintassi errata. Uso: rightlist <path_sorgente> <path_verifica> <listfile.txt> (su Windows evitare il backslash finale dentro le virgolette: usare h: e non "h:\\")')
+
+    path_source = params[0].strip('"\'')
+    path_check = params[1].strip('"\'')
+    list_file = params[2].strip('"\'')
+
+    if not os.path.isdir(path_source):
+        raise FileNotFoundError(f"Cartella sorgente {path_source} non trovata.")
+    if not os.path.isdir(path_check):
+        raise FileNotFoundError(f"Cartella da verificare {path_check} non trovata.")
+
+    walk_errors = []
+    _PROGRESS_EVERY = 50000
+
+    def _on_walk_error(err):
+        walk_errors.append(str(err))
+        pyt_Print(f"[{pyt_Timestamp()}]   ATTENZIONE scansione: {err}")
+
+    def _rel(base, full, fallback):
+        try:
+            return os.path.relpath(full, base)
+        except ValueError:
+            return fallback
+
+    def _walk_entries(base, label):
+        """Yield (kind, relpath) con potatura dei cicli (junction/symlink,
+        tipici nelle scansioni di interi dischi) e avanzamento periodico."""
+        seen = set()
+        try:
+            st = os.stat(base)
+            seen.add((st.st_dev, st.st_ino))
+        except OSError:
+            pass
+        count = 0
+        next_mark = _PROGRESS_EVERY
+        for root, dirs, files in os.walk(base, onerror=_on_walk_error):
+            keep = []
+            for d in dirs:
+                full = os.path.join(root, d)
+                try:
+                    st = os.stat(full)
+                    key = (st.st_dev, st.st_ino)
+                except OSError as e:
+                    walk_errors.append(f"{full}: {e}")
+                    continue
+                if key in seen:
+                    continue
+                seen.add(key)
+                keep.append(d)
+            dirs[:] = keep
+            for d in dirs:
+                yield ("DIR", _rel(base, os.path.join(root, d), d))
+            for f in files:
+                yield ("FILE", _rel(base, os.path.join(root, f), f))
+            count += len(dirs) + len(files)
+            if count >= next_mark:
+                pyt_Print(f"[{pyt_Timestamp()}]   {label}: scansionate {count} voci...")
+                next_mark += _PROGRESS_EVERY
+
+    def _collect_entries(base):
+        """Raccoglie i percorsi relativi di file e cartelle sotto base."""
+        return set(_walk_entries(base, f"Scansione {base}"))
+
+    pyt_Print(f"[{pyt_Timestamp()}] Fase 1: Scansione della cartella sorgente {path_source}")
+    source_entries = _collect_entries(path_source)
+    pyt_Print(f"[{pyt_Timestamp()}]   Trovate {len(source_entries)} voci in sorgente")
+
+    pyt_Print(f"[{pyt_Timestamp()}] Fase 2: Scansione di {path_check} e confronto")
+    source_rel = {rel for (_kind, rel) in source_entries}
+    check_abs = os.path.abspath(path_check)
+    missing = []
+    for (kind, rel) in _walk_entries(path_check, f"Scansione {path_check}"):
+        if rel not in source_rel:
+            missing.append((kind, os.path.join(check_abs, rel)))
+
+    missing.sort(key=lambda item: (item[1].lower(), item[0]))
+
+    pyt_Print(f"[{pyt_Timestamp()}] Fase 3: Scrittura della lista in {list_file}")
+    list_dir = os.path.dirname(os.path.abspath(list_file))
+    if list_dir and not os.path.exists(list_dir):
+        os.makedirs(list_dir)
+    n_dir = sum(1 for (kind, _rel) in missing if kind == "DIR")
+    n_file = len(missing) - n_dir
+    with open(list_file, "w", encoding="utf-8") as lf:
+        for (kind, full) in missing:
+            lf.write(f"{kind} {full}\n")
+
+    pyt_Print(f"[{pyt_Timestamp()}] Riepilogo - Voci mancanti in sorgente: {len(missing)} "
+              f"(cartelle: {n_dir}, file: {n_file}), errori scansione: {len(walk_errors)}")
+    pyt_Print(f"Lista scritta in: {list_file}")
+
+def app_delfiles(params):
+    """Cancella i file e le cartelle elencati in listfile (output di rightlist),
+    usando i path assoluti scritti nelle voci. Le voci relative (formato
+    precedente) sono risolte rispetto alla directory corrente.
+    Ordine: prima i FILE, poi le DIR (dalle piu' profonde).
+    Le righe senza prefisso FILE/DIR come prima parola vengono interpretate
+    in base a cio' che si trova su disco. Funziona su Windows e Linux."""
+    if len(params) != 1:
+        raise ValueError("Sintassi errata. Uso: delfiles <listfile.txt>")
+
+    list_file = params[0].strip('"\'')
+
+    if not os.path.isfile(list_file):
+        raise FileNotFoundError(f"File lista {list_file} non trovato.")
+
+    pyt_Print(f"[{pyt_Timestamp()}] Fase 1: Lettura della lista {list_file}")
+    raw_entries = []
+    with open(list_file, "r", encoding="utf-8") as lf:
+        for line in lf:
+            line = line.strip()
+            if not line:
+                continue
+            parts = line.split(None, 1)
+            if len(parts) == 2 and parts[0] in ("FILE", "DIR"):
+                raw_entries.append((parts[0], parts[1]))
+            else:
+                raw_entries.append((None, line))
+    pyt_Print(f"[{pyt_Timestamp()}]   Trovate {len(raw_entries)} voci in lista")
+
+    files, dirs = [], []
+    skipped = 0
+    errors = 0
+    for (kind, entry) in raw_entries:
+        full = os.path.abspath(entry)
+        if not os.path.lexists(full):
+            skipped += 1
+            pyt_Print(f"[{pyt_Timestamp()}]   SALTATO (non trovato): {entry}")
+            continue
+        if kind is None:
+            # Interpreta dal disco: link/dir/file
+            kind = "DIR" if (os.path.isdir(full) and not os.path.islink(full)) else "FILE"
+        if kind == "DIR":
+            dirs.append((entry, full))
+        else:
+            files.append((entry, full))
+
+    def _delete_file(rel, full):
+        try:
+            if os.path.islink(full) or os.path.isfile(full):
+                os.unlink(full)
+            elif os.path.isdir(full):
+                shutil.rmtree(full)
+            else:
+                os.remove(full)
+            pyt_Print(f"[{pyt_Timestamp()}]   ELIMINATO FILE: {rel}")
+            return True
+        except Exception as e:
+            pyt_Print(f"[{pyt_Timestamp()}]   ERRORE su {rel}: {e}")
+            return False
+
+    def _delete_dir(rel, full):
+        try:
+            if os.path.islink(full):
+                os.unlink(full)
+            else:
+                shutil.rmtree(full, ignore_errors=False)
+            pyt_Print(f"[{pyt_Timestamp()}]   ELIMINATA DIR: {rel}")
+            return True
+        except Exception as e:
+            pyt_Print(f"[{pyt_Timestamp()}]   ERRORE su {rel}: {e}")
+            return False
+
+    pyt_Print(f"[{pyt_Timestamp()}] Fase 2: Cancellazione di {len(files)} FILE")
+    n_files = 0
+    for (rel, full) in files:
+        if _delete_file(rel, full):
+            n_files += 1
+        else:
+            errors += 1
+
+    # Dir dalle piu' profonde verso la radice
+    dirs.sort(key=lambda item: (item[0].count(os.sep) + item[0].count("/"), item[0].lower()), reverse=True)
+    pyt_Print(f"[{pyt_Timestamp()}] Fase 3: Cancellazione di {len(dirs)} DIR")
+    n_dirs = 0
+    for (rel, full) in dirs:
+        if not os.path.lexists(full):
+            skipped += 1
+            pyt_Print(f"[{pyt_Timestamp()}]   SALTATO (non trovato): {rel}")
+            continue
+        if _delete_dir(rel, full):
+            n_dirs += 1
+        else:
+            errors += 1
+
+    pyt_Print(f"[{pyt_Timestamp()}] Riepilogo - File eliminati: {n_files}, "
+              f"Cartelle eliminate: {n_dirs}, Saltati: {skipped}, Errori: {errors}")
+
+def app_reqdoc(params):
+    """Genera un file Markdown che documenta le librerie di un requirements.txt.
+    Output: stesso percorso del requirements con estensione .md.
+    Dati locali via importlib.metadata + arricchimento PyPI online (se requests disponibile).
+    Funziona su Windows e Linux (solo stdlib + requests opzionale)."""
+    if len(params) != 1:
+        raise ValueError("Sintassi errata. Uso: reqdoc <requirements.txt>")
+
+    req_file = params[0].strip('"\'')
+
+    if not os.path.isfile(req_file):
+        raise FileNotFoundError(f"File requirements {req_file} non trovato.")
+
+    out_file = os.path.splitext(req_file)[0] + ".md"
+
+    def _md_cell(text):
+        """Pulisce un testo per l'uso in cella di tabella Markdown."""
+        if not text:
+            return ""
+        return " ".join(str(text).split()).replace("|", "\\|")
+
+    def _clean_requires(requires):
+        """Rimuove i marker d'ambiente (dopo ;) e le voci vuote."""
+        cleaned = []
+        for req in requires or []:
+            req = req.split(";")[0].strip()
+            if req:
+                cleaned.append(req)
+        return cleaned
+
+    pyt_Print(f"[{pyt_Timestamp()}] Fase 1: Lettura e parsing di {req_file}")
+    entries = []
+    skipped_lines = 0
+    try:
+        with open(req_file, "r", encoding="utf-8-sig") as f:
+            req_text = f.read()
+    except (UnicodeDecodeError, UnicodeError):
+        # pip freeze su Windows redireziona spesso in UTF-16
+        with open(req_file, "r", encoding="utf-16") as f:
+            req_text = f.read()
+    for raw in req_text.splitlines():
+        line = raw.strip()
+        if not line or line.startswith("#"):
+            continue
+        if line.startswith("-") or "://" in line:
+            skipped_lines += 1
+            continue
+        name = line
+        pinned = ""
+        for i, ch in enumerate(line):
+            if ch in "=<>!~[; ":
+                name = line[:i].strip()
+                rest = line[i:].strip()
+                if rest.startswith("=="):
+                    pinned = rest[2:].strip().split()[0].split(";")[0].strip()
+                break
+        if not name:
+            skipped_lines += 1
+            continue
+        entries.append((name, pinned))
+    pyt_Print(f"[{pyt_Timestamp()}]   Trovate {len(entries)} librerie ({skipped_lines} righe saltate)")
+
+    pyt_Print(f"[{pyt_Timestamp()}] Fase 2: Lettura metadata locali (importlib.metadata)")
+    rows = []
+    need_online = []
+    for (name, pinned) in entries:
+        version = pinned
+        summary = ""
+        home = ""
+        requires = []
+        try:
+            dist = importlib.metadata.distribution(name)
+            version = dist.version or pinned
+            meta = dist.metadata
+            summary = (meta.get("Summary") or "").strip()
+            home = (meta.get("Home-page") or "").strip()
+            if not home:
+                for url in (meta.get_all("Project-URL") or []):
+                    parts = url.split(",", 1)
+                    if len(parts) == 2 and parts[1].strip():
+                        home = parts[1].strip()
+                        break
+            requires = _clean_requires(dist.requires)
+        except importlib.metadata.PackageNotFoundError:
+            pass
+        except Exception as e:
+            pyt_Print(f"[{pyt_Timestamp()}]   ATTENZIONE metadata locali per {name}: {e}")
+        rows.append({"name": name, "version": version or "n/d",
+                     "summary": summary, "home": home, "requires": requires,
+                     "from_pypi": False})
+        if not summary and not requires:
+            need_online.append(len(rows) - 1)
+    pyt_Print(f"[{pyt_Timestamp()}]   Metadata locali ok, da arricchire online: {len(need_online)}")
+
+    n_pypi = 0
+    if need_online:
+        if requests is None:
+            pyt_Print(f"[{pyt_Timestamp()}] Fase 3: Arricchimento PyPI saltato (libreria requests non installata)")
+        else:
+            pyt_Print(f"[{pyt_Timestamp()}] Fase 3: Arricchimento PyPI online per {len(need_online)} librerie")
+            for idx in need_online:
+                name = rows[idx]["name"]
+                try:
+                    resp = requests.get(f"https://pypi.org/pypi/{name}/json", timeout=10)
+                    if resp.status_code != 200:
+                        pyt_Print(f"[{pyt_Timestamp()}]   PyPI {name}: HTTP {resp.status_code}")
+                        continue
+                    info = resp.json().get("info", {})
+                    if not rows[idx]["summary"]:
+                        rows[idx]["summary"] = (info.get("summary") or "").strip()
+                    if not rows[idx]["home"]:
+                        rows[idx]["home"] = (info.get("home_page") or "").strip()
+                    if not rows[idx]["requires"]:
+                        rows[idx]["requires"] = _clean_requires(info.get("requires_dist"))
+                    if not rows[idx]["version"] or rows[idx]["version"] == "n/d":
+                        rows[idx]["version"] = (info.get("version") or "n/d").strip()
+                    rows[idx]["from_pypi"] = True
+                    n_pypi += 1
+                except Exception as e:
+                    pyt_Print(f"[{pyt_Timestamp()}]   PyPI {name}: {e}")
+                    continue
+            pyt_Print(f"[{pyt_Timestamp()}]   Arricchite via PyPI: {n_pypi}")
+
+    pyt_Print(f"[{pyt_Timestamp()}] Fase 4: Scrittura del Markdown in {out_file}")
+    rows.sort(key=lambda r: r["name"].lower())
+    n_missing = 0
+    with open(out_file, "w", encoding="utf-8") as out:
+        out.write(f"# Librerie Python — {os.path.basename(req_file)}\n\n")
+        out.write(f"Generato: {pyt_Timestamp()} con `pyt reqdoc`\n\n")
+        out.write(f"Librerie in elenco: {len(rows)}\n\n")
+        out.write("| Libreria | Versione | Scopo | Dipendenze | Home-page |\n")
+        out.write("|---|---|---|---|---|\n")
+        for r in rows:
+            deps = ", ".join(r["requires"]) if r["requires"] else "-"
+            if not r["summary"] and not r["requires"]:
+                n_missing += 1
+            out.write(f"| {_md_cell(r['name'])} | {_md_cell(r['version'])} | "
+                      f"{_md_cell(r['summary']) if r['summary'] else 'n/d'} | "
+                      f"{_md_cell(deps) if deps != '-' else '-'} | "
+                      f"{_md_cell(r['home']) if r['home'] else '-'} |\n")
+
+    pyt_Print(f"[{pyt_Timestamp()}] Riepilogo - Documentate: {len(rows)}, "
+              f"arricchite via PyPI: {n_pypi}, senza dati: {n_missing}, righe saltate: {skipped_lines}")
+    pyt_Print(f"Markdown scritto in: {out_file}")
 
 # ==============================================================================
 # MOTORE DI ESECUZIONE

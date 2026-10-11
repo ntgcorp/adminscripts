@@ -1,5 +1,14 @@
-REM @ECHO OFF
+@ECHO OFF
 REM ORIGINALE SU PC GOMERA - LAUNCHER PYTHON / PODMAN / ALTRO VIA CMD - BASH
+REM VERSIONE 20261010 - Rename x->py (test<-pytest, mod<-pymod), pip help in zona Python, stub x/pymod/pip in py
+REM VERSIONE 20261010 - Refactor direttive: tolti pip passthrough e pys; x pip*/mod spostati in pip <sub> e pymod; node senza npm + nuova npm dedicata; help b con Git-Bash
+REM VERSIONE 20261010 - Convenzione CLI: rimossa riga dedicata Python Path; ogni esecuzione stampa CLI: + stringa comando (python, java, powershell, access, bash, chrome, podman, pandoc, ocode)
+REM VERSIONE 20261010 - Aggiunto dominio node (solo Windows): Node.js portable (array V:\Tools\nodejs, D:\APPLIC\NODEJS, C:\APPLIC\NODEJS o NODEJS_PATH) + npm.cmd dallo stesso path
+REM VERSIONE 20261009 - Aggiunto dominio pys: esegue script python (nomi semplici risolti in %~dp0) col python calcolato, senza richiamare pyn.cmd
+REM VERSIONE 20261008 - Variabile PATH_SCRIPTS (default Windows G:\Il mio Drive\Scripts, Linux /mnt/gdrive/scripts); ocode start usa opencode.json da PATH_SCRIPTS; nuovo x pytest (test_python.py da PATH_SCRIPTS)
+REM VERSIONE 20261007 - Aggiunto dominio ocode per avvio opencode (logica da opencode_start.cmd: cerca opencode_start_base.cmd nei possibili paths, cwd invariato)
+REM VERSIONE 20261007 - Aggiunto dominio a (1 carattere, solo Windows) per esecuzione Microsoft Access con parametri successivi
+REM VERSIONE 20260930 - Fix quoting: confronti dispatch con %~1/%~2 e argv :RUN con %~3-%~9 (path con spazi tra virgolette davano "<...> non atteso" e doppio-quoting)
 REM VERSIONE 20260928 - Aggiunto dominio ps per esecuzione script PowerShell (.ps1), logica da ps_start.cmd
 REM VERSIONE 20260921 - Aggiunto comando j per esecuzione Java (.java/.class/.jar)
 REM VERSIONE 20260911 - Corretto launcher in calcolo py_path
@@ -25,7 +34,7 @@ REM VERSIONE 20250405 - CORREZIONI - INSTALLAZIONE CRYPTOGRAFY - FORSE PSUTIL
 REM VERSIONE 20250203 - DEFAULT X64
 REM VERSIONE 20250130 - GESTIONE MIGLIORE RUNTIME
 
-SET PYN_VER=20260928
+SET PYN_VER=20261010
 
 REM PER PRIMO
 :SETUP
@@ -33,18 +42,26 @@ SET PY_SCRIPT=%0
 SET PY_P0=%~dp0
 IF "%PY_TYPE%"=="" SET PY_TYPE=X64
 SET PY_PATH=
-SET PAR1=%1
-SET PAR2=%2
+SET "PAR1=%~1"
+SET "PAR2=%~2"
 IF "%PY_ENV%"=="" SET PY_ENV=myenv
+REM Cartella script condivisi (Windows default; su Linux /mnt/gdrive/Scripts): sovrascrivibile da esterno
+IF "%PATH_SCRIPTS%"=="" SET "PATH_SCRIPTS=G:\Il mio Drive\Scripts"
+REM Normalizza: senza backslash finale (tranne radici tipo G:\); le composizioni usano sempre \%SEP%
+IF NOT "%PATH_SCRIPTS:~3,1%"=="" IF "%PATH_SCRIPTS:~-1%"=="\" SET "PATH_SCRIPTS=%PATH_SCRIPTS:~0,-1%"
 
 REM ALTRI COMANDI ESTESI
-IF "%1"=="pod"    GOTO :POD
-IF "%1"=="pandoc" GOTO :PANDOC
-IF "%1"=="b"      GOTO :BASH
-IF "%1"=="j"      GOTO :JAVA
-IF "%1"=="ps"     GOTO :PS
-IF "%1"==""       GOTO :SINTASSI
-IF "%1"=="chrome" GOTO :CHROME
+IF "%~1"=="pod"    GOTO :POD
+IF "%~1"=="pandoc" GOTO :PANDOC
+IF "%~1"=="b"      GOTO :BASH
+IF "%~1"=="j"      GOTO :JAVA
+IF "%~1"=="ps"     GOTO :PS
+IF "%~1"=="a"      GOTO :A
+IF "%~1"=="ocode"  GOTO :OCODE
+IF "%~1"==""       GOTO :SINTASSI
+IF "%~1"=="chrome" GOTO :CHROME
+IF "%~1"=="node" GOTO :NODE
+IF "%~1"=="npm" GOTO :NPM
 
 REM POSSIBILI PATH - ordine documentato: K: (se MACH0) > D: > C: > XX (TOOLS locale)
 for %%I in ("%~dp0..") do set "PATH_PADRE=%%~fI"
@@ -84,7 +101,6 @@ FOR %%A IN ("%PATHP_01%" "%PATHP_02%" "%PATHP_03%" "%PATHP_XX%") DO (
 
 :PYN_1
 @ECHO LAUNCHER PYTHON PORTABLE NTGCORP %PYN_VER%: Tipo %PY_TYPE%: Path: %PY_PATH% Env: %PY_ENV%
-IF DEFINED PY_PATH ECHO Python Path: %PY_PATH%
 IF "%PY_PATH%"=="" GOTO :ERR
 
 REM PY_CMD
@@ -92,19 +108,21 @@ SET PY_CMD=%PY_PATH%\%PY_ENV%\Scripts\PYTHON.EXE
 SET PY_PIP=%PY_CMD% -m pip
 
 REM COMANDI ESTESI
-IF "%1"=="pip" GOTO :PIP
-IF EXIST "%1"  GOTO :RUN
-IF "%1"=="x"   GOTO :X
+IF "%~1"=="pip" GOTO :PIP
+IF "%~1"=="pymod" GOTO :PYMOD_MOVED
+IF EXIST "%~1"  GOTO :RUN
+IF "%~1"=="x" GOTO :X_MOVEDPY
+IF "%~1"=="py"   GOTO :PY
 
 :RUN
 IF NOT EXIST "%PY_CMD%" GOTO :ERR
-ECHO START PYTHON SCRIPT: %PY_SCRIPT% - %PY_0% - %PY_CMD% - %PAR1% %PAR2% %3 %4 %5 %6 %7 %8 %9
-"%PY_CMD%" "%PAR1%" "%PAR2%" "%3" "%4" "%5" "%6" "%7" "%8" "%9"
+ECHO CLI: "%PY_CMD%" "%PAR1%" "%PAR2%" "%~3" "%~4" "%~5" "%~6" "%~7" "%~8" "%~9"
+"%PY_CMD%" "%PAR1%" "%PAR2%" "%~3" "%~4" "%~5" "%~6" "%~7" "%~8" "%~9"
 GOTO :END
 
 :ENV
 ECHO Attivazione ambiente Python
-IF "%3"=="" goto :SINTASSI
+IF "%~3"=="" goto :SINTASSI
 SET PY_ENV=%3
 SET PATHP_ENV=%3
 IF EXIST "%PY_PATH%\%PY_ENV%\*.*" (
@@ -140,28 +158,90 @@ GOTO :END
 ECHO PYN: Attenzione, non esiste la cartella PYTHON%PY_TYPE% richiesta allo stesso livello
 GOTO :END
 
-:X
-IF "%2"=="upgrade" GOTO :UPGRADE
-IF "%2"=="env" GOTO :ENV
-IF "%2"=="script" GOTO :ENV_SCRIPT
-IF "%2"=="mod" %PY_CMD% -m %3 %4 %5 %6 %7 %8 %9
-IF "%2"=="pip" %PY_CMD% -m pip %3 %4 %5 %6 %7 %8 %9
-IF "%2"=="version" %PY_CMD% --version
-IF "%2"=="pip_check" %PY_PIP% check
-IF "%2"=="pip_dna" rmdir /s /q "%PY_PATH%\Lib\site-packages\~dna" 2>nul
-IF "%2"=="pip_pc" %PY_PIP% cache purge
-IF "%2"=="pip_pu" %PY_PIP% install --upgrade pip
-IF "%2"=="pip_i" %PY_PIP% install --upgrade --only-binary=:all: %3 %4 %5 %6 %7 %8 %9
-IF "%2"=="pip_u" %PY_PIP% install %3 --upgrade --dry-run --only-binary=:all:
-IF "%2"=="pip_ulist" GOTO :PIP_ULIST
-IF "%2"=="pip_uexec" GOTO :PIP_UEXEC
-IF "%2"=="pip_re" GOTO :PIP_RE
-IF "%2"=="pip_ri" GOTO :PIP_RI
-IF "%2"=="" ECHO COMANDO ESTESO (x) NON INSERITO
+:PY
+IF "%~2"=="upgrade" GOTO :UPGRADE
+IF "%~2"=="env" GOTO :ENV
+IF "%~2"=="script" GOTO :ENV_SCRIPT
+IF "%~2"=="version" %PY_CMD% --version
+IF "%~2"=="test" GOTO :PYTEST
+IF "%~2"=="mod" GOTO :PY_MOD
+IF "%~2"=="pip" GOTO :PY_PIPMOVED
+SET "PYSUB=%~2"
+IF "%PYSUB:~0,4%"=="pip_" GOTO :PY_PIPMOVED
+IF "%~2"=="" ECHO COMANDO ESTESO (py) NON INSERITO
+GOTO :END
+
+:PY_PIPMOVED
+ECHO [ERRORE] py %~2 spostato in pip: usa pip ^<sub^> [args] (es. pip check)
+GOTO :END
+
+:X_MOVEDPY
+ECHO [ERRORE] direttiva x rinominata in py: usa py ^<comando^>
+GOTO :END
+
+:PYMOD_MOVED
+ECHO [ERRORE] pymod spostato in py: usa py mod ^<modulo^> [args]
+GOTO :END
+
+:PYTEST
+IF NOT EXIST "%PY_CMD%" GOTO :ERR
+SET "PYTEST_SCRIPT=%PATH_SCRIPTS%\test_python.py"
+IF EXIST "%PYTEST_SCRIPT%" GOTO :PYTEST_SHIFT
+ECHO [ERRORE] test_python.py non trovato in: "%PATH_SCRIPTS%"
+GOTO :END
+:PYTEST_SHIFT
+SHIFT
+SHIFT
+SET "PYTEST_ARGS="
+:PYTEST_COLLECT
+IF "%~1"=="" GOTO :PYTEST_RUN
+SET "PYTEST_ARGS=%PYTEST_ARGS% "%~1""
+SHIFT
+GOTO :PYTEST_COLLECT
+:PYTEST_RUN
+ECHO CLI: "%PY_CMD%" "%PYTEST_SCRIPT%"%PYTEST_ARGS%
+"%PY_CMD%" "%PYTEST_SCRIPT%"%PYTEST_ARGS%
+GOTO :END
+
+:PY_MOD
+IF NOT EXIST "%PY_CMD%" GOTO :ERR
+IF "%~3"=="" GOTO :SINTASSI
+ECHO CLI: "%PY_CMD%" -m %3 %4 %5 %6 %7 %8 %9
+"%PY_CMD%" -m %3 %4 %5 %6 %7 %8 %9
 GOTO :END
 
 :PIP
+IF "%~2"=="ulist" GOTO :PIP_ULIST
+IF "%~2"=="uexec" GOTO :PIP_UEXEC
+IF "%~2"=="re" GOTO :PIP_RE
+IF "%~2"=="ri" GOTO :PIP_RI
+IF "%~2"=="dna" GOTO :PIP_DNA
+IF "%~2"=="pc" GOTO :PIP_PC
+IF "%~2"=="pu" GOTO :PIP_PU
+IF "%~2"=="i" GOTO :PIP_I
+IF "%~2"=="u" GOTO :PIP_U
+IF "%~2"=="" GOTO :SINTASSI
 %PY_PIP% %2 %3 %4 %5 %6 %7 %8 %9
+GOTO :END
+
+:PIP_DNA
+rmdir /s /q "%PY_PATH%\Lib\site-packages\~dna" 2>nul
+GOTO :END
+
+:PIP_PC
+%PY_PIP% cache purge
+GOTO :END
+
+:PIP_PU
+%PY_PIP% install --upgrade pip
+GOTO :END
+
+:PIP_I
+%PY_PIP% install --upgrade --only-binary=:all: %3 %4 %5 %6 %7 %8 %9
+GOTO :END
+
+:PIP_U
+%PY_PIP% install %3 --upgrade --dry-run --only-binary=:all:
 GOTO :END
 
 :PIP_RE
@@ -240,11 +320,11 @@ ECHO VIENE IMPOSTATA VARIBILE X32 X64 W64 e upgrade per tutti e 2 i tipi
 ECHO ATTUALE: %PY_TYPE%
 SET PY_STACK=%PY_TYPE%
 SET PY_TYPE=X32
-call "%~dp0pyn.cmd" x upgrade
+call "%~dp0pyn.cmd" py upgrade
 SET PY_TYPE=X64
-call "%~dp0pyn.cmd" x upgrade
+call "%~dp0pyn.cmd" py upgrade
 SET PY_TYPE=W64
-call "%~dp0pyn.cmd" x upgrade
+call "%~dp0pyn.cmd" py upgrade
 SET PY_TYPE=%PY_STACK%
 SET PY_STACK=
 ECHO ATTUALE: %PY_TYPE%
@@ -277,6 +357,7 @@ if /i "%ACTION%"=="md2html" (
         goto :SINTASSI
     )
     for /f "delims=" %%I in ("%FILE_MD%") do set "FILE_HTML=%%~dpnI.html"
+    ECHO CLI: "%PANDOC%" "%FILE_MD%" -o "%FILE_HTML%"
     "%PANDOC%" "%FILE_MD%" -o "%FILE_HTML%"
 )
 GOTO :END
@@ -296,14 +377,17 @@ if NOT exist "%SRC_FILE%" (
 for /f "delims=" %%I in ("%SRC_FILE%") do set "OUT_MD=%%~dpnI.md"
 
 if /i "%ACTION%"=="doc2md" (
+    ECHO CLI: "%PANDOC%" "%SRC_FILE%" -f docx -t markdown -o "%OUT_MD%"
     "%PANDOC%" "%SRC_FILE%" -f docx -t markdown -o "%OUT_MD%"
     goto :EOF
 )
 if /i "%ACTION%"=="docx2md" (
+    ECHO CLI: "%PANDOC%" "%SRC_FILE%" -f docx -t markdown -o "%OUT_MD%"
     "%PANDOC%" "%SRC_FILE%" -f docx -t markdown -o "%OUT_MD%"
     goto :EOF
 )
 if /i "%ACTION%"=="pdf2md" (
+    ECHO CLI: "%PANDOC%" "%SRC_FILE%" -f pdf -t markdown -o "%OUT_MD%"
     "%PANDOC%" "%SRC_FILE%" -f pdf -t markdown -o "%OUT_MD%"
     goto :EOF
 )
@@ -339,7 +423,7 @@ SHIFT
 GOTO :BASH_COLLECT
 
 :BASH_RUN
-ECHO Esecuzione: "%SH_EXEC%" "%SH_NAME%" %SH_PARAMS%
+ECHO CLI: "%SH_EXEC%" "%SH_NAME%" %SH_PARAMS%
 "%SH_EXEC%" "%SH_NAME%" %SH_PARAMS%
 GOTO :END
 
@@ -396,7 +480,7 @@ IF NOT EXIST "%JAVAC_EXE%" (
     ECHO [ERRORE] javac.exe non trovato in: %JAVANTG_PATH%. Serve un JDK per compilare i .java.
     GOTO :END
 )
-ECHO Compilazione: "%JAVAC_EXE%" "%JAVA_FILE%"
+ECHO CLI: "%JAVAC_EXE%" "%JAVA_FILE%"
 "%JAVAC_EXE%" "%JAVA_FILE%"
 IF ERRORLEVEL 1 (
     ECHO [ERRORE] Compilazione fallita: "%JAVA_FILE%"
@@ -406,12 +490,12 @@ IF ERRORLEVEL 1 (
 :JAVA_CLASS
 FOR /F "delims=" %%I IN ("%JAVA_FILE%") DO SET "JAVA_DIR=%%~dpI"
 FOR /F "delims=" %%I IN ("%JAVA_FILE%") DO SET "JAVA_CN=%%~nI"
-ECHO Esecuzione: "%JAVA_EXE%" -cp "%JAVA_DIR%" %JAVA_CN%%JAVA_PARAMS%
+ECHO CLI: "%JAVA_EXE%" -cp "%JAVA_DIR%" %JAVA_CN%%JAVA_PARAMS%
 "%JAVA_EXE%" -cp "%JAVA_DIR%" %JAVA_CN%%JAVA_PARAMS%
 GOTO :END
 
 :JAVA_JAR
-ECHO Esecuzione: "%JAVA_EXE%" -jar "%JAVA_FILE%"%JAVA_PARAMS%
+ECHO CLI: "%JAVA_EXE%" -jar "%JAVA_FILE%"%JAVA_PARAMS%
 "%JAVA_EXE%" -jar "%JAVA_FILE%"%JAVA_PARAMS%
 GOTO :END
 
@@ -442,8 +526,156 @@ IF EXIST "%PS_SCRIPT%" GOTO :PS_EXEC
 ECHO [ERRORE] Script PowerShell non trovato: "%PS_SCRIPT%"
 GOTO :END
 :PS_EXEC
-ECHO Esecuzione dello script PowerShell: "%PS_SCRIPT%"
+ECHO CLI: powershell -ExecutionPolicy Bypass -File "%PS_SCRIPT%" %PS_ARGS%
 powershell -ExecutionPolicy Bypass -File "%PS_SCRIPT%" %PS_ARGS%
+GOTO :END
+
+REM ----------------------------------------------- A (Microsoft Access, solo Windows) -------------------------------
+:A
+@ECHO LAUNCHER ACCESS %PYN_VER%
+REM Array dei possibili percorsi di MSACCESS.EXE (vince il primo esistente)
+SET "A_EXE="
+FOR %%P IN (
+    "C:\Program Files\Microsoft Office\root\Office16\MSACCESS.EXE"
+    "C:\Program Files (x86)\Microsoft Office\root\Office16\MSACCESS.EXE"
+) DO IF EXIST "%%~P" IF NOT DEFINED A_EXE SET "A_EXE=%%~P"
+IF NOT DEFINED A_EXE (
+    ECHO [ERRORE] MSACCESS.EXE non trovato nei percorsi standard.
+    GOTO :END
+)
+SHIFT
+REM Raccoglie tutti i parametri successivi (da %2 in poi) preservando gli spazi
+SET "A_PARAMS="
+:A_COLLECT
+IF "%~1"=="" GOTO :A_RUN
+SET "A_PARAMS=%A_PARAMS% "%~1""
+SHIFT
+GOTO :A_COLLECT
+:A_RUN
+ECHO CLI: "%A_EXE%"%A_PARAMS%
+"%A_EXE%"%A_PARAMS%
+GOTO :END
+
+REM ----------------------------------------------- NODE (Node.js portable + npm, solo Windows) -------------------------------
+:NODE
+@ECHO LAUNCHER NODEJS %PYN_VER%
+REM NODEJS_PATH esterno valido ha priorita' (come JAVANTG_PATH); altrimenti array di possibilita' (vince il primo esistente)
+IF DEFINED NODEJS_PATH IF EXIST "%NODEJS_PATH%\node.exe" GOTO :NODE_DISPATCH
+SET "NODEJS_PATH="
+IF EXIST "V:\Tools\nodejs\node.exe" SET "NODEJS_PATH=V:\Tools\nodejs"
+IF NOT DEFINED NODEJS_PATH IF EXIST "D:\APPLIC\NODEJS\node.exe" SET "NODEJS_PATH=D:\APPLIC\NODEJS"
+IF NOT DEFINED NODEJS_PATH IF EXIST "C:\APPLIC\NODEJS\node.exe" SET "NODEJS_PATH=C:\APPLIC\NODEJS"
+IF NOT DEFINED NODEJS_PATH GOTO :NODE_MISSING
+GOTO :NODE_DISPATCH
+:NODE_MISSING
+ECHO [ERRORE] node.exe non trovato (array V:\Tools\nodejs, D:\APPLIC\NODEJS, C:\APPLIC\NODEJS, o NODEJS_PATH).
+GOTO :END
+:NODE_DISPATCH
+SET "NODE_EXE=%NODEJS_PATH%\node.exe"
+SET "NODE_FILE=%~2"
+IF "%NODE_FILE%"=="" GOTO :SINTASSI
+IF EXIST "%NODE_FILE%" GOTO :NODE_COLLECT
+ECHO [ERRORE] File non trovato: "%NODE_FILE%"
+GOTO :END
+:NODE_COLLECT
+SHIFT
+SHIFT
+SET "NODE_PARAMS="
+:NODE_LOOP
+IF "%~1"=="" GOTO :NODE_RUN
+SET "NODE_PARAMS=%NODE_PARAMS% "%~1""
+SHIFT
+GOTO :NODE_LOOP
+:NODE_RUN
+ECHO CLI: "%NODE_EXE%" "%NODE_FILE%"%NODE_PARAMS%
+"%NODE_EXE%" "%NODE_FILE%"%NODE_PARAMS%
+GOTO :END
+
+REM npm dedicato: usa npm.cmd dallo stesso path di node.exe
+:NPM
+@ECHO LAUNCHER NPM %PYN_VER%
+IF DEFINED NODEJS_PATH IF EXIST "%NODEJS_PATH%\npm.cmd" GOTO :NPM_SET
+SET "NODEJS_PATH="
+IF EXIST "V:\Tools\nodejs\npm.cmd" SET "NODEJS_PATH=V:\Tools\nodejs"
+IF NOT DEFINED NODEJS_PATH IF EXIST "D:\APPLIC\NODEJS\npm.cmd" SET "NODEJS_PATH=D:\APPLIC\NODEJS"
+IF NOT DEFINED NODEJS_PATH IF EXIST "C:\APPLIC\NODEJS\npm.cmd" SET "NODEJS_PATH=C:\APPLIC\NODEJS"
+IF NOT DEFINED NODEJS_PATH GOTO :NPM_MISSING
+GOTO :NPM_SET
+:NPM_MISSING
+ECHO [ERRORE] npm.cmd non trovato (array V:\Tools\nodejs, D:\APPLIC\NODEJS, C:\APPLIC\NODEJS, o NODEJS_PATH).
+GOTO :END
+:NPM_SET
+SET "NPM_CMD=%NODEJS_PATH%\npm.cmd"
+SHIFT
+SET "NPM_ARGS="
+:NPM_LOOP
+IF "%~1"=="" GOTO :NPM_RUN
+SET "NPM_ARGS=%NPM_ARGS% "%~1""
+SHIFT
+GOTO :NPM_LOOP
+:NPM_RUN
+ECHO CLI: CALL "%NPM_CMD%"%NPM_ARGS%
+CALL "%NPM_CMD%"%NPM_ARGS%
+GOTO :END
+
+REM ----------------------------------------------- OCODE (OpenCode) -------------------------------
+:OCODE
+@ECHO LAUNCHER OPENCODE %PYN_VER%
+REM Logica integrata da opencode_start.cmd: per ora unico sottocomando "start",
+REM altri sottocomandi futuri si aggiungono qui con IF /I "%~2"=="..."
+IF "%~2"=="" GOTO :SINTASSI
+IF /I "%~2"=="start" GOTO :OCODE_START
+ECHO [ERRORE] Sottocomando ocode non riconosciuto: "%~2" (uso: ocode start)
+GOTO :END
+
+:OCODE_START
+REM Cerca opencode_start_base.cmd nei possibili paths ed eseguilo.
+REM La cartella di riferimento resta quella da cui viene eseguito pyn.cmd (%CD%
+REM del chiamante): nessun CD, OPENCODE_CONFIG_DIR punta al cwd, non a %~dp0.
+setlocal enabledelayedexpansion
+SET "OCODE_CWD=%CD%"
+SHIFT
+SHIFT
+REM Raccoglie eventuali parametri successivi (da %3 in poi) da inoltrare allo script base
+SET "OCODE_ARGS="
+:OCODE_COLLECT
+IF "%~1"=="" GOTO :OCODE_SEARCH
+SET "OCODE_ARGS=!OCODE_ARGS! "%~1""
+SHIFT
+GOTO :OCODE_COLLECT
+:OCODE_SEARCH
+SET "PATHS[0]=C:\PortableAi\Tools\Opencode"
+SET "PATHS[1]=V:\PortableAi\Tools\Opencode"
+SET "PATHS[2]=X:\_applic\opencode"
+SET "PATHS[3]=%~dp0..\Tools\Opencode"
+SET "FOUND_SCRIPT="
+FOR /L %%i IN (0,1,3) DO (
+    IF EXIST "!PATHS[%%i]!\opencode_start_base.cmd" (
+        SET "FOUND_SCRIPT=!PATHS[%%i]!\opencode_start_base.cmd"
+        ECHO !FOUND_SCRIPT!
+        GOTO :OCODE_FOUND
+    )
+)
+:OCODE_FOUND
+IF DEFINED FOUND_SCRIPT GOTO :OCODE_RUN
+ECHO [ERRORE] Impossibile trovare opencode_start_base.cmd nei percorsi specificati.
+ENDLOCAL
+GOTO :END
+:OCODE_RUN
+ECHO Trovato script base in: !FOUND_SCRIPT!
+SET "OPENCODE_CONFIG_DIR=!OCODE_CWD!"
+ECHO OPENCODE_CONFIG_DIR=!OPENCODE_CONFIG_DIR!
+REM File di config dal folder PATH_SCRIPTS (esportato per lo script base)
+SET "OPENCODE_CONFIG_FILE=%PATH_SCRIPTS%\opencode.json"
+IF EXIST "!OPENCODE_CONFIG_FILE!" (
+    ECHO OPENCODE_CONFIG_FILE=!OPENCODE_CONFIG_FILE!
+) ELSE (
+    ECHO [ATTENZIONE] opencode.json non trovato in: "%PATH_SCRIPTS%"
+)
+ECHO CLI: CALL "!FOUND_SCRIPT!"!OCODE_ARGS!
+CALL "!FOUND_SCRIPT!"!OCODE_ARGS!
+PAUSE
+ENDLOCAL
 GOTO :END
 
 REM ----------------------------------------------- CHROME -------------------------------
@@ -464,6 +696,7 @@ IF NOT DEFINED CH_CMD (
 
 IF /I "%~2"=="auto" (
     ECHO [INFO] Avvio di Chrome in modalita' debug...
+    ECHO CLI: "%CH_CMD%" --remote-debugging-port=9222 --user-data-dir="C:\chromedata"
     "%CH_CMD%" --remote-debugging-port=9222 --user-data-dir="C:\chromedata"
 )
 GOTO :END
@@ -473,18 +706,18 @@ REM ----------------------------------------------- POD ------------------------
 @ECHO LAUNCHER POD %PYN_VER%
 IF "%POD_PATH%"=="" SET POD_PATH=c:\podman
 IF "%POD_APP%"=="" SET POD_APP=ntjobsos
-IF "%2"=="" GOTO :SINTASSI
-IF "%2"=="x" GOTO :POD_RUN
-IF "%2"=="start" GOTO :POD_START
-IF "%2"=="end" GOTO :POD_END
-IF "%2"=="opt" GOTO :POD_OPT
+IF "%~2"=="" GOTO :SINTASSI
+IF "%~2"=="x" GOTO :POD_RUN
+IF "%~2"=="start" GOTO :POD_START
+IF "%~2"=="end" GOTO :POD_END
+IF "%~2"=="opt" GOTO :POD_OPT
 
-ECHO Podman Esecuzione Standard
+ECHO CLI: podman %2 %3 %4 %5 %6 %7 %8 %9
 podman %2 %3 %4 %5 %6 %7 %8 %9
 GOTO :END
 
 :POD_RUN
-ECHO Podman Esecuzione Python ntjobsos Script
+ECHO CLI: podman run -it --rm -v "%POD_PATH%:/app" %POD_APP%:v1 %3
 podman run -it --rm -v "%POD_PATH%:/app" %POD_APP%:v1 %3
 GOTO :END
 
@@ -495,12 +728,12 @@ if errorlevel 1 (
     echo [USCITA OS-SPECIFICA] WSL non trovato. Su Linux nativo Podman non usa WSL. Usa 'systemctl stop podman'.
     exit /b 1
 )
-ECHO Podman Stop e chiudi wsl
+ECHO CLI: wsl --shutdown
 wsl --shutdown
 GOTO :END
 
 :POD_START
-ECHO Podman Esecuzione motore
+ECHO CLI: podman machine start
 podman machine start
 GOTO :END
 
@@ -515,13 +748,18 @@ if errorlevel 1 (
 setlocal
 set VHDX_PATH=%USERPROFILE%\.local\share\containers\podman\machine\wsl\podman-machine-default_data.vhdx
 echo [1/4] Avvio macchina per pulizia interna...
+echo CLI: podman machine start
 podman machine start
 echo [2/4] Esecuzione fstrim...
+echo CLI: podman machine ssh sudo fstrim -av
 podman machine ssh sudo fstrim -av
 echo [3/4] Spegnimento totale WSL...
+echo CLI: podman machine stop
 podman machine stop
+echo CLI: wsl --shutdown
 wsl --shutdown
 echo [4/4] Ottimizzazione disco VHDX (Richiede privilegi Admin)...
+echo CLI: powershell -Command "Optimize-VHD -Path '%VHDX_PATH%' -Mode Full"
 powershell -Command "Optimize-VHD -Path '%VHDX_PATH%' -Mode Full"
 if %ERRORLEVEL% NEQ 0 (
     echo.
@@ -536,29 +774,25 @@ GOTO :END
 REM ----------------------------------------- SINTASSI -------------------------------
 :SINTASSI
 @ECHO OFF
-ECHO SCRIPT PYN.CMD di lancio PYTHON PORTABLE. X64 o X32 / PODMAN / CHROME / BASH / PANDOC / JAVA / PS - %PYN_VER%
+ECHO Launcher: PYTHON PIP/PODMAN/CHROME/BASH/PANDOC/JAVA/PS/OCODE/ACCESS/NODE/NPM. R: %PYN_VER%
 ECHO Sintassi PYN.CMD script.py [parametri] oppure PYN.CMD dominio comando parametri
-ECHO ----- Comandi Dominio Python (Dominio Base), x
-ECHO PYN.CMD x [comando esteso]
-ECHO PYN.CMD x script nome_script(.exe) e parametri successivi
-ECHO PYN.CMD x env ambiente - Cambio o Attivazione Python ENV
-ECHO PYN.CMD x version - Versione Python
-ECHO PYN.CMD x pip richiamo mod pip [comandi] per gestione librerie interne, aggiornamenti, ecc.
-ECHO PYN.CMD x pip_check CHECK PIP
-ECHO PYN.CMD x pip_pc CACHE PURGE
-ECHO PYN.CMD x pip_dna RIMUOVE dna precedente installa errato
-ECHO PYN.CMD x pip_pu Upgrade solo pip
-ECHO PYN.CMD x pip_i richiamo mod pip install per install librerie (fino a 7)
-ECHO PYN.CMD x pip_u richiamo mod pip upgrade uno solo
-ECHO PYN.CMD x pip_ulist Lista pipupgrade.txt delle librerie da upgradare
-ECHO PYN.CMD x pip_uexec Eegue upgrade da pipugrade.txt
-ECHO PYN.CMD x pip_re/Crea requirements_x32/x64.txt
-ECHO PYN.CMD x pip_ri file Importa requirements.txt
-ECHO PYN.CMD x mod modulo richiamo mod specifico
-ECHO PYN.CMD %CD%\test_python.py (Esecuzione script di test)
-ECHO PY_TYPE=Variabile d'ambiente per forzare 32 o 64bit (SET PY_TYPE=X32 o PY_TYPE=X64)
-ECHO ----- Comandi POD/PANDOC/BASH/CHROME/JAVA/PS/PIP
-ECHO PYN.CMD pip [comando pip]
+ECHO ----- Comandi Estesi. Sintassi pyn dominio parametri_aggiuntivi
+ECHO PYN.CMD py [comando esteso]
+ECHO PYN.CMD py script nome_script(.exe) e parametri successivi
+ECHO PYN.CMD py env ambiente - Cambio o Attivazione Python ENV
+ECHO PYN.CMD py version - Versione Python
+ECHO PYN.CMD py mod modulo [args] (python -m modulo)
+ECHO PYN.CMD py test esegue test_python.py da PATH_SCRIPTS con parametri successivi
+ECHO PYN.CMD pip check CHECK PIP
+ECHO PYN.CMD pip pc CACHE PURGE
+ECHO PYN.CMD pip dna RIMUOVE dna precedente installa errato
+ECHO PYN.CMD pip pu Upgrade solo pip
+ECHO PYN.CMD pip i install librerie (solo binari)
+ECHO PYN.CMD pip u upgrade singolo (dry-run, solo binari)
+ECHO PYN.CMD pip ulist Lista pipupgrade.txt delle librerie da upgradare
+ECHO PYN.CMD pip uexec Esegue upgrade da pipupgrade.txt
+ECHO PYN.CMD pip re Crea requirements_x32/x64.txt
+ECHO PYN.CMD pip ri file Importa requirements.txt
 ECHO PYN.CMD chrome auto. Esecuzione Chrome in modalità AUTO
 ECHO PYN.CMD pod comando script . Devono essere impostate le ENV POD_PATH e POD_APP(ntjobsos default)
 ECHO PYN.CMD pod end
@@ -566,9 +800,13 @@ ECHO PYN.CMD pod start
 ECHO PYN.CMD pandoc doc2md file.doc
 ECHO PYN.CMD pandoc pdf2md file.doc
 ECHO PYN.CMD pandoc md2html file.md file.html
-ECHO PYN.CMD b script.sh parametri
+ECHO PYN.CMD b script.sh parametri (esegue uno script bash su Windows tramite Git-Bash)
 ECHO PYN.CMD j script.java/script.class/script.jar parametri (i .java vengono compilati con javac)
 ECHO PYN.CMD ps [script.ps1] parametri (senza .ps1 esegue ps_start.ps1 con tutti i parametri)
+ECHO PYN.CMD ocode start [parametri] (esegue opencode_start_base.cmd dai possibili paths, cwd invariato, config opencode.json da PATH_SCRIPTS)
+ECHO PYN.CMD a [parametri...] (esegue MSACCESS.EXE dai possibili paths, solo Windows)
+ECHO PYN.CMD node script.js parametri (Node.js portable, solo Windows)
+ECHO PYN.CMD npm ^<comando^> [args] (npm dallo stesso path di node.exe, solo Windows)
 GOTO :END
 
 :END

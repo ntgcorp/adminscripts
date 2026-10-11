@@ -1,16 +1,21 @@
 #!/bin/bash
 # pyn.sh - Launcher Linux per Python portable / PODMAN / CHROME / BASH / PANDOC
+# VERSIONE 20261010 - Convenzione CLI: rimossa riga Python Path; ogni esecuzione stampa CLI: + stringa comando
+# VERSIONE 20261009 - pys: esegue script python (nomi semplici in SCRIPT_DIR) col python calcolato
 # VERSIONE 20260911 - Counterpart Linux di pyn.cmd (traduzione bash di pyn.cmd:28-164)
 # VERSIONE 20260830 - Accelerazione ricerca PY_PATH con early-exit
 # VERSIONE 20260810 - REFACTOR bug critici (delayed expansion, doppia exec, path hardcoded) + uscite OS-specifiche
 set -e
 
-PYN_VER="20260911"
+PYN_VER="20261010"
 
 # --- SETUP ---
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PY_TYPE="${PY_TYPE:-X64}"
 PY_ENV="${PY_ENV:-myenv}"
+PATH_SCRIPTS="${PATH_SCRIPTS:-/mnt/gdrive/Scripts}"
+# Normalizza: senza slash finale (tranne radice /)
+if [ "$PATH_SCRIPTS" != "/" ]; then PATH_SCRIPTS="${PATH_SCRIPTS%/}"; fi
 PAR1="$1"
 PAR2="$2"
 
@@ -21,32 +26,32 @@ case "$1" in
     b)      shift; exec bash -c "source \"$SCRIPT_DIR/pyn.sh\" --bash-internal \"\$@\"" -- "$@" ;;
     chrome) shift; exec bash -c "source \"$SCRIPT_DIR/pyn.sh\" --chrome-internal \"\$@\"" -- "$@" ;;
     "")     # help
+            echo "Launcher: PYTHON PIP/PODMAN/CHROME/BASH/PANDOC. R: $PYN_VER"
             cat <<'EOS'
-SCRIPT PYN.SH di lancio PYTHON PORTABLE. X64 o X32 / PODMAN / CHROME / BASH / PANDOC - 20260911
 Sintassi PYN.SH script.py [parametri] oppure PYN.SH dominio comando parametri
------ Comandi Dominio Python (Dominio Base), x
-PYN.SH x [comando esteso]
-PYN.SH x script nome_script e parametri successivi
-PYN.SH x env ambiente - Cambio o Attivazione Python ENV
-PYN.SH x version - Versione Python
-PYN.SH x pip richiamo mod pip [comandi]
-PYN.SH x pip_check CHECK PIP
-PYN.SH x pip_pc CACHE PURGE
-PYN.SH x pip_pu Upgrade solo pip
-PYN.SH x pip_i install librerie
-PYN.SH x pip_u upgrade singolo
-PYN.SH x pip_ulist Lista pipupgrade.txt
-PYN.SH x pip_uexec Esegue upgrade da pipupgrade.txt
-PYN.SH x pip_re Crea requirements_x32/x64.txt
-PYN.SH x pip_ri Importa requirements.txt
-PYN.SH x mod modulo
+----- Comandi Estesi. Sintassi pyn dominio parametri_aggiuntivi
+PYN.SH py [comando esteso]
+PYN.SH py script nome_script e parametri successivi
+PYN.SH py env ambiente - Cambio o Attivazione Python ENV
+PYN.SH py version - Versione Python
+PYN.SH py mod modulo [args] (python -m modulo)
+PYN.SH py test esegue test_python.py da PATH_SCRIPTS con parametri successivi
 ----- Comandi POD/PANDOC/BASH/CHROME/PIP
-PYN.SH pip [comando pip]
+PYN.SH pip check CHECK PIP
+PYN.SH pip pc CACHE PURGE
+PYN.SH pip dna RIMUOVE dna precedente installa errato
+PYN.SH pip pu Upgrade solo pip
+PYN.SH pip i install librerie (solo binari)
+PYN.SH pip u upgrade singolo (dry-run, solo binari)
+PYN.SH pip ulist Lista pipupgrade.txt
+PYN.SH pip uexec Esegue upgrade da pipupgrade.txt
+PYN.SH pip re Crea requirements_x32/x64.txt
+PYN.SH pip ri Importa requirements.txt
 PYN.SH chrome auto
 PYN.SH pod comando
 PYN.SH pod end/start/opt
 PYN.SH pandoc doc2md|docx2md|pdf2md|md2html file
-PYN.SH b script.sh parametri
+PYN.SH b script.sh parametri (esegue uno script bash su Linux)
 EOS
             exit 0
             ;;
@@ -56,13 +61,13 @@ esac
 if [[ "$1" == --pod-internal ]]; then
     POD_SUB="$2"; shift 2 || true
     case "$POD_SUB" in
-        x) echo "Podman Esecuzione Python ntjobsos Script"; exec podman run -it --rm -v "${POD_PATH:-c:\podman}:/app" "${POD_APP:-ntjobsos}:v1" "$@" ;;
-        start) echo "Podman Esecuzione motore"; exec podman machine start ;;
+        x) echo "CLI: podman run -it --rm -v \"${POD_PATH:-c:\podman}:/app\" \"${POD_APP:-ntjobsos}:v1\" $*"; exec podman run -it --rm -v "${POD_PATH:-c:\podman}:/app" "${POD_APP:-ntjobsos}:v1" "$@" ;;
+        start) echo "CLI: podman machine start"; exec podman machine start ;;
         end)
             if ! command -v podman >/dev/null 2>&1; then
                 echo "[USCITA OS-SPECIFICA] podman non trovato. Su Linux nativo usa 'systemctl --user stop podman' o 'podman machine stop'." >&2; exit 1
             fi
-            echo "Podman Stop"; podman machine stop 2>/dev/null || true
+            echo "CLI: podman machine stop"; podman machine stop 2>/dev/null || true
             exit 0
             ;;
         opt)
@@ -71,7 +76,7 @@ if [[ "$1" == --pod-internal ]]; then
             exit 0
             ;;
         "") echo "[ERRORE] pod richiede sottocomando" >&2; exit 1 ;;
-        *) echo "Podman Esecuzione Standard"; exec podman "$POD_SUB" "$@" ;;
+        *) echo "CLI: podman $POD_SUB $*"; exec podman "$POD_SUB" "$@" ;;
     esac
 fi
 
@@ -91,11 +96,13 @@ if [[ "$1" == --pandoc-internal ]]; then
             if [ ! -f "$SRC_FILE" ]; then echo "[ERRORE] File non trovato: $SRC_FILE" >&2; exit 1; fi
             OUT_MD="${SRC_FILE%.*}.md"
             fmt="docx"; [[ "${ACTION,,}" == "pdf2md" ]] && fmt="pdf"
+            echo "CLI: $PANDOC $SRC_FILE -f $fmt -t markdown -o $OUT_MD"
             exec "$PANDOC" "$SRC_FILE" -f "$fmt" -t markdown -o "$OUT_MD"
             ;;
         md2html)
             if [ ! -f "$SRC_FILE" ]; then echo "[ERRORE] File non trovato: $SRC_FILE" >&2; exit 1; fi
             OUT_HTML="${SRC_FILE%.*}.html"
+            echo "CLI: $PANDOC $SRC_FILE -o $OUT_HTML"
             exec "$PANDOC" "$SRC_FILE" -o "$OUT_HTML"
             ;;
         *) echo "[ERRORE] Azione $ACTION non riconosciuta" >&2; exit 1 ;;
@@ -110,7 +117,7 @@ if [[ "$1" == --bash-internal ]]; then
         if [ -x "$b" ]; then SH_EXEC="$b"; break; fi
     done
     if [ -z "$SH_EXEC" ]; then echo "[ERRORE] bash non trovato" >&2; exit 1; fi
-    echo "Esecuzione: $SH_EXEC $SH_NAME $@"
+    echo "CLI: $SH_EXEC $SH_NAME $*"
     exec "$SH_EXEC" "$SH_NAME" "$@"
 fi
 
@@ -123,6 +130,7 @@ if [[ "$1" == --chrome-internal ]]; then
     if [ -z "$CH_CMD" ]; then echo "[ERRORE] chrome/chromium non trovato" >&2; exit 1; fi
     if [[ "$1" == "auto" ]]; then
         echo "[INFO] Avvio Chrome debug..."
+        echo "CLI: $CH_CMD --remote-debugging-port=9222 --user-data-dir=$HOME/chromedata"
         exec "$CH_CMD" --remote-debugging-port=9222 --user-data-dir="$HOME/chromedata"
     fi
     exit 0
@@ -166,7 +174,6 @@ if [ -z "$PY_PATH" ]; then
 fi
 
 echo "LAUNCHER PYTHON PORTABLE NTGCORP $PYN_VER: Tipo $PY_TYPE: Path: $PY_PATH Env: $PY_ENV"
-if [ -n "$PY_PATH" ]; then echo "Python Path: $PY_PATH"; fi
 if [ -z "$PY_PATH" ]; then echo "PYN: Attenzione, non esiste la cartella PYTHON${PY_TYPE} richiesta" >&2; exit 1; fi
 
 # PY_CMD su Linux: venv bin/python, non Scripts\PYTHON.EXE
@@ -175,21 +182,91 @@ if [ ! -x "$PY_CMD" ]; then PY_CMD="$PY_PATH/$PY_ENV/bin/python"; fi
 PY_PIP="$PY_CMD -m pip"
 
 # --- Dispatch Python ---
-# pip diretto: pyn.sh pip <args>
+# pip: direttiva con sub-direttive (check|pc|dna|pu|i|u|ulist|uexec|re|ri) + passthrough
 if [[ "$1" == "pip" ]]; then
     shift
-    exec $PY_CMD -m pip "$@"
+    SUB="$1"
+    case "$SUB" in
+        check) exec $PY_CMD -m pip check ;;
+        dna) rm -rf "$PY_PATH/lib/python"*/site-packages/~dna 2>/dev/null; rm -rf "$PY_PATH/$PY_ENV/lib/python"*/site-packages/~dna 2>/dev/null; exit 0 ;;
+        pc) exec $PY_CMD -m pip cache purge ;;
+        pu) exec $PY_CMD -m pip install --upgrade pip ;;
+        i) shift; exec $PY_CMD -m pip install --upgrade --only-binary=:all: "$@" ;;
+        u) shift; exec $PY_CMD -m pip install "$1" --upgrade --dry-run --only-binary=:all: ;;
+        ulist)
+            echo "Raccolta pacchetti obsoleti..."
+            $PY_CMD -m pip list --outdated > /tmp/pip_raw.txt
+            echo "Generazione pipupgrade.txt..."
+            rm -f pipupgrade.txt
+            awk 'NR>2 {print $1}' /tmp/pip_raw.txt >> pipupgrade.txt
+            rm -f /tmp/pip_raw.txt
+            echo "Operazione completata! Trovi elenco in: pipupgrade.txt"
+            exit 0
+            ;;
+        uexec)
+            LOGFILE="pipupgrade.log"
+            echo "Inizio aggiornamento: $(date)" > "$LOGFILE"
+            while IFS= read -r p || [ -n "$p" ]; do
+                [ -z "$p" ] && continue
+                echo "------------------------------------------"
+                echo "Aggiornamento: $p"
+                echo "------------------------------------------"
+                if $PY_CMD -m pip install --upgrade "$p" >> "$LOGFILE" 2>&1; then
+                    echo "[OK] $p aggiornato" >> "$LOGFILE"
+                else
+                    echo "[ERRORE] $p non aggiornato" >> "$LOGFILE"
+                fi
+            done < pipupgrade.txt
+            echo "Processo terminato. Controlla $LOGFILE"
+            exit 0
+            ;;
+        re)
+            $PY_CMD -m pip freeze > "requirements_${PY_TYPE}.txt"
+            awk -F== '{print $1}' "requirements_${PY_TYPE}.txt" > "requirements_${PY_TYPE}_LIGHT.txt"
+            exit 0
+            ;;
+        ri)
+            REQ_FILE="requirements_${PY_TYPE}.txt"
+            SKIPPED=""
+            while IFS= read -r line || [ -n "$line" ]; do
+                [[ "$line" =~ ^#.* ]] && continue
+                [[ -z "$line" ]] && continue
+                echo "Installando $line..."
+                if $PY_CMD -m pip install --upgrade --only-binary=:all: "$line" >/dev/null 2>&1; then
+                    echo "  OK: $line"
+                else
+                    echo "  SALTATO: $line"
+                    SKIPPED="$SKIPPED $line"
+                fi
+            done < "$REQ_FILE"
+            echo "--- Pacchetti saltati ---"
+            if [ -z "$SKIPPED" ]; then echo "  Nessuno"; else for p in $SKIPPED; do echo "  - $p"; done; fi
+            exit 0
+            ;;
+        "") echo "[ERRORE] pip richiede sub-direttiva" >&2; exit 1 ;;
+        *) exec $PY_CMD -m pip "$SUB" "$@" ;;
+    esac
+fi
+
+# pymod spostato in py: usa py mod <modulo>
+if [[ "$1" == "pymod" ]]; then
+    echo "[ERRORE] pymod spostato in py: usa py mod <modulo> [args]" >&2; exit 1
+fi
+
+# x rinominata in py
+if [[ "$1" == "x" ]]; then
+    echo "[ERRORE] direttiva x rinominata in py: usa py <comando>" >&2; exit 1
 fi
 
 # File esistente -> RUN
 if [ -f "$1" ]; then
     if [ ! -x "$PY_CMD" ]; then echo "PYN: python venv non trovato: $PY_CMD" >&2; exit 1; fi
-    echo "START PYTHON SCRIPT: $0 - $PY_CMD - $PAR1 $PAR2 $3 $4 $5 $6 $7 $8 $9"
+    echo "CLI: $PY_CMD $PAR1 $PAR2 $3 $4 $5 $6 $7 $8 $9"
     exec "$PY_CMD" "$PAR1" "$PAR2" "$3" "$4" "$5" "$6" "$7" "$8" "$9"
 fi
 
-# x subcommands
-if [[ "$1" == "x" ]]; then
+# py subcommands (ex x)
+if [[ "$1" == "py" ]]; then
     SUB="$2"
     case "$SUB" in
         env)
@@ -209,6 +286,14 @@ if [[ "$1" == "x" ]]; then
             exec "$PY_PATH/$PY_ENV/bin/$EXE" "$@"
             ;;
         mod) shift 2; exec $PY_CMD -m "$@" ;;
+        pip|pip_*) echo "[ERRORE] py $SUB spostato in pip: usa pip <sub> (es. pip check)" >&2; exit 1 ;;
+        test)
+            shift 2
+            PYTEST_SCRIPT="$PATH_SCRIPTS/test_python.py"
+            if [ ! -f "$PYTEST_SCRIPT" ]; then echo "[ERRORE] test_python.py non trovato in: $PATH_SCRIPTS" >&2; exit 1; fi
+            echo "CLI: $PY_CMD $PYTEST_SCRIPT $*"
+            exec "$PY_CMD" "$PYTEST_SCRIPT" "$@"
+            ;;
         pip) shift 2; exec $PY_CMD -m pip "$@" ;;
         version) exec $PY_CMD --version ;;
         pip_check) exec $PY_CMD -m pip check ;;
@@ -272,8 +357,8 @@ if [[ "$1" == "x" ]]; then
             $PY_CMD -m pip list --outdated
             exit 0
             ;;
-        "") echo "COMANDO ESTESO (x) NON INSERITO" >&2; exit 1 ;;
-        *) echo "[ERRORE] x sottocomando $SUB non riconosciuto" >&2; exit 1 ;;
+        "") echo "COMANDO ESTESO (py) NON INSERITO" >&2; exit 1 ;;
+        *) echo "[ERRORE] py sottocomando $SUB non riconosciuto" >&2; exit 1 ;;
     esac
 fi
 
