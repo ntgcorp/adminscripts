@@ -1,5 +1,5 @@
 @ECHO OFF
-REM ORIGINALE SU PC GOMERA - LAUNCHER PYTHON / PODMAN / ALTRO VIA CMD - BASH
+REM LAUNCHER PYTHON / PODMAN / ALTRO VIA CMD - BASH
 REM VERSIONE 20261010 - Rename x->py (test<-pytest, mod<-pymod), pip help in zona Python, stub x/pymod/pip in py
 REM VERSIONE 20261010 - Refactor direttive: tolti pip passthrough e pys; x pip*/mod spostati in pip <sub> e pymod; node senza npm + nuova npm dedicata; help b con Git-Bash
 REM VERSIONE 20261010 - Convenzione CLI: rimossa riga dedicata Python Path; ogni esecuzione stampa CLI: + stringa comando (python, java, powershell, access, bash, chrome, podman, pandoc, ocode)
