@@ -34,7 +34,7 @@ except ImportError:
 # ==============================================================================
 # VARIABILI GLOBALI E COSTANTI
 # ==============================================================================
-PYT_VER = "20261008"
+PYT_VER = "20261017"
 QEMU_IMG = r"X:\_Applic\Qemu\qemu-img.exe"
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 LOG_FILE = os.path.join(SCRIPT_DIR, "pyt.log")
@@ -162,6 +162,16 @@ git.pull <config.json>
         nome, versione, scopo, dipendenze, home-page.
         Dati locali (importlib.metadata) + arricchimento PyPI online se disponibile.
         Funziona su Windows e Linux.
+     podman <config.json>
+        Gestisce container podman da JSON a sezioni con id.
+        Ogni sezione: command (solo cstart), volume (opz, creato se manca),
+        image, name, porta_host host:container (opz), machine (opz, avviata o creata).
+        Funziona su Windows e Linux (richiede podman installato).
+     form <fileform.json>
+        Mostra un form interattivo descritto nel JSON (libreria pyt_form).
+        Oggetti: THEME, WINDOW, LAYOUT, TEXT, LABEL, LIST, BUTTON, COMMAND.
+        Modalita config.mode: TUI (console), GUI (tkinter), WEB (pagina+browser).
+        Log in <fileform>.log, valori in <fileform>_results.json (o config.return.file).
     @ <nome_file>
        Esegue le direttive contenute nel file specificato
 """
@@ -2128,6 +2138,224 @@ def app_reqdoc(params):
     pyt_Print(f"[{pyt_Timestamp()}] Riepilogo - Documentate: {len(rows)}, "
               f"arricchite via PyPI: {n_pypi}, senza dati: {n_missing}, righe saltate: {skipped_lines}")
     pyt_Print(f"Markdown scritto in: {out_file}")
+
+def _split_volume_spec(spec):
+    """Divide "host[:container]" rispettando la lettera drive Windows.
+    Ritorna (host, container_ou_None). Esempi:
+    "C:\\dir" -> ("C:\\dir", None); "C:\\dir:/data" -> ("C:\\dir", "/data");
+    "./rel:/data" -> ("./rel", "/data")."""
+    spec = spec.strip()
+    if len(spec) >= 2 and spec[1] == ":" and spec[0].isalpha():
+        rest = spec[2:]
+        idx = rest.find(":")
+        if idx == -1:
+            return (spec, None)
+        host = spec[:2 + idx]
+        cont = rest[idx + 1:].strip()
+        return (host, cont if cont else None)
+    if ":" in spec:
+        host, _, cont = spec.partition(":")
+        cont = cont.strip()
+        return (host.strip(), cont if cont else None)
+    return (spec, None)
+
+def _parse_port_spec(spec):
+    """Valida "host:container" con porte numeriche. Ritorna (host, container).
+    Solleva ValueError se malformato."""
+    parts = spec.strip().split(":")
+    if len(parts) != 2 or not parts[0].strip().isdigit() or not parts[1].strip().isdigit():
+        raise ValueError(f"porta_host malformata '{spec}'. Uso: host:container (es. 8080:80).")
+    return (parts[0].strip(), parts[1].strip())
+
+def _podman_run(args):
+    """Esegue podman con lista argomenti (mai shell=True). Ritorna CompletedProcess."""
+    return subprocess.run(["podman"] + args, capture_output=True, text=True)
+
+def _podman_machine_state(name):
+    """Ritorna True (attiva), False (esiste, ferma) o None (mancante/sconosciuta)."""
+    r = _podman_run(["machine", "list", "--format", "json"])
+    if r.returncode != 0:
+        return None
+    try:
+        data = json.loads(r.stdout)
+        items = data if isinstance(data, list) else [data]
+        for m in items:
+            if isinstance(m, dict) and m.get("Name") == name:
+                return bool(m.get("Running", False))
+        return None
+    except ValueError:
+        found = False
+        running = False
+        for line in r.stdout.splitlines():
+            if name in line:
+                found = True
+                if "running" in line.lower():
+                    running = True
+        return running if found else None
+
+def _podman_container_status(name):
+    """Ritorna la stringa di stato del container o None se non esiste."""
+    r = _podman_run(["ps", "-a", "--format", "{{.Names}} {{.Status}}"])
+    if r.returncode != 0:
+        return None
+    for line in r.stdout.splitlines():
+        parts = line.split(None, 1)
+        if parts and parts[0] == name:
+            return parts[1] if len(parts) > 1 else ""
+    return None
+
+def app_podman(params):
+    """Gestisce container podman da file JSON a sezioni con id.
+    Ogni sezione: command (solo cstart per ora), volume (opz, creato se manca),
+    image (obbl), name (obbl), porta_host (opz, formato host:container),
+    machine (opz, avviata o creata se manca).
+    Funziona su Windows e Linux (richiede podman installato)."""
+    if len(params) != 1:
+        raise ValueError("Sintassi errata. Uso: podman <config.json>")
+
+    config_file = params[0].strip('"\'')
+
+    if not os.path.exists(config_file):
+        raise FileNotFoundError(f"File di configurazione {config_file} non trovato.")
+
+    pyt_Print(f"[{pyt_Timestamp()}] Fase 1: Lettura e validazione del file di configurazione JSON")
+    try:
+        with open(config_file, "r", encoding="utf-8") as f:
+            cfg = json.load(f)
+    except json.JSONDecodeError as e:
+        raise ValueError(f"JSON malformato: {e}")
+    except UnicodeDecodeError:
+        with open(config_file, "r", encoding="utf-16") as f:
+            try:
+                cfg = json.load(f)
+            except json.JSONDecodeError as e:
+                raise ValueError(f"JSON malformato: {e}")
+
+    if not isinstance(cfg, dict):
+        raise ValueError("Il JSON deve essere un oggetto con sezioni identificate da id.")
+
+    stats = {"created": 0, "started": 0, "skipped": 0, "errors": 0}
+
+    for section_id, section in cfg.items():
+        pyt_Print(f"\n[{pyt_Timestamp()}] SEZIONE: {section_id}")
+        if not isinstance(section, dict):
+            pyt_Print(f"[{pyt_Timestamp()}]   ERRORE: la sezione deve essere un oggetto JSON.")
+            stats["errors"] += 1
+            continue
+
+        command = str(section.get("command", "")).strip().lower()
+        image = str(section.get("image", "")).strip()
+        name = str(section.get("name", "")).strip()
+        volume = section.get("volume")
+        porta_host = section.get("porta_host")
+        machine = section.get("machine")
+
+        if command != "cstart":
+            pyt_Print(f"[{pyt_Timestamp()}]   SALTATO: command '{command}' non supportato (solo cstart per ora).")
+            stats["skipped"] += 1
+            continue
+        if not image:
+            pyt_Print(f"[{pyt_Timestamp()}]   ERRORE: chiave 'image' obbligatoria.")
+            stats["errors"] += 1
+            continue
+        if not name:
+            pyt_Print(f"[{pyt_Timestamp()}]   ERRORE: chiave 'name' obbligatoria.")
+            stats["errors"] += 1
+            continue
+
+        try:
+            # Fase 2: macchina virtuale (opzionale)
+            if machine:
+                machine = str(machine).strip()
+                pyt_Print(f"[{pyt_Timestamp()}] Fase 2: Verifica macchina '{machine}'")
+                state = _podman_machine_state(machine)
+                if state is True:
+                    pyt_Print(f"[{pyt_Timestamp()}]   Macchina già attiva.")
+                elif state is False:
+                    pyt_Print(f"[{pyt_Timestamp()}]   Avvio macchina...")
+                    r = _podman_run(["machine", "start", machine])
+                    if r.returncode != 0:
+                        raise RuntimeError(f"Avvio macchina fallito: {r.stderr.strip()}")
+                    pyt_Print(f"[{pyt_Timestamp()}]   Macchina avviata.")
+                else:
+                    pyt_Print(f"[{pyt_Timestamp()}]   Macchina non trovata, creazione...")
+                    r = _podman_run(["machine", "init", machine])
+                    if r.returncode != 0:
+                        raise RuntimeError(f"Creazione macchina fallita: {r.stderr.strip()}")
+                    r = _podman_run(["machine", "start", machine])
+                    if r.returncode != 0:
+                        raise RuntimeError(f"Avvio macchina fallito: {r.stderr.strip()}")
+                    pyt_Print(f"[{pyt_Timestamp()}]   Macchina creata e avviata.")
+
+            # Fase 3: volume (opzionale, creato se manca)
+            volumes = []
+            if volume:
+                host, cont = _split_volume_spec(str(volume))
+                host_abs = os.path.abspath(host)
+                os.makedirs(host_abs, exist_ok=True)
+                target = cont if cont else "/data"
+                volumes = ["-v", f"{host_abs}:{target}"]
+                pyt_Print(f"[{pyt_Timestamp()}] Fase 3: Volume {host_abs}:{target}")
+
+            # Fase 4: porte (opzionale)
+            ports = []
+            if porta_host:
+                hp, cp = _parse_port_spec(str(porta_host))
+                ports = ["-p", f"{hp}:{cp}"]
+                pyt_Print(f"[{pyt_Timestamp()}] Fase 4: Porta {hp}:{cp}")
+
+            # Fase 5: container esistente?
+            pyt_Print(f"[{pyt_Timestamp()}] Fase 5: Verifica container '{name}'")
+            status = _podman_container_status(name)
+            if status is not None and "up" in status.lower():
+                pyt_Print(f"[{pyt_Timestamp()}]   SALTATO: container già attivo ({status}).")
+                stats["skipped"] += 1
+                continue
+            if status is not None:
+                pyt_Print(f"[{pyt_Timestamp()}]   Container esistente ma fermo, avvio...")
+                r = _podman_run(["start", name])
+                if r.returncode != 0:
+                    raise RuntimeError(f"Avvio container fallito: {r.stderr.strip()}")
+                pyt_Print(f"[{pyt_Timestamp()}]   AVVIATO: {name}")
+                stats["started"] += 1
+                continue
+
+            # Fase 6: creazione
+            pyt_Print(f"[{pyt_Timestamp()}] Fase 6: Creazione container '{name}' da '{image}'")
+            cmd = ["run", "-d", "--name", name] + volumes + ports + [image]
+            r = _podman_run(cmd)
+            if r.returncode != 0:
+                raise RuntimeError(f"Creazione container fallita: {r.stderr.strip()}")
+            pyt_Print(f"[{pyt_Timestamp()}]   CREATO: {name} ({r.stdout.strip()[:12]})")
+            stats["created"] += 1
+
+        except Exception as e:
+            pyt_Print(f"[{pyt_Timestamp()}]   ERRORE su sezione '{section_id}': {e}")
+            stats["errors"] += 1
+
+    pyt_Print(f"\n[{pyt_Timestamp()}] RIEPILOGO FINALE")
+    pyt_Print(f"[{pyt_Timestamp()}] Creati: {stats['created']}, Avviati: {stats['started']}, "
+              f"Saltati: {stats['skipped']}, Errori: {stats['errors']}")
+
+def app_form(params):
+    """Mostra un form interattivo descritto nel JSON usando la libreria esterna pyt_form."""
+    if len(params) != 1:
+        raise ValueError("Sintassi errata. Uso: form <fileform.json>")
+
+    fileform = params[0].strip('"\'')
+
+    if not os.path.exists(fileform):
+        raise FileNotFoundError(f"File form {fileform} non trovato.")
+
+    try:
+        import pyt_form
+    except ImportError:
+        raise ImportError("Libreria pyt_form non installata.")
+
+    pyt_Print(f"[{pyt_Timestamp()}] START: form")
+    pyt_Print(f"[{pyt_Timestamp()}] ARGS: fileform={fileform}")
+    results_path = pyt_form.run_form(fileform, pyt_Print, pyt_Timestamp)
+    pyt_Print(f"[{pyt_Timestamp()}] WRITE: {results_path}")
 
 # ==============================================================================
 # MOTORE DI ESECUZIONE

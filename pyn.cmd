@@ -1,6 +1,15 @@
 @ECHO OFF
 REM ORIGINALE SU PC GOMERA - LAUNCHER PYTHON / PODMAN / ALTRO VIA CMD - BASH
 REM VERSIONE 20261010 - Rename x->py (test<-pytest, mod<-pymod), pip help in zona Python, stub x/pymod/pip in py
+REM VERSIONE 20261011 - podman export <image> <file.tar> (save) e import <file.tar> (load)
+REM VERSIONE 20261016 - Preflight PY_CMD in :RUN (venv con base mancante -> errore chiaro)
+REM VERSIONE 20261016 - Fix ricerca PY_PATH a due passate: strict (python.exe/App) su tutti i path prima del fallback *.* (che fermava la ricerca al primo path esistente senza python)
+REM VERSIONE 20261015 - ocode startdesk: avvia OpenCode Desktop da path fisso (Win) /opt/OpenCode (Linux, solo doc)
+REM VERSIONE 20261015 - help podtips: promemoria comandi podman frequenti
+REM VERSIONE 20261015 - podman stop (ferma tutti) e reset (rm -f tutti); direttiva help con sub-help pip-podman-pandoc
+REM VERSIONE 20261014 - Nuova direttiva shell: podman exec -it in container attivo
+REM VERSIONE 20261014 - podman list image rinominato images (all sequenziale invariato)
+REM VERSIONE 20261011 - Direttiva pod rinominata podman: machine start|stop, crun, cstop, image set (POD_IMAGE), list machines|image|containers|pod|all; tolti x/end/start/passthrough-help; stub pod
 REM VERSIONE 20261010 - Refactor direttive: tolti pip passthrough e pys; x pip*/mod spostati in pip <sub> e pymod; node senza npm + nuova npm dedicata; help b con Git-Bash
 REM VERSIONE 20261010 - Convenzione CLI: rimossa riga dedicata Python Path; ogni esecuzione stampa CLI: + stringa comando (python, java, powershell, access, bash, chrome, podman, pandoc, ocode)
 REM VERSIONE 20261010 - Aggiunto dominio node (solo Windows): Node.js portable (array V:\Tools\nodejs, D:\APPLIC\NODEJS, C:\APPLIC\NODEJS o NODEJS_PATH) + npm.cmd dallo stesso path
@@ -34,7 +43,7 @@ REM VERSIONE 20250405 - CORREZIONI - INSTALLAZIONE CRYPTOGRAFY - FORSE PSUTIL
 REM VERSIONE 20250203 - DEFAULT X64
 REM VERSIONE 20250130 - GESTIONE MIGLIORE RUNTIME
 
-SET PYN_VER=20261010
+SET PYN_VER=20261016
 
 REM PER PRIMO
 :SETUP
@@ -51,7 +60,7 @@ REM Normalizza: senza backslash finale (tranne radici tipo G:\); le composizioni
 IF NOT "%PATH_SCRIPTS:~3,1%"=="" IF "%PATH_SCRIPTS:~-1%"=="\" SET "PATH_SCRIPTS=%PATH_SCRIPTS:~0,-1%"
 
 REM ALTRI COMANDI ESTESI
-IF "%~1"=="pod"    GOTO :POD
+IF "%~1"=="podman" GOTO :PODMAN
 IF "%~1"=="pandoc" GOTO :PANDOC
 IF "%~1"=="b"      GOTO :BASH
 IF "%~1"=="j"      GOTO :JAVA
@@ -62,6 +71,8 @@ IF "%~1"==""       GOTO :SINTASSI
 IF "%~1"=="chrome" GOTO :CHROME
 IF "%~1"=="node" GOTO :NODE
 IF "%~1"=="npm" GOTO :NPM
+IF "%~1"=="shell" GOTO :SHELL
+IF "%~1"=="help" GOTO :HELP
 
 REM POSSIBILI PATH - ordine documentato: K: (se MACH0) > D: > C: > XX (TOOLS locale)
 for %%I in ("%~dp0..") do set "PATH_PADRE=%%~fI"
@@ -84,6 +95,7 @@ IF DEFINED PATHP_ENV (
     IF EXIST "%PATHP_ENV%\App\python.exe" SET "PY_PATH=%PATHP_ENV%" & GOTO :PYN_1
     IF EXIST "%PATHP_ENV%\*.*" SET "PY_PATH=%PATHP_ENV%" & GOTO :PYN_1
 )
+REM Pass 1 STRICT: python.exe / App\python.exe su TUTTI i path (priorita' a chi ha python vero)
 FOR %%A IN ("%PATHP_01%" "%PATHP_02%" "%PATHP_03%" "%PATHP_XX%") DO (
     IF EXIST "%%~A\python.exe" (
         SET "PY_PATH=%%~A"
@@ -93,6 +105,9 @@ FOR %%A IN ("%PATHP_01%" "%PATHP_02%" "%PATHP_03%" "%PATHP_XX%") DO (
         SET "PY_PATH=%%~A"
         GOTO :PYN_1
     )
+)
+REM Pass 2 LENIENT: solo se nessuno ha python, accetta prima cartella esistente (fallback storico *.*)
+FOR %%A IN ("%PATHP_01%" "%PATHP_02%" "%PATHP_03%" "%PATHP_XX%") DO (
     IF EXIST "%%~A\*.*" (
         SET "PY_PATH=%%~A"
         GOTO :PYN_1
@@ -116,6 +131,14 @@ IF "%~1"=="py"   GOTO :PY
 
 :RUN
 IF NOT EXIST "%PY_CMD%" GOTO :ERR
+REM Preflight: il venv puo' esistere ma puntare a una base mancante (pyvenv.cfg: home)
+"%PY_CMD%" --version >nul 2>&1
+IF NOT ERRORLEVEL 1 GOTO :RUN_GO
+ECHO [ERRORE] Python non avviabile: "%PY_CMD%"
+ECHO   Controlla che PY_PATH esista e che il venv non punti a una base mancante (pyvenv.cfg, chiave home).
+ECHO   Ricrea l'ambiente con: pyn.cmd py env %PY_ENV% (dopo aver cancellato la cartella)
+GOTO :END
+:RUN_GO
 ECHO CLI: "%PY_CMD%" "%PAR1%" "%PAR2%" "%~3" "%~4" "%~5" "%~6" "%~7" "%~8" "%~9"
 "%PY_CMD%" "%PAR1%" "%PAR2%" "%~3" "%~4" "%~5" "%~6" "%~7" "%~8" "%~9"
 GOTO :END
@@ -166,9 +189,12 @@ IF "%~2"=="version" %PY_CMD% --version
 IF "%~2"=="test" GOTO :PYTEST
 IF "%~2"=="mod" GOTO :PY_MOD
 IF "%~2"=="pip" GOTO :PY_PIPMOVED
+IF "%~2"=="" GOTO :PY_EMPTY
 SET "PYSUB=%~2"
 IF "%PYSUB:~0,4%"=="pip_" GOTO :PY_PIPMOVED
-IF "%~2"=="" ECHO COMANDO ESTESO (py) NON INSERITO
+GOTO :END
+:PY_EMPTY
+ECHO COMANDO ESTESO (py) NON INSERITO
 GOTO :END
 
 :PY_PIPMOVED
@@ -618,14 +644,35 @@ ECHO CLI: CALL "%NPM_CMD%"%NPM_ARGS%
 CALL "%NPM_CMD%"%NPM_ARGS%
 GOTO :END
 
+REM ----------------------------------------------- SHELL (podman exec interattivo) -------------------------------
+:SHELL
+@ECHO LAUNCHER SHELL %PYN_VER%
+REM Esegue un comando in un container gia' attivo: podman exec -it <name> <shell> [args]
+IF "%~2"=="" GOTO :SINTASSI
+IF "%~3"=="" GOTO :SINTASSI
+SET "SHELL_CONTAINER=%~2"
+SHIFT
+SHIFT
+SET "SHELL_ARGS="
+:SHELL_COLLECT
+IF "%~1"=="" GOTO :SHELL_RUN
+SET "SHELL_ARGS=%SHELL_ARGS% "%~1""
+SHIFT
+GOTO :SHELL_COLLECT
+:SHELL_RUN
+ECHO CLI: podman exec -it "%SHELL_CONTAINER%"%SHELL_ARGS%
+podman exec -it "%SHELL_CONTAINER%"%SHELL_ARGS%
+GOTO :END
+
 REM ----------------------------------------------- OCODE (OpenCode) -------------------------------
 :OCODE
 @ECHO LAUNCHER OPENCODE %PYN_VER%
-REM Logica integrata da opencode_start.cmd: per ora unico sottocomando "start",
+REM Logica integrata da opencode_start.cmd: sottocomandi "start" (terminale) e "startdesk" (desktop),
 REM altri sottocomandi futuri si aggiungono qui con IF /I "%~2"=="..."
 IF "%~2"=="" GOTO :SINTASSI
 IF /I "%~2"=="start" GOTO :OCODE_START
-ECHO [ERRORE] Sottocomando ocode non riconosciuto: "%~2" (uso: ocode start)
+IF /I "%~2"=="startdesk" GOTO :OCODE_STARTDESK
+ECHO [ERRORE] Sottocomando ocode non riconosciuto: "%~2" (uso: ocode start^|startdesk)
 GOTO :END
 
 :OCODE_START
@@ -678,6 +725,27 @@ PAUSE
 ENDLOCAL
 GOTO :END
 
+:OCODE_STARTDESK
+REM Avvia OpenCode Desktop da posizione fissa (niente terminale/base script).
+REM Windows: opencode.exe in @opencode-aidesktop; Linux: /opt/OpenCode/opencode (vedi prompt).
+SET "OCODE_DESKEXE=C:\Users\User\AppData\Local\Programs\@opencode-aidesktop\opencode.exe"
+IF EXIST "%OCODE_DESKEXE%" GOTO :OCODE_DESKCOLLECT
+ECHO [ERRORE] opencode.exe non trovato in: "C:\Users\User\AppData\Local\Programs\@opencode-aidesktop"
+GOTO :END
+:OCODE_DESKCOLLECT
+SHIFT
+SHIFT
+SET "OCODE_DESKARGS="
+:OCODE_DESKLOOP
+IF "%~1"=="" GOTO :OCODE_DESKRUN
+SET "OCODE_DESKARGS=%OCODE_DESKARGS% "%~1""
+SHIFT
+GOTO :OCODE_DESKLOOP
+:OCODE_DESKRUN
+ECHO CLI: "%OCODE_DESKEXE%"%OCODE_DESKARGS%
+"%OCODE_DESKEXE%"%OCODE_DESKARGS%
+GOTO :END
+
 REM ----------------------------------------------- CHROME -------------------------------
 :CHROME
 @ECHO LAUNCHER CHROME %PYN_VER%
@@ -701,43 +769,126 @@ IF /I "%~2"=="auto" (
 )
 GOTO :END
 
-REM ----------------------------------------------- POD -------------------------------
-:POD
-@ECHO LAUNCHER POD %PYN_VER%
+REM ----------------------------------------------- PODMAN -------------------------------
+:PODMAN
+@ECHO LAUNCHER PODMAN %PYN_VER%
 IF "%POD_PATH%"=="" SET POD_PATH=c:\podman
 IF "%POD_APP%"=="" SET POD_APP=ntjobsos
 IF "%~2"=="" GOTO :SINTASSI
-IF "%~2"=="x" GOTO :POD_RUN
-IF "%~2"=="start" GOTO :POD_START
-IF "%~2"=="end" GOTO :POD_END
-IF "%~2"=="opt" GOTO :POD_OPT
+IF /I "%~2"=="machine" GOTO :PODMAN_MACHINE
+IF /I "%~2"=="crun" GOTO :PODMAN_CRUN
+IF /I "%~2"=="cstop" GOTO :PODMAN_CSTOP
+IF /I "%~2"=="image" GOTO :PODMAN_IMAGE
+IF /I "%~2"=="list" GOTO :PODMAN_LIST
+IF /I "%~2"=="export" GOTO :PODMAN_EXPORT
+IF /I "%~2"=="import" GOTO :PODMAN_IMPORT
+IF /I "%~2"=="stop" GOTO :PODMAN_STOPALL
+IF /I "%~2"=="reset" GOTO :PODMAN_RESET
+IF /I "%~2"=="opt" GOTO :PODMAN_OPT
 
 ECHO CLI: podman %2 %3 %4 %5 %6 %7 %8 %9
 podman %2 %3 %4 %5 %6 %7 %8 %9
 GOTO :END
 
-:POD_RUN
-ECHO CLI: podman run -it --rm -v "%POD_PATH%:/app" %POD_APP%:v1 %3
-podman run -it --rm -v "%POD_PATH%:/app" %POD_APP%:v1 %3
+:PODMAN_MACHINE
+IF /I "%~3"=="start" GOTO :PODMAN_MACHINE_START
+IF /I "%~3"=="stop" GOTO :PODMAN_MACHINE_STOP
+ECHO [ERRORE] podman machine richiede start o stop.
 GOTO :END
-
-:POD_END
-REM USCITA OS-SPECIFICA: WSL è esclusivo di Windows
-where wsl >nul 2>&1
-if errorlevel 1 (
-    echo [USCITA OS-SPECIFICA] WSL non trovato. Su Linux nativo Podman non usa WSL. Usa 'systemctl stop podman'.
-    exit /b 1
-)
-ECHO CLI: wsl --shutdown
-wsl --shutdown
-GOTO :END
-
-:POD_START
+:PODMAN_MACHINE_START
 ECHO CLI: podman machine start
 podman machine start
 GOTO :END
+:PODMAN_MACHINE_STOP
+ECHO CLI: podman machine stop
+podman machine stop
+GOTO :END
 
-:POD_OPT
+:PODMAN_CRUN
+IF "%~3"=="" GOTO :SINTASSI
+IF "%~4"=="" GOTO :SINTASSI
+ECHO CLI: podman run -it --rm --name %3 %4 %5 %6 %7 %8 %9
+podman run -it --rm --name %3 %4 %5 %6 %7 %8 %9
+GOTO :END
+
+:PODMAN_CSTOP
+IF "%~3"=="" GOTO :SINTASSI
+ECHO CLI: podman stop %3
+podman stop %3
+GOTO :END
+
+:PODMAN_STOPALL
+ECHO CLI: podman stop - ferma tutti i container attivi
+FOR /F "delims=" %%c IN ('podman ps -q') DO (
+    ECHO CLI: podman stop %%c
+    podman stop %%c
+)
+GOTO :END
+
+:PODMAN_RESET
+ECHO CLI: podman rm -f - rimuove tutti i container (anche fermi)
+FOR /F "delims=" %%c IN ('podman ps -a -q') DO (
+    ECHO CLI: podman rm -f %%c
+    podman rm -f %%c
+)
+GOTO :END
+
+:PODMAN_IMAGE
+IF /I "%~3"=="set" GOTO :PODMAN_IMAGE_SET
+ECHO [ERRORE] podman image richiede set ^<image_name^>.
+GOTO :END
+:PODMAN_IMAGE_SET
+IF "%~4"=="" GOTO :SINTASSI
+SET "POD_IMAGE=%~4"
+ECHO POD_IMAGE=%POD_IMAGE%
+GOTO :END
+
+:PODMAN_LIST
+IF /I "%~3"=="machines" GOTO :PODMAN_LIST_MACHINES
+IF /I "%~3"=="images" GOTO :PODMAN_LIST_IMAGES
+IF /I "%~3"=="containers" GOTO :PODMAN_LIST_CONTAINERS
+IF /I "%~3"=="all" GOTO :PODMAN_LIST_ALL
+ECHO [ERRORE] podman list richiede machines^|images^|containers^|all.
+GOTO :END
+:PODMAN_LIST_MACHINES
+ECHO CLI: podman machine list
+podman machine list
+GOTO :END
+:PODMAN_LIST_IMAGES
+ECHO CLI: podman images
+podman images
+GOTO :END
+:PODMAN_LIST_CONTAINERS
+ECHO CLI: podman ps -a
+podman ps -a
+GOTO :END
+:PODMAN_LIST_ALL
+ECHO CLI: podman machine list
+podman machine list
+ECHO CLI: podman images
+podman images
+ECHO CLI: podman ps -a
+podman ps -a
+GOTO :END
+
+:PODMAN_EXPORT
+IF "%~3"=="" GOTO :SINTASSI
+IF "%~4"=="" GOTO :SINTASSI
+ECHO CLI: podman save --output "%~4" "%~3"
+podman save --output "%~4" "%~3"
+GOTO :END
+
+:PODMAN_IMPORT
+IF "%~3"=="" GOTO :SINTASSI
+IF NOT EXIST "%~3" GOTO :PODMAN_IMPORT_MISSING
+ECHO CLI: podman load --input "%~3"
+podman load --input "%~3"
+GOTO :END
+:PODMAN_IMPORT_MISSING
+ECHO [ERRORE] File tar non trovato: "%~3"
+GOTO :END
+
+:PODMAN_OPT
 REM USCITA OS-SPECIFICA: Optimize-VHD richiede PowerShell e Hyper-V (Windows)
 where powershell >nul 2>&1
 if errorlevel 1 (
@@ -772,17 +923,16 @@ endlocal
 GOTO :END
 
 REM ----------------------------------------- SINTASSI -------------------------------
-:SINTASSI
-@ECHO OFF
-ECHO Launcher: PYTHON PIP/PODMAN/CHROME/BASH/PANDOC/JAVA/PS/OCODE/ACCESS/NODE/NPM. R: %PYN_VER%
-ECHO Sintassi PYN.CMD script.py [parametri] oppure PYN.CMD dominio comando parametri
-ECHO ----- Comandi Estesi. Sintassi pyn dominio parametri_aggiuntivi
-ECHO PYN.CMD py [comando esteso]
-ECHO PYN.CMD py script nome_script(.exe) e parametri successivi
-ECHO PYN.CMD py env ambiente - Cambio o Attivazione Python ENV
-ECHO PYN.CMD py version - Versione Python
-ECHO PYN.CMD py mod modulo [args] (python -m modulo)
-ECHO PYN.CMD py test esegue test_python.py da PATH_SCRIPTS con parametri successivi
+:HELP
+IF "%~2"=="" GOTO :SINTASSI
+IF /I "%~2"=="pip" GOTO :HELP_PIP
+IF /I "%~2"=="podman" GOTO :HELP_PODMAN
+IF /I "%~2"=="pandoc" GOTO :HELP_PANDOC
+IF /I "%~2"=="podtips" GOTO :HELP_PODTIPS
+ECHO [ERRORE] help: sotto-parametri validi pip-podman-pandoc-podtips.
+GOTO :SINTASSI
+
+:HELP_PIP
 ECHO PYN.CMD pip check CHECK PIP
 ECHO PYN.CMD pip pc CACHE PURGE
 ECHO PYN.CMD pip dna RIMUOVE dna precedente installa errato
@@ -793,20 +943,78 @@ ECHO PYN.CMD pip ulist Lista pipupgrade.txt delle librerie da upgradare
 ECHO PYN.CMD pip uexec Esegue upgrade da pipupgrade.txt
 ECHO PYN.CMD pip re Crea requirements_x32/x64.txt
 ECHO PYN.CMD pip ri file Importa requirements.txt
-ECHO PYN.CMD chrome auto. Esecuzione Chrome in modalità AUTO
-ECHO PYN.CMD pod comando script . Devono essere impostate le ENV POD_PATH e POD_APP(ntjobsos default)
-ECHO PYN.CMD pod end
-ECHO PYN.CMD pod start
+GOTO :END
+
+:HELP_PODMAN
+ECHO PYN.CMD podman machine start-stop. Gestione macchina podman
+ECHO PYN.CMD podman crun nome_container nome_immagine [args]. Esegue container con nome
+ECHO PYN.CMD podman cstop nome_container. Ferma il container
+ECHO PYN.CMD podman stop. Ferma tutti i container attivi
+ECHO PYN.CMD podman reset. Rimuove tutti i container (anche fermi)
+ECHO PYN.CMD podman image set nome_immagine. Imposta POD_IMAGE
+ECHO PYN.CMD podman list machines-images-containers. Elenca oggetti podman
+ECHO PYN.CMD podman export nome_immagine file.tar. Esporta immagine in file tar
+ECHO PYN.CMD podman import file.tar. Importa immagine da file tar
+GOTO :END
+
+:HELP_PANDOC
 ECHO PYN.CMD pandoc doc2md file.doc
 ECHO PYN.CMD pandoc pdf2md file.doc
 ECHO PYN.CMD pandoc md2html file.md file.html
+GOTO :END
+
+:HELP_PODTIPS
+ECHO podman machine list
+ECHO Mostra le macchine virtuali disponibili e quella attiva.
+ECHO podman machine start / stop
+ECHO Accende o spegne la macchina virtuale.
+ECHO podman pull ^<immagine^>
+ECHO Scarica un'immagine da un registry.
+ECHO podman images
+ECHO Elenca le immagini presenti sul sistema.
+ECHO podman run [opzioni] ^<immagine^>
+ECHO Crea e avvia un nuovo container.
+ECHO podman ps (-a)
+ECHO Elenca i container attivi (o tutti, compresi i fermi).
+ECHO podman stop / start ^<container^>
+ECHO Ferma o riavvia un container esistente.
+ECHO podman rm ^<container^>
+ECHO Elimina un container (usa -f per forzare se attivo).
+ECHO podman exec -it ^<container^> ^<shell^>
+ECHO Apre una sessione interattiva dentro un container attivo.
+ECHO podman volume create ^<nome^>
+ECHO Crea un volume persistente.
+ECHO podman volume ls
+ECHO Elenca tutti i volumi presenti.
+ECHO podman logs -f ^<container^>
+ECHO Mostra in tempo reale l'output del container.
+ECHO podman stats
+ECHO Mostra il consumo di risorse in tempo reale.
+ECHO podman system prune
+ECHO Libera spazio rimuovendo container fermi e dati orfani.
+GOTO :END
+
+:SINTASSI
+@ECHO OFF
+ECHO Launcher: PYTHON PIP/PODMAN/CHROME/BASH/PANDOC/JAVA/PS/OCODE/ACCESS/NODE/NPM/SHELL. R: %PYN_VER%
+ECHO Sintassi PYN.CMD script.py [parametri] oppure PYN.CMD dominio comando parametri
+ECHO ----- Comandi Estesi. Sintassi pyn dominio parametri_aggiuntivi
+ECHO PYN.CMD py [comando esteso]
+ECHO PYN.CMD py script nome_script(.exe) e parametri successivi
+ECHO PYN.CMD py env ambiente - Cambio o Attivazione Python ENV
+ECHO PYN.CMD py version - Versione Python
+ECHO PYN.CMD py mod modulo [args] (python -m modulo)
+ECHO PYN.CMD py test esegue test_python.py da PATH_SCRIPTS con parametri successivi
+ECHO PYN.CMD help pip-podman-pandoc-podtips. Help mirato per direttiva
+ECHO PYN.CMD chrome auto. Esecuzione Chrome in modalità AUTO
 ECHO PYN.CMD b script.sh parametri (esegue uno script bash su Windows tramite Git-Bash)
 ECHO PYN.CMD j script.java/script.class/script.jar parametri (i .java vengono compilati con javac)
 ECHO PYN.CMD ps [script.ps1] parametri (senza .ps1 esegue ps_start.ps1 con tutti i parametri)
-ECHO PYN.CMD ocode start [parametri] (esegue opencode_start_base.cmd dai possibili paths, cwd invariato, config opencode.json da PATH_SCRIPTS)
+ECHO PYN.CMD ocode start^|startdesk [parametri] (start=terminale, startdesk=desktop GUI)
 ECHO PYN.CMD a [parametri...] (esegue MSACCESS.EXE dai possibili paths, solo Windows)
 ECHO PYN.CMD node script.js parametri (Node.js portable, solo Windows)
 ECHO PYN.CMD npm ^<comando^> [args] (npm dallo stesso path di node.exe, solo Windows)
+ECHO PYN.CMD shell nome_container comando [args] (podman exec -it in container attivo)
 GOTO :END
 
 :END

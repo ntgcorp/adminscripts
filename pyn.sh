@@ -1,5 +1,9 @@
 #!/bin/bash
 # pyn.sh - Launcher Linux per Python portable / PODMAN / CHROME / BASH / PANDOC
+# VERSIONE 20261011 - podman export <image> <file.tar> (save) e import <file.tar> (load)
+# VERSIONE 20261015 - podman stop (tutti) e reset (rm -f tutti); help mirato pip-podman-pandoc
+# VERSIONE 20261014 - podman list image rinominato images
+# VERSIONE 20261011 - Direttiva pod rinominata podman: machine start|stop, crun, cstop, image set (export POD_IMAGE), list; tolti x/end/start; stub pod
 # VERSIONE 20261010 - Convenzione CLI: rimossa riga Python Path; ogni esecuzione stampa CLI: + stringa comando
 # VERSIONE 20261009 - pys: esegue script python (nomi semplici in SCRIPT_DIR) col python calcolato
 # VERSIONE 20260911 - Counterpart Linux di pyn.cmd (traduzione bash di pyn.cmd:28-164)
@@ -7,7 +11,7 @@
 # VERSIONE 20260810 - REFACTOR bug critici (delayed expansion, doppia exec, path hardcoded) + uscite OS-specifiche
 set -e
 
-PYN_VER="20261010"
+PYN_VER="20261015"
 
 # --- SETUP ---
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -21,10 +25,51 @@ PAR2="$2"
 
 # Dispatch comandi che non richiedono Python (come pyn.cmd:38-43 prima di SETUP)
 case "$1" in
-    pod)    POD_CMD="$2"; shift 2 || true; exec bash -c "source \"$SCRIPT_DIR/pyn.sh\" --pod-internal \"$POD_CMD\" \"\$@\"" -- "$@" ;;
+    podman) POD_CMD="$2"; shift 2 || true; exec bash -c "source \"$SCRIPT_DIR/pyn.sh\" --pod-internal \"$POD_CMD\" \"\$@\"" -- "$@" ;;
     pandoc) PANDOC_CMD="$2"; shift 2 || true; exec bash -c "source \"$SCRIPT_DIR/pyn.sh\" --pandoc-internal \"\$@\"" -- "$@" ;;
     b)      shift; exec bash -c "source \"$SCRIPT_DIR/pyn.sh\" --bash-internal \"\$@\"" -- "$@" ;;
     chrome) shift; exec bash -c "source \"$SCRIPT_DIR/pyn.sh\" --chrome-internal \"\$@\"" -- "$@" ;;
+    help)
+        case "$2" in
+            pip)
+                cat <<'EOS'
+PYN.SH pip check CHECK PIP
+PYN.SH pip pc CACHE PURGE
+PYN.SH pip dna RIMUOVE dna precedente installa errato
+PYN.SH pip pu Upgrade solo pip
+PYN.SH pip i install librerie (solo binari)
+PYN.SH pip u upgrade singolo (dry-run, solo binari)
+PYN.SH pip ulist Lista pipupgrade.txt
+PYN.SH pip uexec Esegue upgrade da pipupgrade.txt
+PYN.SH pip re Crea requirements_x32/x64.txt
+PYN.SH pip ri Importa requirements.txt
+EOS
+                exit 0
+                ;;
+            podman)
+                cat <<'EOS'
+PYN.SH podman machine start-stop. Gestione macchina podman
+PYN.SH podman crun nome_container nome_immagine [args]. Esegue container con nome
+PYN.SH podman cstop nome_container. Ferma il container
+PYN.SH podman stop. Ferma tutti i container attivi
+PYN.SH podman reset. Rimuove tutti i container (anche fermi)
+PYN.SH podman image set nome_immagine. Imposta POD_IMAGE
+PYN.SH podman list machines-images-containers. Elenca oggetti podman
+PYN.SH podman export nome_immagine file.tar. Esporta immagine in file tar
+PYN.SH podman import file.tar. Importa immagine da file tar
+EOS
+                exit 0
+                ;;
+            pandoc)
+                cat <<'EOS'
+PYN.SH pandoc doc2md|docx2md|pdf2md|md2html file
+EOS
+                exit 0
+                ;;
+            "") exec "$SCRIPT_DIR/pyn.sh" ;;
+            *) echo "[ERRORE] help: sotto-parametri validi pip-podman-pandoc." >&2; exec "$SCRIPT_DIR/pyn.sh" ;;
+        esac
+        ;;
     "")     # help
             echo "Launcher: PYTHON PIP/PODMAN/CHROME/BASH/PANDOC. R: $PYN_VER"
             cat <<'EOS'
@@ -36,21 +81,8 @@ PYN.SH py env ambiente - Cambio o Attivazione Python ENV
 PYN.SH py version - Versione Python
 PYN.SH py mod modulo [args] (python -m modulo)
 PYN.SH py test esegue test_python.py da PATH_SCRIPTS con parametri successivi
------ Comandi POD/PANDOC/BASH/CHROME/PIP
-PYN.SH pip check CHECK PIP
-PYN.SH pip pc CACHE PURGE
-PYN.SH pip dna RIMUOVE dna precedente installa errato
-PYN.SH pip pu Upgrade solo pip
-PYN.SH pip i install librerie (solo binari)
-PYN.SH pip u upgrade singolo (dry-run, solo binari)
-PYN.SH pip ulist Lista pipupgrade.txt
-PYN.SH pip uexec Esegue upgrade da pipupgrade.txt
-PYN.SH pip re Crea requirements_x32/x64.txt
-PYN.SH pip ri Importa requirements.txt
+PYN.SH help pip-podman-pandoc. Help mirato per direttiva
 PYN.SH chrome auto
-PYN.SH pod comando
-PYN.SH pod end/start/opt
-PYN.SH pandoc doc2md|docx2md|pdf2md|md2html file
 PYN.SH b script.sh parametri (esegue uno script bash su Linux)
 EOS
             exit 0
@@ -61,21 +93,77 @@ esac
 if [[ "$1" == --pod-internal ]]; then
     POD_SUB="$2"; shift 2 || true
     case "$POD_SUB" in
-        x) echo "CLI: podman run -it --rm -v \"${POD_PATH:-c:\podman}:/app\" \"${POD_APP:-ntjobsos}:v1\" $*"; exec podman run -it --rm -v "${POD_PATH:-c:\podman}:/app" "${POD_APP:-ntjobsos}:v1" "$@" ;;
-        start) echo "CLI: podman machine start"; exec podman machine start ;;
-        end)
-            if ! command -v podman >/dev/null 2>&1; then
-                echo "[USCITA OS-SPECIFICA] podman non trovato. Su Linux nativo usa 'systemctl --user stop podman' o 'podman machine stop'." >&2; exit 1
+        machine)
+            case "$1" in
+                start) echo "CLI: podman machine start"; exec podman machine start ;;
+                stop) echo "CLI: podman machine stop"; exec podman machine stop ;;
+                *) echo "[ERRORE] podman machine richiede start o stop." >&2; exit 1 ;;
+            esac
+            ;;
+        crun)
+            if [ -z "$1" ] || [ -z "$2" ]; then echo "[ERRORE] uso: podman crun <container_name> <image_name> [args]" >&2; exit 1; fi
+            echo "CLI: podman run -it --rm --name $1 $2 ${*:3}"
+            exec podman run -it --rm --name "$1" "$2" "${@:3}"
+            ;;
+        cstop)
+            if [ -z "$1" ]; then echo "[ERRORE] uso: podman cstop <container_name>" >&2; exit 1; fi
+            echo "CLI: podman stop $1"
+            exec podman stop "$1"
+            ;;
+        stop)
+            IDS=$(podman ps -q)
+            if [ -z "$IDS" ]; then echo "Nessun container attivo."; exit 0; fi
+            echo "CLI: podman stop $IDS"
+            # shellcheck disable=SC2086
+            exec podman stop $IDS
+            ;;
+        reset)
+            IDS=$(podman ps -a -q)
+            if [ -z "$IDS" ]; then echo "Nessun container da rimuovere."; exit 0; fi
+            echo "CLI: podman rm -f $IDS"
+            exec podman rm -f $IDS
+            ;;
+        image)
+            if [[ "$1" == "set" ]]; then
+                shift || true
+                if [ -z "$1" ]; then echo "[ERRORE] uso: podman image set <image_name>" >&2; exit 1; fi
+                export POD_IMAGE="$1"
+                echo "POD_IMAGE=$POD_IMAGE"
+                exit 0
             fi
-            echo "CLI: podman machine stop"; podman machine stop 2>/dev/null || true
-            exit 0
+            echo "[ERRORE] podman image richiede set <image_name>." >&2; exit 1
+            ;;
+        list)
+            case "$1" in
+                machines) echo "CLI: podman machine list"; exec podman machine list ;;
+                images) echo "CLI: podman images"; exec podman images ;;
+                containers) echo "CLI: podman ps -a"; exec podman ps -a ;;
+                all)
+                    echo "CLI: podman machine list"; podman machine list
+                    echo "CLI: podman images"; podman images
+                    echo "CLI: podman ps -a"; podman ps -a
+                    exit 0
+                    ;;
+                *) echo "[ERRORE] podman list richiede machines|images|containers|all." >&2; exit 1 ;;
+            esac
+            ;;
+        export)
+            if [ -z "$1" ] || [ -z "$2" ]; then echo "[ERRORE] uso: podman export <image_name> <file.tar>" >&2; exit 1; fi
+            echo "CLI: podman save --output $2 $1"
+            exec podman save --output "$2" "$1"
+            ;;
+        import)
+            if [ -z "$1" ]; then echo "[ERRORE] uso: podman import <file.tar>" >&2; exit 1; fi
+            if [ ! -f "$1" ]; then echo "[ERRORE] File tar non trovato: $1" >&2; exit 1; fi
+            echo "CLI: podman load --input $1"
+            exec podman load --input "$1"
             ;;
         opt)
             echo "[USCITA OS-SPECIFICA] Optimize-VHD è Windows/Hyper-V only. Su Linux usa 'fstrim -av' o 'qemu-img convert'." >&2
             echo "[1/2] fstrim..."; sudo fstrim -av || true
             exit 0
             ;;
-        "") echo "[ERRORE] pod richiede sottocomando" >&2; exit 1 ;;
+        "") echo "[ERRORE] podman richiede sottocomando" >&2; exit 1 ;;
         *) echo "CLI: podman $POD_SUB $*"; exec podman "$POD_SUB" "$@" ;;
     esac
 fi

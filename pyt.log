@@ -1,202 +1,554 @@
-PYT.START: 20261008 20261011:211819
-PYT.START: SYNC 20261011:211819
-[20261011:211819] Fase 1: Lettura e validazione del file di configurazione JSON
-  Chiavi trovate nel JSON: ['name', 'type', 'source', 'dest', 'mode', 'log']
-  Nessuna chiave 'jobs' trovata, trattato come singolo job
+PYT.START: 20261015 20261017:000756
+PYT.START:  20261017:000756
+Errore: direttiva '' non riconosciuta.
+PYT.END:  20261017:000756
+END: 20261017:000756
+PYT.START: 20261015 20261017:000825
+PYT.START: FORM 20261017:000825
+Errore: direttiva 'form' non riconosciuta.
+PYT.END: FORM 20261017:000825
+END: 20261017:000825
+PYT.START: 20261017 20261017:001128
+PYT.START: FORM 20261017:001128
+ERRORE [form]: Sintassi errata. Uso: form <fileform.json>
+PYT.END: FORM 20261017:001128
+END: 20261017:001128
+PYT.START: 20261017 20261017:001157
+PYT.START: FORM 20261017:001157
+ERRORE [form]: Sintassi errata. Uso: form <fileform.json>
+PYT.END: FORM 20261017:001157
+END: 20261017:001157
+PYT.START: 20261017 20261017:001218
+PYT.START: FORM 20261017:001218
+[20261017:001218] START: form
+[20261017:001218] ARGS: fileform=Examples\pyt_form_sample1.json
+[20261017:001218] Fase 1: validazione ok (9 oggetti: BUTTON=2, COMMAND=1, LABEL=1, LAYOUT=1, LIST=1, TEXT=1, THEME=1, WINDOW=1)
+[20261017:001218] Fase 2: rendering TUI
+[20261017:001249] Fase 4-5: scrittura results in G:\Il mio Drive\Progetti\pyt_pyn\Examples\pyt_form_sample1_results.json
+[20261017:001249] WRITE: G:\Il mio Drive\Progetti\pyt_pyn\Examples\pyt_form_sample1_results.json
+PYT.END: FORM 20261017:001249
+END: 20261017:001249
+PYT.START: 20261017 20261017:001257
+PYT.START: FORM 20261017:001257
+[20261017:001257] START: form
+[20261017:001257] ARGS: fileform=Examples\pyt_form_sample2.json
+[20261017:001257] Fase 1: validazione ok (9 oggetti: BUTTON=2, COMMAND=1, LABEL=1, LAYOUT=1, LIST=1, TEXT=1, THEME=1, WINDOW=1)
+[20261017:001257] Fase 2-3: rendering GUI + loop
+[20261017:001322] START: form
+[20261017:001322] ARGS: fileform=C:\Users\User\AppData\Local\Temp\tmp5_pq8xa7\f.json
+[20261017:001322] WRITE: C:\Users\User\AppData\Local\Temp\tmp5_pq8xa7\f_results.json
+[20261017:001544] Fase 4-5: scrittura results in G:\Il mio Drive\Progetti\pyt_pyn\Examples\pyt_form_sample2_results.json
+[20261017:001544] WRITE: G:\Il mio Drive\Progetti\pyt_pyn\Examples\pyt_form_sample2_results.json
+PYT.END: FORM 20261017:001544
+END: 20261017:001544
+[20261017:001627] START: form
+[20261017:001627] ARGS: fileform=C:\Users\User\AppData\Local\Temp\tmplo3kv83e\f.json
+[20261017:001628] WRITE: C:\Users\User\AppData\Local\Temp\tmplo3kv83e\f_results.json
+PYT.START: 20261017 20261017:001641
+PYT.START: FORM 20261017:001641
+[20261017:001641] START: form
+[20261017:001641] ARGS: fileform=Examples\pyt_form_sample3.json
+[20261017:001641] Fase 1: validazione ok (9 oggetti: BUTTON=2, COMMAND=1, LABEL=1, LAYOUT=1, LIST=1, TEXT=1, THEME=1, WINDOW=1)
+[20261017:001641] Fase 2-3: rendering WEB + submit
+Form WEB su http://127.0.0.1:45993 — file G:\Il mio Drive\Progetti\pyt_pyn\Examples\pyt_form_sample3.html
+[20261017:001644] Fase 4-5: scrittura results in G:\Il mio Drive\Progetti\pyt_pyn\Examples\pyt_form_sample3_results.json
+[20261017:001644] WRITE: G:\Il mio Drive\Progetti\pyt_pyn\Examples\pyt_form_sample3_results.json
+PYT.END: FORM 20261017:001644
+END: 20261017:001644
+PYT.START: 20261017 20261017:001701
+PYT.START: FORM 20261017:001701
+[20261017:001701] START: form
+[20261017:001701] ARGS: fileform=Examples\pyt_form_sample3.json
+[20261017:001701] Fase 1: validazione ok (9 oggetti: BUTTON=2, COMMAND=1, LABEL=1, LAYOUT=1, LIST=1, TEXT=1, THEME=1, WINDOW=1)
+[20261017:001701] Fase 2-3: rendering WEB + submit
+Form WEB su http://127.0.0.1:46030 — file G:\Il mio Drive\Progetti\pyt_pyn\Examples\pyt_form_sample3.html
+[20261017:001719] Fase 4-5: scrittura results in G:\Il mio Drive\Progetti\pyt_pyn\Examples\pyt_form_sample3_results.json
+[20261017:001719] WRITE: G:\Il mio Drive\Progetti\pyt_pyn\Examples\pyt_form_sample3_results.json
+PYT.END: FORM 20261017:001719
+END: 20261017:001719
+PYT.START: 20261017 20261017:001746
+PYT.START: FORM 20261017:001746
+[20261017:001746] START: form
+[20261017:001746] ARGS: fileform=G:\Il mio Drive\Progetti\pyt_pyn\Examples\pyt_form_sample1.json
+[20261017:001746] Fase 1: validazione ok (9 oggetti: BUTTON=2, COMMAND=1, LABEL=1, LAYOUT=1, LIST=1, TEXT=1, THEME=1, WINDOW=1)
+[20261017:001746] Fase 2: rendering TUI
+[20261017:001746] Fase 4-5: scrittura results in G:\Il mio Drive\Progetti\pyt_pyn\Examples\pyt_form_sample1_results.json
+[20261017:001746] WRITE: G:\Il mio Drive\Progetti\pyt_pyn\Examples\pyt_form_sample1_results.json
+PYT.END: FORM 20261017:001746
+END: 20261017:001746
+PYT.START: 20261017 20261017:001759
+PYT.START: FORM 20261017:001759
+[20261017:001759] START: form
+[20261017:001759] ARGS: fileform=G:\Il mio Drive\Progetti\pyt_pyn\Examples\pyt_form_sample1.json
+[20261017:001759] Fase 1: validazione ok (9 oggetti: BUTTON=2, COMMAND=1, LABEL=1, LAYOUT=1, LIST=1, TEXT=1, THEME=1, WINDOW=1)
+[20261017:001759] Fase 2: rendering TUI
+[20261017:001800] Fase 4-5: scrittura results in G:\Il mio Drive\Progetti\pyt_pyn\Examples\pyt_form_sample1_results.json
+[20261017:001800] WRITE: G:\Il mio Drive\Progetti\pyt_pyn\Examples\pyt_form_sample1_results.json
+PYT.END: FORM 20261017:001800
+END: 20261017:001800
+END: 20261017:001902
+TEST_MESSAGE_20261017:001902
+Errore: file di direttive nonexistent.txt non trovato.
+[20261017:001902] Fase 1: Lettura e validazione del file di configurazione JSON
+[20261017:001902] Fase 1: Lettura e validazione del file di configurazione JSON
+  Chiavi trovate nel JSON: ['jobs']
+  Rilevata chiave 'jobs' (originale: 'jobs')
+  Trovati 2 job da eseguire
+    Job 1: job1
+    Job 2: job2
 
 ============================================================
-[20261011:211819] JOB 1/1: mirror_h_to_w
+[20261017:001902] JOB 1/2: job1
 ============================================================
-[20261011:211819] Fase 2: Verifica esistenza della cartella source
-ERRORE nel job 'mirror_h_to_w': Cartella sorgente H:\\ non trovata.
+[20261017:001902] Fase 2: Verifica esistenza della cartella source
+[20261017:001902] Fase 3: Verifica raggiungibilità di dest
+[20261017:001902] Fase 4: Sincronizzazione file
+[20261017:001902] COPIED: test.txt
+[20261017:001902] Fase 5: Rimozione da dest dei file non presenti in source
+[20261017:001902] Fase 6: Scrittura del riepilogo
+[20261017:001902] Riepilogo - Copiati: 1, Aggiornati: 0, Rimossi: 0, Saltati: 0, Errori: 0
+
+============================================================
+[20261017:001902] JOB 2/2: job2
+============================================================
+[20261017:001902] Fase 2: Verifica esistenza della cartella source
+[20261017:001902] Fase 3: Verifica raggiungibilità di dest
+[20261017:001903] Fase 4: Sincronizzazione file
+[20261017:001903] COPIED: test.txt
+[20261017:001903] Fase 5: Rimozione da dest dei file non presenti in source
+[20261017:001903] Fase 6: Scrittura del riepilogo
+[20261017:001903] Riepilogo - Copiati: 1, Aggiornati: 0, Rimossi: 0, Saltati: 0, Errori: 0
 
 ============================================================
 RIEPILOGO GENERALE
 ============================================================
-Job completati con successo : 0
-Job falliti                 : 1
-Totale file copiati         : 0
+Job completati con successo : 2
+Job falliti                 : 0
+Totale file copiati         : 2
 Totale file aggiornati      : 0
 Totale file rimossi         : 0
 Totale file saltati         : 0
 Totale errori file          : 0
-PYT.END: SYNC 20261011:211819
-END: 20261011:211819
-PYT.START: 20261008 20261011:211931
-PYT.START: ROBOCOPY 20261011:211931
-[20261011:211931] Fase 1: Lettura e validazione del file di configurazione JSON
-ERRORE [robocopy]: Sezione 'settings' obbligatoria nel JSON
-PYT.END: ROBOCOPY 20261011:211931
-END: 20261011:211931
-PYT.START: 20261008 20261011:212138
-PYT.START: ROBOCOPY 20261011:212138
-[20261011:212138] Fase 1: Lettura e validazione del file di configurazione JSON
-ERRORE [robocopy]: JSON malformato: Expecting ',' delimiter: line 37 column 2 (char 762)
-PYT.END: ROBOCOPY 20261011:212138
-END: 20261011:212138
-PYT.START: 20261008 20261011:212255
-PYT.START: ROBOCOPY 20261011:212255
-[20261011:212255] Fase 1: Lettura e validazione del file di configurazione JSON
-[20261011:212255] Configurazione letta: 3 action(s) trovate
-[20261011:212255] 
+[20261017:001903] Fase 1: Lettura e validazione del file di configurazione JSON
+  Chiavi trovate nel JSON: ['type', 'source', 'dest', 'mode', 'log']
+  Nessuna chiave 'jobs' trovata, trattato come singolo job
+
 ============================================================
-[20261011:212255] AZIONE: copy_v
-[20261011:212255] ============================================================
-[20261011:212255]   path_source: G:\Il mio Drive\Progetti\pyt_pyn
-[20261011:212255]   path_dest:   v:\Scripts
-[20261011:212255]   mode:        overwrite
-[20261011:212255]   files:       3 file(s)
-[20261011:212255]   Elaborazione: pyt.*
-[20261011:212255]     Trovati 4 file(s) per pattern: pyt.*
-[20261011:212255]     Elaborazione: pyt.cmd
-[20261011:212255]       COPIATO: pyt.cmd
-[20261011:212255]     Elaborazione: pyt.py
-[20261011:212255]       COPIATO: pyt.py
-[20261011:212255]     Elaborazione: pyt.sh
-[20261011:212255]       COPIATO: pyt.sh
-[20261011:212255]     Elaborazione: pyt.log
-[20261011:212255]       COPIATO: pyt.log
-[20261011:212255]   Elaborazione: pyn.*
-[20261011:212255]     Trovati 2 file(s) per pattern: pyn.*
-[20261011:212255]     Elaborazione: pyn.cmd
-[20261011:212255]       COPIATO: pyn.cmd
-[20261011:212255]     Elaborazione: pyn.sh
-[20261011:212255]       COPIATO: pyn.sh
-[20261011:212255]   Elaborazione: pyy_report.*
-[20261011:212255]     SALTATO (nessun file corrispondente al pattern): pyy_report.*
-[20261011:212255] 
+[20261017:001903] JOB 1/1: job_1
 ============================================================
-[20261011:212255] AZIONE: copy_k
-[20261011:212256] ============================================================
-[20261011:212256]   path_source: G:\Il mio Drive\Progetti\pyt_pyn
-[20261011:212256]   path_dest:   k:\Tools
-[20261011:212256]   mode:        overwrite
-[20261011:212256]   files:       3 file(s)
-[20261011:212256]   Elaborazione: pyt.*
-[20261011:212256]     Trovati 4 file(s) per pattern: pyt.*
-[20261011:212256]     Elaborazione: pyt.cmd
-[20261011:212256]       COPIATO: pyt.cmd
-[20261011:212256]     Elaborazione: pyt.py
-[20261011:212256]       COPIATO: pyt.py
-[20261011:212256]     Elaborazione: pyt.sh
-[20261011:212256]       COPIATO: pyt.sh
-[20261011:212256]     Elaborazione: pyt.log
-[20261011:212256]       COPIATO: pyt.log
-[20261011:212256]   Elaborazione: pyn.*
-[20261011:212256]     Trovati 2 file(s) per pattern: pyn.*
-[20261011:212256]     Elaborazione: pyn.cmd
-[20261011:212256]       COPIATO: pyn.cmd
-[20261011:212256]     Elaborazione: pyn.sh
-[20261011:212256]       COPIATO: pyn.sh
-[20261011:212256]   Elaborazione: pyy_report.*
-[20261011:212256]     SALTATO (nessun file corrispondente al pattern): pyy_report.*
-[20261011:212256] 
+[20261017:001903] Fase 2: Verifica esistenza della cartella source
+[20261017:001903] Fase 3: Verifica raggiungibilità di dest
+[20261017:001903] Fase 4: Sincronizzazione file
+[20261017:001903] UPDATED: ._res.dat
+[20261017:001903] COPIED: archive.tar.gz
+[20261017:001903] COPIED: test.txt
+[20261017:001903] Fase 5: Rimozione da dest dei file non presenti in source
+[20261017:001903] Fase 6: Scrittura del riepilogo
+[20261017:001903] Riepilogo - Copiati: 2, Aggiornati: 1, Rimossi: 0, Saltati: 0, Errori: 0
+
 ============================================================
-[20261011:212256] AZIONE: copy_g
-[20261011:212256] ============================================================
-[20261011:212256]   path_source: G:\Il mio Drive\Progetti\pyt_pyn
-[20261011:212256]   path_dest:   v:\Scripts
-[20261011:212256]   mode:        overwrite
-[20261011:212256]   files:       3 file(s)
-[20261011:212256]   Elaborazione: pyt.*
-[20261011:212256]     Trovati 4 file(s) per pattern: pyt.*
-[20261011:212256]     Elaborazione: pyt.cmd
-[20261011:212256]       COPIATO: pyt.cmd
-[20261011:212256]     Elaborazione: pyt.py
-[20261011:212256]       COPIATO: pyt.py
-[20261011:212256]     Elaborazione: pyt.sh
-[20261011:212256]       COPIATO: pyt.sh
-[20261011:212256]     Elaborazione: pyt.log
-[20261011:212256]       COPIATO: pyt.log
-[20261011:212256]   Elaborazione: pyn.*
-[20261011:212256]     Trovati 2 file(s) per pattern: pyn.*
-[20261011:212256]     Elaborazione: pyn.cmd
-[20261011:212256]       COPIATO: pyn.cmd
-[20261011:212256]     Elaborazione: pyn.sh
-[20261011:212256]       COPIATO: pyn.sh
-[20261011:212257]   Elaborazione: pyy_report.*
-[20261011:212257]     SALTATO (nessun file corrispondente al pattern): pyy_report.*
-[20261011:212257] 
+RIEPILOGO GENERALE
 ============================================================
-[20261011:212257] RIEPILOGO FINALE
-[20261011:212257] ============================================================
-[20261011:212257] File copiati   : 18
-[20261011:212257] File aggiornati: 0
-[20261011:212257] File saltati   : 3
-[20261011:212257] Errori         : 0
-[20261011:212257] Operazione completata senza errori.
-PYT.END: ROBOCOPY 20261011:212257
-END: 20261011:212257
-PYT.START: 20261008 20261011:212637
-PYT.START: ROBOCOPY 20261011:212637
-[20261011:212637] Fase 1: Lettura e validazione del file di configurazione JSON
-[20261011:212637] Configurazione letta: 5 action(s) trovate
-[20261011:212637] 
+Job completati con successo : 1
+Job falliti                 : 0
+Totale file copiati         : 2
+Totale file aggiornati      : 1
+Totale file rimossi         : 0
+Totale file saltati         : 0
+Totale errori file          : 0
+[20261017:001903] Fase 1: Lettura e validazione del file di configurazione JSON
+  Chiavi trovate nel JSON: ['type', 'source', 'dest', 'mode', 'log']
+  Nessuna chiave 'jobs' trovata, trattato come singolo job
+
 ============================================================
-[20261011:212637] AZIONE: copy_v
-[20261011:212637] ============================================================
-[20261011:212637]   path_source: G:\Il mio Drive\Progetti\pyt_pyn
-[20261011:212638]   path_dest:   v:\Scripts
-[20261011:212638]   mode:        overwrite
-[20261011:212638]   files:       3 file(s)
-[20261011:212638]   Elaborazione: pyt.*
-[20261011:212638]     Trovati 4 file(s) per pattern: pyt.*
-[20261011:212638]     Elaborazione: pyt.cmd
-[20261011:212638]       COPIATO: pyt.cmd
-[20261011:212638]     Elaborazione: pyt.py
-[20261011:212638]       COPIATO: pyt.py
-[20261011:212638]     Elaborazione: pyt.sh
-[20261011:212638]       COPIATO: pyt.sh
-[20261011:212638]     Elaborazione: pyt.log
-[20261011:212638]       COPIATO: pyt.log
-[20261011:212638]   Elaborazione: pyn.*
-[20261011:212638]     Trovati 2 file(s) per pattern: pyn.*
-[20261011:212638]     Elaborazione: pyn.cmd
-[20261011:212638]       COPIATO: pyn.cmd
-[20261011:212638]     Elaborazione: pyn.sh
-[20261011:212638]       COPIATO: pyn.sh
-[20261011:212638]   Elaborazione: pyy_report.*
-[20261011:212638]     SALTATO (nessun file corrispondente al pattern): pyy_report.*
-[20261011:212638] 
+[20261017:001903] JOB 1/1: job_1
 ============================================================
-[20261011:212638] AZIONE: copy_adminscripts
-[20261011:212638] ============================================================
-[20261011:212638]   path_source: G:\Il mio Drive\Progetti\pyt_pyn
-[20261011:212638]   path_dest:   G:\Il mio Drive\Progetti\adminscripts
-[20261011:212638]   mode:        overwrite
-[20261011:212638]   files:       3 file(s)
-[20261011:212638]   Elaborazione: pyt.*
-[20261011:212638]     Trovati 4 file(s) per pattern: pyt.*
-[20261011:212638]     Elaborazione: pyt.cmd
-[20261011:212638]       COPIATO: pyt.cmd
-[20261011:212638]     Elaborazione: pyt.py
-[20261011:212638]       COPIATO: pyt.py
-[20261011:212638]     Elaborazione: pyt.sh
-[20261011:212638]       COPIATO: pyt.sh
-[20261011:212638]     Elaborazione: pyt.log
-[20261011:212638]       COPIATO: pyt.log
-[20261011:212638]   Elaborazione: pyn.*
-[20261011:212638]     Trovati 2 file(s) per pattern: pyn.*
-[20261011:212638]     Elaborazione: pyn.cmd
-[20261011:212638]       COPIATO: pyn.cmd
-[20261011:212638]     Elaborazione: pyn.sh
-[20261011:212638]       COPIATO: pyn.sh
-[20261011:212638]   Elaborazione: pyy_report.*
-[20261011:212638]     SALTATO (nessun file corrispondente al pattern): pyy_report.*
-[20261011:212638] 
+[20261017:001903] Fase 2: Verifica esistenza della cartella source
+[20261017:001903] Fase 3: Verifica raggiungibilità di dest
+[20261017:001903] Fase 4: Sincronizzazione file
+[20261017:001903] COPIED: test.txt
+[20261017:001903] Fase 5: Rimozione da dest dei file non presenti in source
+[20261017:001903] Fase 6: Scrittura del riepilogo
+[20261017:001903] Riepilogo - Copiati: 1, Aggiornati: 0, Rimossi: 0, Saltati: 0, Errori: 0
+
 ============================================================
-[20261011:212638] AZIONE: copy_adminscripts_github
-[20261011:212638] ============================================================
-[20261011:212638]   path_source: G:\Il mio Drive\Progetti\pyt_pyn
-[20261011:212638]   path_dest:   G:\Il mio Drive\Github\adminscripts
-[20261011:212639]   mode:        overwrite
-[20261011:212639]   files:       3 file(s)
-[20261011:212639]   Elaborazione: pyt.*
-[20261011:212639]     Trovati 4 file(s) per pattern: pyt.*
-[20261011:212639]     Elaborazione: pyt.cmd
-[20261011:212639]       COPIATO: pyt.cmd
-[20261011:212639]     Elaborazione: pyt.py
-[20261011:212639]       COPIATO: pyt.py
-[20261011:212639]     Elaborazione: pyt.sh
-[20261011:212639]       COPIATO: pyt.sh
-[20261011:212639]     Elaborazione: pyt.log
+RIEPILOGO GENERALE
+============================================================
+Job completati con successo : 1
+Job falliti                 : 0
+Totale file copiati         : 1
+Totale file aggiornati      : 0
+Totale file rimossi         : 0
+Totale file saltati         : 0
+Totale errori file          : 0
+[20261017:001904] Fase 1: Lettura e validazione del file di configurazione JSON
+  Chiavi trovate nel JSON: ['type', 'source', 'dest', 'log']
+  Nessuna chiave 'jobs' trovata, trattato come singolo job
+
+============================================================
+[20261017:001904] JOB 1/1: job_1
+============================================================
+[20261017:001904] Fase 2: Verifica esistenza della cartella source
+[20261017:001904] Fase 3: Verifica raggiungibilità di dest
+[20261017:001904] Fase 4: Sincronizzazione file
+[20261017:001904] COPIED: test.txt
+[20261017:001904] Fase 5: Rimozione da dest dei file non presenti in source
+[20261017:001904] Fase 6: Scrittura del riepilogo
+[20261017:001904] Riepilogo - Copiati: 1, Aggiornati: 0, Rimossi: 0, Saltati: 0, Errori: 0
+
+============================================================
+RIEPILOGO GENERALE
+============================================================
+Job completati con successo : 1
+Job falliti                 : 0
+Totale file copiati         : 1
+Totale file aggiornati      : 0
+Totale file rimossi         : 0
+Totale file saltati         : 0
+Totale errori file          : 0
+[20261017:001904] Fase 1: Lettura e validazione del file di configurazione JSON
+[20261017:001904] Fase 1: Lettura e validazione del file di configurazione JSON
+[20261017:001904] Fase 1: Lettura e validazione del file di configurazione JSON
+[20261017:001904] Fase 1: Lettura e validazione del file di configurazione JSON
+[20261017:001904] Fase 1: Lettura e validazione del file di configurazione JSON
+[20261017:001904] Configurazione letta: 1 action(s) trovate
+[20261017:001904] 
+============================================================
+[20261017:001904] AZIONE: copy_test
+[20261017:001904] ============================================================
+[20261017:001904]   path_source: nonexistent_path
+[20261017:001904]   path_dest:   C:\Users\User\AppData\Local\Temp\tmpgpl087hk\dest
+[20261017:001904]   mode:        overwrite
+[20261017:001904]   files:       1 file(s)
+[20261017:001904] ERRORE: Sorgente non esistente: nonexistent_path
+[20261017:001904] Fase 1: Lettura e validazione del file di configurazione JSON
+[20261017:001904] Configurazione letta: 1 action(s) trovate
+[20261017:001904] 
+============================================================
+[20261017:001904] AZIONE: copy_test
+[20261017:001904] ============================================================
+[20261017:001904]   path_source: C:\Users\User\AppData\Local\Temp\tmprjlrdbkh\source
+[20261017:001904]   path_dest:   C:\Users\User\AppData\Local\Temp\tmprjlrdbkh\dest
+[20261017:001905]   mode:        old
+[20261017:001905]   files:       1 file(s)
+[20261017:001905]   Elaborazione: test.txt
+[20261017:001905]     RINOMINATO in .old: C:\Users\User\AppData\Local\Temp\tmprjlrdbkh\dest\test.txt -> C:\Users\User\AppData\Local\Temp\tmprjlrdbkh\dest\test.txt.old
+[20261017:001905]     COPIATO: test.txt
+[20261017:001905] 
+============================================================
+[20261017:001905] RIEPILOGO FINALE
+[20261017:001905] ============================================================
+[20261017:001905] File copiati   : 1
+[20261017:001905] File aggiornati: 0
+[20261017:001905] File saltati   : 0
+[20261017:001905] Errori         : 0
+[20261017:001905] Operazione completata senza errori.
+[20261017:001905] Fase 1: Lettura e validazione del file di configurazione JSON
+[20261017:001905] Configurazione letta: 1 action(s) trovate
+[20261017:001905] 
+============================================================
+[20261017:001905] AZIONE: copy_test
+[20261017:001905] ============================================================
+[20261017:001905]   path_source: C:\Users\User\AppData\Local\Temp\tmpj4t5cy4u\source
+[20261017:001905]   path_dest:   C:\Users\User\AppData\Local\Temp\tmpj4t5cy4u\dest
+[20261017:001905]   mode:        overwrite
+[20261017:001905]   files:       1 file(s)
+[20261017:001905]   Elaborazione: test.txt
+[20261017:001905]     COPIATO: test.txt
+[20261017:001905] 
+============================================================
+[20261017:001905] RIEPILOGO FINALE
+[20261017:001905] ============================================================
+[20261017:001905] File copiati   : 1
+[20261017:001905] File aggiornati: 0
+[20261017:001905] File saltati   : 0
+[20261017:001905] Errori         : 0
+[20261017:001905] Operazione completata senza errori.
+[20261017:001905] Fase 1: Lettura e validazione del file di configurazione JSON
+[20261017:001905] Configurazione letta: 1 action(s) trovate
+[20261017:001905] 
+============================================================
+[20261017:001905] AZIONE: copy_test
+[20261017:001905] ============================================================
+[20261017:001905]   path_source: nonexistent_path
+[20261017:001905]   path_dest:   C:\Users\User\AppData\Local\Temp\tmpbbmaot7p\dest
+[20261017:001905]   mode:        overwrite
+[20261017:001905]   files:       1 file(s)
+[20261017:001905] ERRORE: Sorgente non esistente: nonexistent_path
+[20261017:001905] 
+============================================================
+[20261017:001905] RIEPILOGO FINALE
+[20261017:001905] ============================================================
+[20261017:001905] File copiati   : 0
+[20261017:001905] File aggiornati: 0
+[20261017:001905] File saltati   : 0
+[20261017:001905] Errori         : 1
+[20261017:001906] ATTENZIONE: Sono presenti errori. Controlla il log per dettagli.
+[20261017:001906] Fase 1: Lettura e validazione del file di configurazione JSON
+[20261017:001906] Configurazione letta: 1 action(s) trovate
+[20261017:001906] 
+============================================================
+[20261017:001906] AZIONE: copy_wildcard
+[20261017:001906] ============================================================
+[20261017:001906]   path_source: C:\Users\User\AppData\Local\Temp\tmpyecqq4v_\source
+[20261017:001906]   path_dest:   C:\Users\User\AppData\Local\Temp\tmpyecqq4v_\dest
+[20261017:001906]   mode:        overwrite
+[20261017:001906]   files:       1 file(s)
+[20261017:001906]   Elaborazione: *.txt
+[20261017:001906]     Trovati 4 file(s) per pattern: *.txt
+[20261017:001906]     Elaborazione: file0.txt
+[20261017:001906]       COPIATO: file0.txt
+[20261017:001906]     Elaborazione: file1.txt
+[20261017:001906]       COPIATO: file1.txt
+[20261017:001906]     Elaborazione: file2.txt
+[20261017:001906]       COPIATO: file2.txt
+[20261017:001906]     Elaborazione: test.txt
+[20261017:001906]       COPIATO: test.txt
+[20261017:001906] 
+============================================================
+[20261017:001906] RIEPILOGO FINALE
+[20261017:001906] ============================================================
+[20261017:001906] File copiati   : 4
+[20261017:001906] File aggiornati: 0
+[20261017:001906] File saltati   : 0
+[20261017:001906] Errori         : 0
+[20261017:001906] Operazione completata senza errori.
+[20261017:001906] Fase 1: Scansione della cartella sorgente C:\Users\User\AppData\Local\Temp\tmp7jo8u07u\source
+[20261017:001906]   Trovate 3 voci in sorgente
+[20261017:001906] Fase 2: Scansione di C:\Users\User\AppData\Local\Temp\tmp7jo8u07u\check e confronto
+[20261017:001906] Fase 3: Scrittura della lista in C:\Users\User\AppData\Local\Temp\tmp7jo8u07u\out.txt
+[20261017:001906] Riepilogo - Voci mancanti in sorgente: 2 (cartelle: 1, file: 1), errori scansione: 0
+Lista scritta in: C:\Users\User\AppData\Local\Temp\tmp7jo8u07u\out.txt
+[20261017:001906] Fase 1: Scansione della cartella sorgente C:\Users\User\AppData\Local\Temp\tmplozzm8_q\source
+[20261017:001906]   Trovate 3 voci in sorgente
+[20261017:001906] Fase 2: Scansione di C:\Users\User\AppData\Local\Temp\tmplozzm8_q e confronto
+[20261017:001906] Fase 3: Scrittura della lista in C:\Users\User\AppData\Local\Temp\tmplozzm8_q\out_cycle.txt
+[20261017:001906] Riepilogo - Voci mancanti in sorgente: 5 (cartelle: 3, file: 2), errori scansione: 0
+Lista scritta in: C:\Users\User\AppData\Local\Temp\tmplozzm8_q\out_cycle.txt
+[20261017:001906] Fase 1: Lettura della lista C:\Users\User\AppData\Local\Temp\tmpsi5wcvof\lista.txt
+[20261017:001906]   Trovate 5 voci in lista
+[20261017:001906]   SALTATO (non trovato): C:\Users\User\AppData\Local\Temp\tmpsi5wcvof\base\mancante.txt
+[20261017:001906] Fase 2: Cancellazione di 2 FILE
+[20261017:001906]   ELIMINATO FILE: C:\Users\User\AppData\Local\Temp\tmpsi5wcvof\base\a.txt
+[20261017:001906]   ELIMINATO FILE: C:\Users\User\AppData\Local\Temp\tmpsi5wcvof\base\noprefix.txt
+[20261017:001906] Fase 3: Cancellazione di 2 DIR
+[20261017:001906]   ELIMINATA DIR: C:\Users\User\AppData\Local\Temp\tmpsi5wcvof\base\sub
+[20261017:001906]   ELIMINATA DIR: C:\Users\User\AppData\Local\Temp\tmpsi5wcvof\base\plain_dir
+[20261017:001906] Riepilogo - File eliminati: 2, Cartelle eliminate: 2, Saltati: 1, Errori: 0
+[20261017:001907] Fase 1: Lettura della lista C:\Users\User\AppData\Local\Temp\tmp_txmyd2f\lista.txt
+[20261017:001907]   Trovate 1 voci in lista
+[20261017:001907] Fase 2: Cancellazione di 1 FILE
+[20261017:001907]   ELIMINATO FILE: C:\Users\User\AppData\Local\Temp\tmp_txmyd2f\evil.txt
+[20261017:001907] Fase 3: Cancellazione di 0 DIR
+[20261017:001907] Riepilogo - File eliminati: 1, Cartelle eliminate: 0, Saltati: 0, Errori: 0
+[20261017:001907] Fase 1: Lettura e parsing di C:\Users\User\AppData\Local\Temp\tmpuzntk_84\requirements_X64.txt
+[20261017:001907]   Trovate 3 librerie (1 righe saltate)
+[20261017:001907] Fase 2: Lettura metadata locali (importlib.metadata)
+[20261017:001907]   Metadata locali ok, da arricchire online: 1
+[20261017:001907] Fase 3: Arricchimento PyPI saltato (libreria requests non installata)
+[20261017:001907] Fase 4: Scrittura del Markdown in C:\Users\User\AppData\Local\Temp\tmpuzntk_84\requirements_X64.md
+[20261017:001907] Riepilogo - Documentate: 3, arricchite via PyPI: 0, senza dati: 1, righe saltate: 1
+Markdown scritto in: C:\Users\User\AppData\Local\Temp\tmpuzntk_84\requirements_X64.md
+[20261017:001907] Fase 1: Lettura e parsing di C:\Users\User\AppData\Local\Temp\tmpfehgq2rs\requirements_X64.txt
+[20261017:001907]   Trovate 3 librerie (1 righe saltate)
+[20261017:001907] Fase 2: Lettura metadata locali (importlib.metadata)
+[20261017:001907]   Metadata locali ok, da arricchire online: 3
+[20261017:001907] Fase 3: Arricchimento PyPI online per 3 librerie
+[20261017:001907]   Arricchite via PyPI: 3
+[20261017:001907] Fase 4: Scrittura del Markdown in C:\Users\User\AppData\Local\Temp\tmpfehgq2rs\requirements_X64.md
+[20261017:001907] Riepilogo - Documentate: 3, arricchite via PyPI: 3, senza dati: 0, righe saltate: 1
+Markdown scritto in: C:\Users\User\AppData\Local\Temp\tmpfehgq2rs\requirements_X64.md
+[20261017:001907] Fase 1: Lettura e validazione del file di configurazione JSON
+
+[20261017:001907] SEZIONE: web
+[20261017:001907] Fase 2: Verifica macchina 'm1'
+[20261017:001907]   Macchina già attiva.
+[20261017:001907] Fase 3: Volume C:\Users\User\AppData\Local\Temp\tmpd593rbi2\voldata:/data
+[20261017:001907] Fase 4: Porta 8080:80
+[20261017:001907] Fase 5: Verifica container 'web'
+[20261017:001907] Fase 6: Creazione container 'web' da 'img:test'
+[20261017:001907]   CREATO: web (abc123def456)
+
+[20261017:001907] RIEPILOGO FINALE
+[20261017:001907] Creati: 1, Avviati: 0, Saltati: 0, Errori: 0
+[20261017:001907] Fase 1: Lettura e validazione del file di configurazione JSON
+
+[20261017:001907] SEZIONE: web
+[20261017:001907] Fase 2: Verifica macchina 'm9'
+[20261017:001907]   Macchina non trovata, creazione...
+[20261017:001907]   Macchina creata e avviata.
+[20261017:001907] Fase 5: Verifica container 'web'
+[20261017:001907] Fase 6: Creazione container 'web' da 'img:t'
+[20261017:001907]   CREATO: web (ok)
+
+[20261017:001907] RIEPILOGO FINALE
+[20261017:001907] Creati: 1, Avviati: 0, Saltati: 0, Errori: 0
+[20261017:001907] Fase 1: Lettura e validazione del file di configurazione JSON
+[20261017:001907] Fase 1: Lettura e validazione del file di configurazione JSON
+
+[20261017:001907] SEZIONE: web
+[20261017:001907]   ERRORE: chiave 'image' obbligatoria.
+
+[20261017:001908] RIEPILOGO FINALE
+[20261017:001908] Creati: 0, Avviati: 0, Saltati: 0, Errori: 1
+[20261017:001908] Fase 1: Lettura e validazione del file di configurazione JSON
+
+[20261017:001908] SEZIONE: web
+[20261017:001908] Fase 5: Verifica container 'web'
+[20261017:001908]   SALTATO: container già attivo (Up 2 hours).
+
+[20261017:001908] RIEPILOGO FINALE
+[20261017:001908] Creati: 0, Avviati: 0, Saltati: 1, Errori: 0
+[20261017:001908] Fase 1: Lettura e validazione del file di configurazione JSON
+[20261017:001908] Fase 1: Lettura e validazione del file di configurazione JSON
+
+[20261017:001908] SEZIONE: web
+[20261017:001908]   SALTATO: command 'cstop' non supportato (solo cstart per ora).
+
+[20261017:001908] RIEPILOGO FINALE
+[20261017:001908] Creati: 0, Avviati: 0, Saltati: 1, Errori: 0
+[20261017:001908] START: form
+[20261017:001908] ARGS: fileform=C:\Users\User\AppData\Local\Temp\tmpctl7osqq\f.json
+[20261017:001908] WRITE: C:\Users\User\AppData\Local\Temp\tmpctl7osqq\f_results.json
+PYT.START: UNKNOWN.DIRECTIVE 20261017:001908
+Errore: direttiva 'unknown.directive' non riconosciuta.
+PYT.END: UNKNOWN.DIRECTIVE 20261017:001908
+[20261017:001908] Fase 1: Lettura e validazione del file di configurazione JSON
+  Chiavi trovate nel JSON: ['type', 'source', 'dest', 'mode', 'log']
+  Nessuna chiave 'jobs' trovata, trattato come singolo job
+
+============================================================
+[20261017:001908] JOB 1/1: job_1
+============================================================
+[20261017:001908] Fase 2: Verifica esistenza della cartella source
+[20261017:001908] Fase 3: Verifica raggiungibilità di dest
+[20261017:001908] Fase 4: Sincronizzazione file
+[20261017:001908] COPIED: file0.txt
+[20261017:001908] COPIED: file1.txt
+[20261017:001908] COPIED: file2.txt
+[20261017:001908] Fase 5: Rimozione da dest dei file non presenti in source
+[20261017:001908] Fase 6: Scrittura del riepilogo
+[20261017:001908] Riepilogo - Copiati: 3, Aggiornati: 0, Rimossi: 0, Saltati: 0, Errori: 0
+
+============================================================
+RIEPILOGO GENERALE
+============================================================
+Job completati con successo : 1
+Job falliti                 : 0
+Totale file copiati         : 3
+Totale file aggiornati      : 0
+Totale file rimossi         : 0
+Totale file saltati         : 0
+Totale errori file          : 0
+[20261017:001908] Fase 1: Lettura e validazione del file di configurazione JSON
+[20261017:001908] Configurazione letta: 1 action(s) trovate
+[20261017:001909] 
+============================================================
+[20261017:001909] AZIONE: full_copy
+[20261017:001909] ============================================================
+[20261017:001909]   path_source: C:\Users\User\AppData\Local\Temp\tmpovgw1y9h\source
+[20261017:001909]   path_dest:   C:\Users\User\AppData\Local\Temp\tmpovgw1y9h\dest
+[20261017:001909]   mode:        overwrite
+[20261017:001909]   files:       2 file(s)
+[20261017:001909]   Elaborazione: *.txt
+[20261017:001909]     Trovati 2 file(s) per pattern: *.txt
+[20261017:001909]     Elaborazione: file1.txt
+[20261017:001909]       COPIATO: file1.txt
+[20261017:001909]     Elaborazione: file2.txt
+[20261017:001909]       COPIATO: file2.txt
+[20261017:001909]   Elaborazione: subfolder/*.txt
+[20261017:001909]     Trovati 1 file(s) per pattern: subfolder/*.txt
+[20261017:001909]     Elaborazione: subfolder\file3.txt
+[20261017:001909]       COPIATO: subfolder\file3.txt
+[20261017:001909] 
+============================================================
+[20261017:001909] RIEPILOGO FINALE
+[20261017:001909] ============================================================
+[20261017:001909] File copiati   : 3
+[20261017:001909] File aggiornati: 0
+[20261017:001909] File saltati   : 0
+[20261017:001909] Errori         : 0
+[20261017:001909] Operazione completata senza errori.
+[20261017:001909] Fase 1: Lettura parametri e variabile d'ambiente SYNC_FOLDERS
+  Sorgente    : \\server\share
+  Destinazione: Z:
+  File output : C:\Users\User\AppData\Local\Temp\tmpymujd69u\sync.cmd
+  Cartelle    : 15 (alias, areefile, Backup...)
+[20261017:001909] Fase 2: Costruzione dello script batch
+[20261017:001909] Fase 3: Scrittura atomica del file di output
+  [OK] Script generato con successo in: C:\Users\User\AppData\Local\Temp\tmpymujd69u\sync.cmd
+Script batch generato. Eseguirlo per avviare la sincronizzazione.
+[20261017:001909] Fase 1: Lettura parametri e variabile d'ambiente SYNC_FOLDERS
+  Sorgente    : \\ntgdsnas
+  Destinazione: n:
+  File output : G:\Il mio Drive\Progetti\pyt_pyn\admin_sync_script.cmd
+  Cartelle    : 15 (alias, areefile, Backup...)
+[20261017:001909] Fase 2: Costruzione dello script batch
+[20261017:001909] Fase 3: Scrittura atomica del file di output
+  [OK] Script generato con successo in: G:\Il mio Drive\Progetti\pyt_pyn\admin_sync_script.cmd
+Script batch generato. Eseguirlo per avviare la sincronizzazione.
+[20261017:001910] Fase 1: Lettura parametri e variabile d'ambiente SYNC_FOLDERS
+  Sorgente    : \\server\share
+  Destinazione: Z:
+  File output : C:\Users\User\AppData\Local\Temp\tmpienol7tl\sync.cmd
+  Cartelle    : 2 (folder1, folder2)
+[20261017:001910] Fase 2: Costruzione dello script batch
+[20261017:001910] Fase 3: Scrittura atomica del file di output
+  [OK] Script generato con successo in: C:\Users\User\AppData\Local\Temp\tmpienol7tl\sync.cmd
+Script batch generato. Eseguirlo per avviare la sincronizzazione.
+PYT.START: 20261017 20261017:002500
+PYT.START: ROBOCOPY 20261017:002500
+[20261017:002500] Fase 1: Lettura e validazione del file di configurazione JSON
+[20261017:002500] Configurazione letta: 5 action(s) trovate
+[20261017:002500] 
+============================================================
+[20261017:002500] AZIONE: copy_v
+[20261017:002501] ============================================================
+[20261017:002501]   path_source: G:\Il mio Drive\Progetti\pyt_pyn
+[20261017:002501]   path_dest:   v:\Scripts
+[20261017:002501]   mode:        overwrite
+[20261017:002501]   files:       3 file(s)
+[20261017:002501] ERRORE: Impossibile creare destinazione v:\Scripts: [WinError 3] Impossibile trovare il percorso specificato: 'v:\\'
+[20261017:002501] 
+============================================================
+[20261017:002501] AZIONE: copy_adminscripts
+[20261017:002501] ============================================================
+[20261017:002501]   path_source: G:\Il mio Drive\Progetti\pyt_pyn
+[20261017:002501]   path_dest:   G:\Il mio Drive\Progetti\adminscripts
+[20261017:002501]   mode:        overwrite
+[20261017:002501]   files:       3 file(s)
+[20261017:002501]   Elaborazione: pyt.*
+[20261017:002501]     Trovati 4 file(s) per pattern: pyt.*
+[20261017:002501]     Elaborazione: pyt.cmd
+[20261017:002501]       COPIATO: pyt.cmd
+[20261017:002501]     Elaborazione: pyt.py
+[20261017:002501]       COPIATO: pyt.py
+[20261017:002501]     Elaborazione: pyt.sh
+[20261017:002501]       COPIATO: pyt.sh
+[20261017:002501]     Elaborazione: pyt.log
+[20261017:002501]       COPIATO: pyt.log
+[20261017:002501]   Elaborazione: pyn.*
+[20261017:002501]     Trovati 2 file(s) per pattern: pyn.*
+[20261017:002501]     Elaborazione: pyn.cmd
+[20261017:002501]       COPIATO: pyn.cmd
+[20261017:002501]     Elaborazione: pyn.sh
+[20261017:002501]       COPIATO: pyn.sh
+[20261017:002501]   Elaborazione: pyy_report.*
+[20261017:002501]     SALTATO (nessun file corrispondente al pattern): pyy_report.*
+[20261017:002501] 
+============================================================
+[20261017:002501] AZIONE: copy_adminscripts_github
+[20261017:002501] ============================================================
+[20261017:002501]   path_source: G:\Il mio Drive\Progetti\pyt_pyn
+[20261017:002501]   path_dest:   G:\Il mio Drive\Github\adminscripts
+[20261017:002501]   mode:        overwrite
+[20261017:002501]   files:       3 file(s)
+[20261017:002501]   Elaborazione: pyt.*
+[20261017:002501]     Trovati 4 file(s) per pattern: pyt.*
+[20261017:002501]     Elaborazione: pyt.cmd
+[20261017:002502]       COPIATO: pyt.cmd
+[20261017:002502]     Elaborazione: pyt.py
+[20261017:002502]       COPIATO: pyt.py
+[20261017:002502]     Elaborazione: pyt.sh
+[20261017:002502]       COPIATO: pyt.sh
+[20261017:002502]     Elaborazione: pyt.log
