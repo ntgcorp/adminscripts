@@ -1,5 +1,5 @@
 @ECHO OFF
-REM ORIGINALE SU PC GOMERA - LAUNCHER PYTHON / PODMAN / ALTRO VIA CMD - BASH
+REM LAUNCHER PYTHON / PODMAN / ALTRO VIA CMD - BASH
 REM VERSIONE 20261010 - Rename x->py (test<-pytest, mod<-pymod), pip help in zona Python, stub x/pymod/pip in py
 REM VERSIONE 20261011 - podman export <image> <file.tar> (save) e import <file.tar> (load)
 REM VERSIONE 20261016 - Preflight PY_CMD in :RUN (venv con base mancante -> errore chiaro)
