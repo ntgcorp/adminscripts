@@ -1,7 +1,8 @@
 @ECHO OFF
-REM LAUNCHER PYTHON / PODMAN / ALTRO VIA CMD - BASH
+REM ORIGINALE SU PC GOMERA - LAUNCHER PYTHON / PODMAN / ALTRO VIA CMD - BASH
 REM VERSIONE 20261010 - Rename x->py (test<-pytest, mod<-pymod), pip help in zona Python, stub x/pymod/pip in py
 REM VERSIONE 20261011 - podman export <image> <file.tar> (save) e import <file.tar> (load)
+REM VERSIONE 20261022 - py envzero (ambiente nullo: python base App\Python\Python.exe, no venv) e py envmake (crea ambiente a livello di PYTHON%PY_TYPE%)
 REM VERSIONE 20261016 - Preflight PY_CMD in :RUN (venv con base mancante -> errore chiaro)
 REM VERSIONE 20261016 - Fix ricerca PY_PATH a due passate: strict (python.exe/App) su tutti i path prima del fallback *.* (che fermava la ricerca al primo path esistente senza python)
 REM VERSIONE 20261015 - ocode startdesk: avvia OpenCode Desktop da path fisso (Win) /opt/OpenCode (Linux, solo doc)
@@ -43,13 +44,16 @@ REM VERSIONE 20250405 - CORREZIONI - INSTALLAZIONE CRYPTOGRAFY - FORSE PSUTIL
 REM VERSIONE 20250203 - DEFAULT X64
 REM VERSIONE 20250130 - GESTIONE MIGLIORE RUNTIME
 
-SET PYN_VER=20261016
+SET PYN_VER=20261022
 
 REM PER PRIMO
 :SETUP
 SET PY_SCRIPT=%0
 SET PY_P0=%~dp0
 IF "%PY_TYPE%"=="" SET PY_TYPE=X64
+REM Estrae base type (es. X64 da X64_309) per costruzione path e glob
+FOR /F "delims=_" %%T IN ("%PY_TYPE%") DO SET "PY_BASETYPE=%%T"
+IF "%PY_BASETYPE%"=="" SET "PY_BASETYPE=X64"
 SET PY_PATH=
 SET "PAR1=%~1"
 SET "PAR2=%~2"
@@ -74,40 +78,152 @@ IF "%~1"=="npm" GOTO :NPM
 IF "%~1"=="shell" GOTO :SHELL
 IF "%~1"=="help" GOTO :HELP
 
-REM POSSIBILI PATH - ordine documentato: K: (se MACH0) > D: > C: > XX (TOOLS locale)
+REM POSSIBILI PATH - ordine documentato: K: (se MACH0) > D: > C: > portableai > XX (TOOLS locale)
 for %%I in ("%~dp0..") do set "PATH_PADRE=%%~fI"
 
-SET "PATHP_01=V:\Tools\PYTHON%PY_TYPE%"
-SET "PATHP_02=D:\APPLIC\PYTHON%PY_TYPE%"
-SET "PATHP_03=K:\Tools\Python%PY_TYPE%"
-SET "PATHP_XX=%PATH_PADRE%\TOOLS\PYTHON%PY_TYPE%"
+SET "PATHP_01=V:\Tools\PYTHON%PY_BASETYPE%"
+SET "PATHP_02=D:\APPLIC\PYTHON%PY_BASETYPE%"
+SET "PATHP_03=C:\APPLIC\PYTHON%PY_BASETYPE%"
+SET "PATHP_04=C:\portableai\Tools\PYTHON%PY_BASETYPE%"
+SET "PATHP_05=V:\portableai\Tools\PYTHON%PY_BASETYPE%"
+SET "PATHP_06=K:\Tools\Python%PY_BASETYPE%"
+SET "PATHP_XX=%PATH_PADRE%\TOOLS\PYTHON%PY_BASETYPE%"
 
-REM CASO VDI.MACH0 - priorita' assoluta a K: se flag esiste e path e' valido
-IF EXIST "K:\MACH0_PROD.TXT" (
-    IF EXIST "%PATHP_03%\python.exe" SET "PY_PATH=%PATHP_03%" & GOTO :PYN_1
-    IF EXIST "%PATHP_03%\App\python.exe" SET "PY_PATH=%PATHP_03%" & GOTO :PYN_1
-    IF EXIST "%PATHP_03%\*.*" SET "PY_PATH=%PATHP_03%" & GOTO :PYN_1
+REM Cerca varianti con suffisso versione: PRIMA controlla path base (senza suffisso), POI versionati
+REM V:\Tools
+IF EXIST "V:\Tools\PYTHON%PY_BASETYPE%\python.exe" SET "PATHP_01=V:\Tools\PYTHON%PY_BASETYPE%"
+IF EXIST "V:\Tools\PYTHON%PY_BASETYPE%\App\python.exe" SET "PATHP_01=V:\Tools\PYTHON%PY_BASETYPE%"
+IF EXIST "V:\Tools\PYTHON%PY_BASETYPE%\App\Python\python.exe" SET "PATHP_01=V:\Tools\PYTHON%PY_BASETYPE%"
+IF NOT DEFINED PATHP_01 FOR /D %%D IN ("V:\Tools\PYTHON%PY_BASETYPE%_*") DO (
+    IF EXIST "%%D\python.exe" SET "PATHP_01=%%D"
+    IF EXIST "%%D\App\python.exe" SET "PATHP_01=%%D"
+    IF EXIST "%%D\App\Python\python.exe" SET "PATHP_01=%%D"
+)
+IF NOT DEFINED PATHP_01 FOR /D %%D IN ("V:\Tools\PYTHON%PY_BASETYPE%*") DO (
+    IF EXIST "%%D\python.exe" SET "PATHP_01=%%D"
+    IF EXIST "%%D\App\python.exe" SET "PATHP_01=%%D"
+    IF EXIST "%%D\App\Python\python.exe" SET "PATHP_01=%%D"
+)
+REM D:\APPLIC
+IF EXIST "D:\APPLIC\PYTHON%PY_BASETYPE%\python.exe" SET "PATHP_02=D:\APPLIC\PYTHON%PY_BASETYPE%"
+IF EXIST "D:\APPLIC\PYTHON%PY_BASETYPE%\App\python.exe" SET "PATHP_02=D:\APPLIC\PYTHON%PY_BASETYPE%"
+IF EXIST "D:\APPLIC\PYTHON%PY_BASETYPE%\App\Python\python.exe" SET "PATHP_02=D:\APPLIC\PYTHON%PY_BASETYPE%"
+IF NOT DEFINED PATHP_02 FOR /D %%D IN ("D:\APPLIC\PYTHON%PY_BASETYPE%_*") DO (
+    IF EXIST "%%D\python.exe" SET "PATHP_02=%%D"
+    IF EXIST "%%D\App\python.exe" SET "PATHP_02=%%D"
+    IF EXIST "%%D\App\Python\python.exe" SET "PATHP_02=%%D"
+)
+IF NOT DEFINED PATHP_02 FOR /D %%D IN ("D:\APPLIC\PYTHON%PY_BASETYPE%*") DO (
+    IF EXIST "%%D\python.exe" SET "PATHP_02=%%D"
+    IF EXIST "%%D\App\python.exe" SET "PATHP_02=%%D"
+    IF EXIST "%%D\App\Python\python.exe" SET "PATHP_02=%%D"
+)
+REM C:\APPLIC
+IF EXIST "C:\APPLIC\PYTHON%PY_BASETYPE%\python.exe" SET "PATHP_03=C:\APPLIC\PYTHON%PY_BASETYPE%"
+IF EXIST "C:\APPLIC\PYTHON%PY_BASETYPE%\App\python.exe" SET "PATHP_03=C:\APPLIC\PYTHON%PY_BASETYPE%"
+IF EXIST "C:\APPLIC\PYTHON%PY_BASETYPE%\App\Python\python.exe" SET "PATHP_03=C:\APPLIC\PYTHON%PY_BASETYPE%"
+IF NOT DEFINED PATHP_03 FOR /D %%D IN ("C:\APPLIC\PYTHON%PY_BASETYPE%_*") DO (
+    IF EXIST "%%D\python.exe" SET "PATHP_03=%%D"
+    IF EXIST "%%D\App\python.exe" SET "PATHP_03=%%D"
+    IF EXIST "%%D\App\Python\python.exe" SET "PATHP_03=%%D"
+)
+IF NOT DEFINED PATHP_03 FOR /D %%D IN ("C:\APPLIC\PYTHON%PY_BASETYPE%*") DO (
+    IF EXIST "%%D\python.exe" SET "PATHP_03=%%D"
+    IF EXIST "%%D\App\python.exe" SET "PATHP_03=%%D"
+    IF EXIST "%%D\App\Python\python.exe" SET "PATHP_03=%%D"
+)
+REM C:\portableai\Tools
+IF EXIST "C:\portableai\Tools\PYTHON%PY_BASETYPE%\python.exe" SET "PATHP_04=C:\portableai\Tools\PYTHON%PY_BASETYPE%"
+IF EXIST "C:\portableai\Tools\PYTHON%PY_BASETYPE%\App\python.exe" SET "PATHP_04=C:\portableai\Tools\PYTHON%PY_BASETYPE%"
+IF EXIST "C:\portableai\Tools\PYTHON%PY_BASETYPE%\App\Python\python.exe" SET "PATHP_04=C:\portableai\Tools\PYTHON%PY_BASETYPE%"
+IF NOT DEFINED PATHP_04 FOR /D %%D IN ("C:\portableai\Tools\PYTHON%PY_BASETYPE%_*") DO (
+    IF EXIST "%%D\python.exe" SET "PATHP_04=%%D"
+    IF EXIST "%%D\App\python.exe" SET "PATHP_04=%%D"
+    IF EXIST "%%D\App\Python\python.exe" SET "PATHP_04=%%D"
+)
+IF NOT DEFINED PATHP_04 FOR /D %%D IN ("C:\portableai\Tools\PYTHON%PY_BASETYPE%*") DO (
+    IF EXIST "%%D\python.exe" SET "PATHP_04=%%D"
+    IF EXIST "%%D\App\python.exe" SET "PATHP_04=%%D"
+    IF EXIST "%%D\App\Python\python.exe" SET "PATHP_04=%%D"
+)
+REM V:\portableai\Tools
+IF EXIST "V:\portableai\Tools\PYTHON%PY_BASETYPE%\python.exe" SET "PATHP_05=V:\portableai\Tools\PYTHON%PY_BASETYPE%"
+IF EXIST "V:\portableai\Tools\PYTHON%PY_BASETYPE%\App\python.exe" SET "PATHP_05=V:\portableai\Tools\PYTHON%PY_BASETYPE%"
+IF EXIST "V:\portableai\Tools\PYTHON%PY_BASETYPE%\App\Python\python.exe" SET "PATHP_05=V:\portableai\Tools\PYTHON%PY_BASETYPE%"
+IF NOT DEFINED PATHP_05 FOR /D %%D IN ("V:\portableai\Tools\PYTHON%PY_BASETYPE%_*") DO (
+    IF EXIST "%%D\python.exe" SET "PATHP_05=%%D"
+    IF EXIST "%%D\App\python.exe" SET "PATHP_05=%%D"
+    IF EXIST "%%D\App\Python\python.exe" SET "PATHP_05=%%D"
+)
+IF NOT DEFINED PATHP_05 FOR /D %%D IN ("V:\portableai\Tools\PYTHON%PY_BASETYPE%*") DO (
+    IF EXIST "%%D\python.exe" SET "PATHP_05=%%D"
+    IF EXIST "%%D\App\python.exe" SET "PATHP_05=%%D"
+    IF EXIST "%%D\App\Python\python.exe" SET "PATHP_05=%%D"
+)
+REM K:\Tools
+IF EXIST "K:\Tools\Python%PY_BASETYPE%\python.exe" SET "PATHP_06=K:\Tools\Python%PY_BASETYPE%"
+IF EXIST "K:\Tools\Python%PY_BASETYPE%\App\python.exe" SET "PATHP_06=K:\Tools\Python%PY_BASETYPE%"
+IF EXIST "K:\Tools\Python%PY_BASETYPE%\App\Python\python.exe" SET "PATHP_06=K:\Tools\Python%PY_BASETYPE%"
+IF NOT DEFINED PATHP_06 FOR /D %%D IN ("K:\Tools\Python%PY_BASETYPE%_*") DO (
+    IF EXIST "%%D\python.exe" SET "PATHP_06=%%D"
+    IF EXIST "%%D\App\python.exe" SET "PATHP_06=%%D"
+    IF EXIST "%%D\App\Python\python.exe" SET "PATHP_06=%%D"
+)
+IF NOT DEFINED PATHP_06 FOR /D %%D IN ("K:\Tools\Python%PY_BASETYPE%*") DO (
+    IF EXIST "%%D\python.exe" SET "PATHP_06=%%D"
+    IF EXIST "%%D\App\python.exe" SET "PATHP_06=%%D"
+    IF EXIST "%%D\App\Python\python.exe" SET "PATHP_06=%%D"
+)
+REM XX (TOOLS locale)
+IF EXIST "%PATH_PADRE%\TOOLS\PYTHON%PY_BASETYPE%\python.exe" SET "PATHP_XX=%PATH_PADRE%\TOOLS\PYTHON%PY_BASETYPE%"
+IF EXIST "%PATH_PADRE%\TOOLS\PYTHON%PY_BASETYPE%\App\python.exe" SET "PATHP_XX=%PATH_PADRE%\TOOLS\PYTHON%PY_BASETYPE%"
+IF EXIST "%PATH_PADRE%\TOOLS\PYTHON%PY_BASETYPE%\App\Python\python.exe" SET "PATHP_XX=%PATH_PADRE%\TOOLS\PYTHON%PY_BASETYPE%"
+IF NOT DEFINED PATHP_XX FOR /D %%D IN ("%PATH_PADRE%\TOOLS\PYTHON%PY_BASETYPE%_*") DO (
+    IF EXIST "%%D\python.exe" SET "PATHP_XX=%%D"
+    IF EXIST "%%D\App\python.exe" SET "PATHP_XX=%%D"
+    IF EXIST "%%D\App\Python\python.exe" SET "PATHP_XX=%%D"
+)
+IF NOT DEFINED PATHP_XX FOR /D %%D IN ("%PATH_PADRE%\TOOLS\PYTHON%PY_BASETYPE%*") DO (
+    IF EXIST "%%D\python.exe" SET "PATHP_XX=%%D"
+    IF EXIST "%%D\App\python.exe" SET "PATHP_XX=%%D"
+    IF EXIST "%%D\App\Python\python.exe" SET "PATHP_XX=%%D"
 )
 
-REM Ricerca in ordine: eventuale PATHP_ENV (override esterno) poi D:, C:, K:, XX
+REM CASO VDI.MACH0 - priorita' assoluta a K: se flag esiste e path e' valido (ora PATHP_06)
+IF EXIST "K:\MACH0_PROD.TXT" (
+    IF EXIST "%PATHP_06%\python.exe" SET "PY_PATH=%PATHP_06%" & GOTO :PYN_1
+    IF EXIST "%PATHP_06%\App\python.exe" SET "PY_PATH=%PATHP_06%" & GOTO :PYN_1
+    IF EXIST "%PATHP_06%\App\Python\python.exe" SET "PY_PATH=%PATHP_06%" & GOTO :PYN_1
+    IF EXIST "%PATHP_06%\*.*" SET "PY_PATH=%PATHP_06%" & GOTO :PYN_1
+)
+
+REM Ricerca in ordine: eventuale PATHP_ENV (override esterno) poi V:, D:, C:, C:portableai, V:portableai, K:, XX
 IF DEFINED PATHP_ENV (
     IF EXIST "%PATHP_ENV%\python.exe" SET "PY_PATH=%PATHP_ENV%" & GOTO :PYN_1
     IF EXIST "%PATHP_ENV%\App\python.exe" SET "PY_PATH=%PATHP_ENV%" & GOTO :PYN_1
+    IF EXIST "%PATHP_ENV%\App\Python\python.exe" SET "PY_PATH=%PATHP_ENV%" & GOTO :PYN_1
     IF EXIST "%PATHP_ENV%\*.*" SET "PY_PATH=%PATHP_ENV%" & GOTO :PYN_1
 )
-REM Pass 1 STRICT: python.exe / App\python.exe su TUTTI i path (priorita' a chi ha python vero)
-FOR %%A IN ("%PATHP_01%" "%PATHP_02%" "%PATHP_03%" "%PATHP_XX%") DO (
+REM Pass 1 STRICT: python.exe / App\python.exe / App\Python\python.exe su TUTTI i path
+FOR %%A IN ("%PATHP_01%" "%PATHP_02%" "%PATHP_03%" "%PATHP_04%" "%PATHP_05%" "%PATHP_06%" "%PATHP_XX%") DO (
     IF EXIST "%%~A\python.exe" (
+        ECHO [DEBUG] Found python.exe in %%~A
         SET "PY_PATH=%%~A"
         GOTO :PYN_1
     )
     IF EXIST "%%~A\App\python.exe" (
+        ECHO [DEBUG] Found App\python.exe in %%~A
+        SET "PY_PATH=%%~A"
+        GOTO :PYN_1
+    )
+    IF EXIST "%%~A\App\Python\python.exe" (
+        ECHO [DEBUG] Found App\Python\python.exe in %%~A
         SET "PY_PATH=%%~A"
         GOTO :PYN_1
     )
 )
 REM Pass 2 LENIENT: solo se nessuno ha python, accetta prima cartella esistente (fallback storico *.*)
-FOR %%A IN ("%PATHP_01%" "%PATHP_02%" "%PATHP_03%" "%PATHP_XX%") DO (
+FOR %%A IN ("%PATHP_01%" "%PATHP_02%" "%PATHP_03%" "%PATHP_04%" "%PATHP_05%" "%PATHP_06%" "%PATHP_XX%") DO (
     IF EXIST "%%~A\*.*" (
         SET "PY_PATH=%%~A"
         GOTO :PYN_1
@@ -125,16 +241,20 @@ SET PY_PIP=%PY_CMD% -m pip
 REM COMANDI ESTESI
 IF "%~1"=="pip" GOTO :PIP
 IF "%~1"=="pymod" GOTO :PYMOD_MOVED
-IF EXIST "%~1"  GOTO :RUN
-IF "%~1"=="x" GOTO :X_MOVEDPY
 IF "%~1"=="py"   GOTO :PY
+IF "%~1"=="x"    GOTO :X_MOVEDPY
+IF EXIST "%~1"  GOTO :RUN
 
 :RUN
-IF NOT EXIST "%PY_CMD%" GOTO :ERR
+ECHO [DEBUG] Checking PY_CMD: %PY_CMD%
+IF NOT EXIST "%PY_CMD%" (
+    ECHO [ERRORE] Python non trovato: %PY_CMD%
+    GOTO :ERR
+)
 REM Preflight: il venv puo' esistere ma puntare a una base mancante (pyvenv.cfg: home)
 "%PY_CMD%" --version >nul 2>&1
 IF NOT ERRORLEVEL 1 GOTO :RUN_GO
-ECHO [ERRORE] Python non avviabile: "%PY_CMD%"
+ECHO [ERRORE] Python non avviabile: %PY_CMD%
 ECHO   Controlla che PY_PATH esista e che il venv non punti a una base mancante (pyvenv.cfg, chiave home).
 ECHO   Ricrea l'ambiente con: pyn.cmd py env %PY_ENV% (dopo aver cancellato la cartella)
 GOTO :END
@@ -144,19 +264,29 @@ ECHO CLI: "%PY_CMD%" "%PAR1%" "%PAR2%" "%~3" "%~4" "%~5" "%~6" "%~7" "%~8" "%~9"
 GOTO :END
 
 :ENV
+setlocal enabledelayedexpansion
 ECHO Attivazione ambiente Python
-IF "%~3"=="" goto :SINTASSI
+IF "%~3"=="" GOTO :SINTASSI
 SET PY_ENV=%3
 SET PATHP_ENV=%3
 IF EXIST "%PY_PATH%\%PY_ENV%\*.*" (
     echo Ambiente %PY_ENV% trovato.
-    GOTO :END
+    GOTO :ENV_END
 )
 IF NOT EXIST "%PY_PATH%\%PY_ENV%\*.*" (
     echo Ambiente %PY_ENV% non trovato. Creazione in corso...
-    REM FIX: Rimosso CD e corretto path python base (non più App\python)
-    "%PY_PATH%\python.exe" -m venv "%PY_PATH%\%PY_ENV%"
+    REM Trova python base: root o App\Python (stessa logica ricerca PY_PATH)
+    SET "BASE_PYTHON=%PY_PATH%\python.exe"
+    IF EXIST "!BASE_PYTHON!" GOTO :ENV_CREATE_VENV
+    SET "BASE_PYTHON=%PY_PATH%\App\Python\python.exe"
+    IF EXIST "!BASE_PYTHON!" GOTO :ENV_CREATE_VENV
+    ECHO [ERRORE] python base non trovato in %PY_PATH% (ne' root ne' App\Python)
+    GOTO :ENV_END
 )
+:ENV_CREATE_VENV
+"!BASE_PYTHON!" -m venv "%PY_PATH%\%PY_ENV%"
+:ENV_END
+endlocal
 GOTO :END
 
 :ENV_SCRIPT
@@ -178,12 +308,23 @@ GOTO :END
 
 :ERR
 @ECHO OFF
-ECHO PYN: Attenzione, non esiste la cartella PYTHON%PY_TYPE% richiesta allo stesso livello
+ECHO [ERRORE] PY_PATH non trovato. Percorsi controllati:
+ECHO   PATHP_01=%PATHP_01%
+ECHO   PATHP_02=%PATHP_02%
+ECHO   PATHP_03=%PATHP_03%
+ECHO   PATHP_04=%PATHP_04%
+ECHO   PATHP_05=%PATHP_05%
+ECHO   PATHP_06=%PATHP_06%
+ECHO   PATHP_XX=%PATHP_XX%
+ECHO PY_TYPE=%PY_TYPE% PY_BASETYPE=%PY_BASETYPE% PY_ENV=%PY_ENV%
 GOTO :END
 
 :PY
 IF "%~2"=="upgrade" GOTO :UPGRADE
 IF "%~2"=="env" GOTO :ENV
+IF "%~2"=="envset" GOTO :PY_ENVSET
+IF "%~2"=="envzero" GOTO :PY_ENVZERO
+IF "%~2"=="envmake" GOTO :PY_ENVMAKE
 IF "%~2"=="script" GOTO :ENV_SCRIPT
 IF "%~2"=="version" %PY_CMD% --version
 IF "%~2"=="test" GOTO :PYTEST
@@ -195,6 +336,66 @@ IF "%PYSUB:~0,4%"=="pip_" GOTO :PY_PIPMOVED
 GOTO :END
 :PY_EMPTY
 ECHO COMANDO ESTESO (py) NON INSERITO
+GOTO :END
+
+:PY_ENVZERO
+REM Ambiente nullo: esegue col python BASE (nessun venv).
+REM Caso venv assente/vuoto: python.exe sta in %PY_PATH%\App\Python\Python.exe.
+SET "PY_CMD0=%PY_PATH%\App\Python\Python.exe"
+IF NOT EXIST "%PY_CMD0%" SET "PY_CMD0=%PY_PATH%\python.exe"
+IF NOT EXIST "%PY_CMD0%" GOTO :PY_ENVZERO_MISSING
+SHIFT
+SHIFT
+SET "EV0_ARGS="
+:EV0_LOOP
+IF "%~1"=="" GOTO :EV0_RUN
+SET "EV0_ARGS=%EV0_ARGS% "%~1""
+SHIFT
+GOTO :EV0_LOOP
+:EV0_RUN
+ECHO CLI: "%PY_CMD0%"%EV0_ARGS%
+"%PY_CMD0%"%EV0_ARGS%
+GOTO :END
+:PY_ENVZERO_MISSING
+ECHO [ERRORE] python base non trovato in "%PY_PATH%" (atteso App\Python\Python.exe o python.exe)
+GOTO :END
+
+:PY_ENVMAKE
+REM Crea un nuovo ambiente (venv) a livello di %PY_PATH% usando il python base.
+IF "%~3"=="" GOTO :SINTASSI
+SET "PY_CMD0=%PY_PATH%\App\Python\Python.exe"
+IF NOT EXIST "%PY_CMD0%" SET "PY_CMD0=%PY_PATH%\python.exe"
+IF NOT EXIST "%PY_CMD0%" (
+    ECHO [ERRORE] python base non trovato in "%PY_PATH%"
+    GOTO :END
+)
+IF EXIST "%PY_PATH%\%~3\*.*" (
+    ECHO Ambiente "%~3" gia' esistente in "%PY_PATH%\%~3".
+    GOTO :END
+)
+ECHO Creazione ambiente "%~3" a livello di "%PY_PATH%"...
+ECHO CLI: "%PY_CMD0%" -m venv "%PY_PATH%\%~3"
+"%PY_CMD0%" -m venv "%PY_PATH%\%~3"
+IF NOT ERRORLEVEL 1 (
+    ECHO Ambiente "%~3" creato in "%PY_PATH%\%~3".
+    SET "PY_ENV=%~3"
+)
+GOTO :END
+
+:PY_ENVSET
+REM Imposta variabili d'ambiente persistenti: PY_TYPE (obbligatorio) e PY_ENV (opzionale)
+IF "%~3"=="" GOTO :SINTASSI
+SET "PY_TYPE_NEW=%~3"
+SET "PY_ENV_NEW=%~4"
+ECHO Impostazione PY_TYPE=%PY_TYPE_NEW% (persistente)
+SETX PY_TYPE %PY_TYPE_NEW%
+IF NOT "%PY_ENV_NEW%"=="" (
+    ECHO Impostazione PY_ENV=%PY_ENV_NEW% (persistente)
+    SETX PY_ENV %PY_ENV_NEW%
+    GOTO :END
+)
+ECHO Cancellazione PY_ENV (persistente)
+SETX PY_ENV " "
 GOTO :END
 
 :PY_PIPMOVED
@@ -309,14 +510,14 @@ GOTO :END
 
 :PIP_RI
 setlocal enabledelayedexpansion
-set REQ_FILE=requirements_%PY_TYPE%.txt
+set REQ_FILE=requirements.txt
 set SKIPPED=
 for /F "tokens=*" %%i in (%REQ_FILE%) do (
     set LINE=%%i
     if not "!LINE:~0,1!"=="#" (
         if not "!LINE!"=="" (
             echo Installando %%i...
-            "%PY_CMD%" -m pip install --upgrade --only-binary=:all: %%i >nul 2>&1
+            "%PY_CMD%" -m pip install --upgrade --only-binary=:all: %%i
             if !errorlevel! neq 0 (
                 echo   SALTATO: %%i
                 set SKIPPED=!SKIPPED! %%i
@@ -1002,6 +1203,8 @@ ECHO ----- Comandi Estesi. Sintassi pyn dominio parametri_aggiuntivi
 ECHO PYN.CMD py [comando esteso]
 ECHO PYN.CMD py script nome_script(.exe) e parametri successivi
 ECHO PYN.CMD py env ambiente - Cambio o Attivazione Python ENV
+ECHO PYN.CMD py envzero [args] - esegue col python base (ambiente nullo, no venv)
+ECHO PYN.CMD py envmake nome - crea un nuovo ambiente a livello di PYTHON%PY_TYPE%
 ECHO PYN.CMD py version - Versione Python
 ECHO PYN.CMD py mod modulo [args] (python -m modulo)
 ECHO PYN.CMD py test esegue test_python.py da PATH_SCRIPTS con parametri successivi

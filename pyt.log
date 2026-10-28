@@ -552,3 +552,280 @@ PYT.START: ROBOCOPY 20261017:002500
 [20261017:002502]     Elaborazione: pyt.sh
 [20261017:002502]       COPIATO: pyt.sh
 [20261017:002502]     Elaborazione: pyt.log
+[20261017:002502]       COPIATO: pyt.log
+[20261017:002502]   Elaborazione: pyn.*
+[20261017:002502]     Trovati 2 file(s) per pattern: pyn.*
+[20261017:002502]     Elaborazione: pyn.cmd
+[20261017:002502]       COPIATO: pyn.cmd
+[20261017:002502]     Elaborazione: pyn.sh
+[20261017:002502]       COPIATO: pyn.sh
+[20261017:002502]   Elaborazione: pyy_report.*
+[20261017:002502]     SALTATO (nessun file corrispondente al pattern): pyy_report.*
+[20261017:002502] 
+============================================================
+[20261017:002502] AZIONE: copy_k
+[20261017:002502] ============================================================
+[20261017:002502]   path_source: G:\Il mio Drive\Progetti\pyt_pyn
+[20261017:002502]   path_dest:   k:\Tools
+[20261017:002502]   mode:        overwrite
+[20261017:002502]   files:       3 file(s)
+[20261017:002502]   Elaborazione: pyt.*
+[20261017:002502]     Trovati 4 file(s) per pattern: pyt.*
+[20261017:002502]     Elaborazione: pyt.cmd
+[20261017:002502]       COPIATO: pyt.cmd
+[20261017:002502]     Elaborazione: pyt.py
+[20261017:002502]       COPIATO: pyt.py
+[20261017:002502]     Elaborazione: pyt.sh
+[20261017:002502]       COPIATO: pyt.sh
+[20261017:002502]     Elaborazione: pyt.log
+[20261017:002502]       COPIATO: pyt.log
+[20261017:002502]   Elaborazione: pyn.*
+[20261017:002503]     Trovati 2 file(s) per pattern: pyn.*
+[20261017:002503]     Elaborazione: pyn.cmd
+[20261017:002503]       COPIATO: pyn.cmd
+[20261017:002503]     Elaborazione: pyn.sh
+[20261017:002503]       COPIATO: pyn.sh
+[20261017:002503]   Elaborazione: pyy_report.*
+[20261017:002503]     SALTATO (nessun file corrispondente al pattern): pyy_report.*
+[20261017:002503] 
+============================================================
+[20261017:002503] AZIONE: copy_g
+[20261017:002503] ============================================================
+[20261017:002503]   path_source: G:\Il mio Drive\Progetti\pyt_pyn
+[20261017:002503]   path_dest:   v:\Scripts
+[20261017:002503]   mode:        overwrite
+[20261017:002503]   files:       3 file(s)
+[20261017:002503] ERRORE: Impossibile creare destinazione v:\Scripts: [WinError 3] Impossibile trovare il percorso specificato: 'v:\\'
+[20261017:002503] 
+============================================================
+[20261017:002503] RIEPILOGO FINALE
+[20261017:002503] ============================================================
+[20261017:002503] File copiati   : 18
+[20261017:002503] File aggiornati: 0
+[20261017:002503] File saltati   : 3
+[20261017:002503] Errori         : 2
+[20261017:002503] ATTENZIONE: Sono presenti errori. Controlla il log per dettagli.
+PYT.END: ROBOCOPY 20261017:002503
+END: 20261017:002503
+PYT.START: 20261017 20261024:102617
+PYT.START: ROBOCOPY 20261024:102618
+[20261024:102618] Fase 1: Lettura e validazione del file di configurazione JSON
+[20261024:102618] Configurazione letta: 5 action(s) trovate
+[20261024:102618] 
+============================================================
+[20261024:102618] AZIONE: copy_v
+[20261024:102618] ============================================================
+[20261024:102618]   path_source: G:\Il mio Drive\Progetti\pyt_pyn
+[20261024:102619]   path_dest:   v:\Scripts
+[20261024:102619]   mode:        overwrite
+[20261024:102619]   files:       3 file(s)
+[20261024:102619]   Elaborazione: pyt.*
+[20261024:102619]     Trovati 4 file(s) per pattern: pyt.*
+[20261024:102619]     Elaborazione: pyt.cmd
+[20261024:102619]       COPIATO: pyt.cmd
+[20261024:102619]     Elaborazione: pyt.py
+[20261024:102619]       COPIATO: pyt.py
+[20261024:102619]     Elaborazione: pyt.sh
+[20261024:102620]       COPIATO: pyt.sh
+[20261024:102620]     Elaborazione: pyt.log
+[20261024:102620]       COPIATO: pyt.log
+[20261024:102620]   Elaborazione: pyn.*
+[20261024:102620]     Trovati 2 file(s) per pattern: pyn.*
+[20261024:102620]     Elaborazione: pyn.cmd
+[20261024:102620]       COPIATO: pyn.cmd
+[20261024:102620]     Elaborazione: pyn.sh
+[20261024:102620]       COPIATO: pyn.sh
+[20261024:102620]   Elaborazione: pyy_report.*
+[20261024:102621]     SALTATO (nessun file corrispondente al pattern): pyy_report.*
+[20261024:102621] 
+============================================================
+[20261024:102621] AZIONE: copy_adminscripts
+[20261024:102621] ============================================================
+[20261024:102621]   path_source: G:\Il mio Drive\Progetti\pyt_pyn
+[20261024:102621]   path_dest:   G:\Il mio Drive\Progetti\adminscripts
+[20261024:102621]   mode:        overwrite
+[20261024:102621]   files:       3 file(s)
+[20261024:102621]   Elaborazione: pyt.*
+[20261024:102621]     Trovati 4 file(s) per pattern: pyt.*
+[20261024:102621]     Elaborazione: pyt.cmd
+[20261024:102622]       COPIATO: pyt.cmd
+[20261024:102622]     Elaborazione: pyt.py
+[20261024:102623]       COPIATO: pyt.py
+[20261024:102623]     Elaborazione: pyt.sh
+[20261024:102623]       COPIATO: pyt.sh
+[20261024:102623]     Elaborazione: pyt.log
+[20261024:102624]       COPIATO: pyt.log
+[20261024:102624]   Elaborazione: pyn.*
+[20261024:102624]     Trovati 2 file(s) per pattern: pyn.*
+[20261024:102624]     Elaborazione: pyn.cmd
+[20261024:102625]       COPIATO: pyn.cmd
+[20261024:102625]     Elaborazione: pyn.sh
+[20261024:102626]       COPIATO: pyn.sh
+[20261024:102626]   Elaborazione: pyy_report.*
+[20261024:102626]     SALTATO (nessun file corrispondente al pattern): pyy_report.*
+[20261024:102626] 
+============================================================
+[20261024:102626] AZIONE: copy_adminscripts_github
+[20261024:102626] ============================================================
+[20261024:102626]   path_source: G:\Il mio Drive\Progetti\pyt_pyn
+[20261024:102626]   path_dest:   G:\Il mio Drive\Github\adminscripts
+[20261024:102626]   mode:        overwrite
+[20261024:102626]   files:       3 file(s)
+[20261024:102626]   Elaborazione: pyt.*
+[20261024:102626]     Trovati 4 file(s) per pattern: pyt.*
+[20261024:102626]     Elaborazione: pyt.cmd
+[20261024:102627]       COPIATO: pyt.cmd
+[20261024:102627]     Elaborazione: pyt.py
+[20261024:102627]       COPIATO: pyt.py
+[20261024:102627]     Elaborazione: pyt.sh
+[20261024:102628]       COPIATO: pyt.sh
+[20261024:102628]     Elaborazione: pyt.log
+[20261024:102629]       COPIATO: pyt.log
+[20261024:102629]   Elaborazione: pyn.*
+[20261024:102629]     Trovati 2 file(s) per pattern: pyn.*
+[20261024:102629]     Elaborazione: pyn.cmd
+[20261024:102630]       COPIATO: pyn.cmd
+[20261024:102630]     Elaborazione: pyn.sh
+[20261024:102630]       COPIATO: pyn.sh
+[20261024:102630]   Elaborazione: pyy_report.*
+[20261024:102630]     SALTATO (nessun file corrispondente al pattern): pyy_report.*
+[20261024:102630] 
+============================================================
+[20261024:102630] AZIONE: copy_k
+[20261024:102630] ============================================================
+[20261024:102631]   path_source: G:\Il mio Drive\Progetti\pyt_pyn
+[20261024:102631]   path_dest:   k:\Tools
+[20261024:102631]   mode:        overwrite
+[20261024:102631]   files:       3 file(s)
+[20261024:102631]   Elaborazione: pyt.*
+[20261024:102631]     Trovati 4 file(s) per pattern: pyt.*
+[20261024:102631]     Elaborazione: pyt.cmd
+[20261024:102631]       COPIATO: pyt.cmd
+[20261024:102631]     Elaborazione: pyt.py
+[20261024:102632]       COPIATO: pyt.py
+[20261024:102632]     Elaborazione: pyt.sh
+[20261024:102632]       COPIATO: pyt.sh
+[20261024:102632]     Elaborazione: pyt.log
+[20261024:102632]       COPIATO: pyt.log
+[20261024:102632]   Elaborazione: pyn.*
+[20261024:102632]     Trovati 2 file(s) per pattern: pyn.*
+[20261024:102632]     Elaborazione: pyn.cmd
+[20261024:102633]       COPIATO: pyn.cmd
+[20261024:102633]     Elaborazione: pyn.sh
+[20261024:102633]       COPIATO: pyn.sh
+[20261024:102633]   Elaborazione: pyy_report.*
+[20261024:102633]     SALTATO (nessun file corrispondente al pattern): pyy_report.*
+[20261024:102633] 
+============================================================
+[20261024:102633] AZIONE: copy_g
+[20261024:102633] ============================================================
+[20261024:102633]   path_source: G:\Il mio Drive\Progetti\pyt_pyn
+[20261024:102633]   path_dest:   v:\Scripts
+[20261024:102633]   mode:        overwrite
+[20261024:102634]   files:       3 file(s)
+[20261024:102634]   Elaborazione: pyt.*
+[20261024:102634]     Trovati 4 file(s) per pattern: pyt.*
+[20261024:102634]     Elaborazione: pyt.cmd
+[20261024:102634]       COPIATO: pyt.cmd
+[20261024:102634]     Elaborazione: pyt.py
+[20261024:102634]       COPIATO: pyt.py
+[20261024:102634]     Elaborazione: pyt.sh
+[20261024:102634]       COPIATO: pyt.sh
+[20261024:102634]     Elaborazione: pyt.log
+[20261024:102634]       COPIATO: pyt.log
+[20261024:102634]   Elaborazione: pyn.*
+[20261024:102634]     Trovati 2 file(s) per pattern: pyn.*
+[20261024:102634]     Elaborazione: pyn.cmd
+[20261024:102634]       COPIATO: pyn.cmd
+[20261024:102634]     Elaborazione: pyn.sh
+[20261024:102634]       COPIATO: pyn.sh
+[20261024:102634]   Elaborazione: pyy_report.*
+[20261024:102634]     SALTATO (nessun file corrispondente al pattern): pyy_report.*
+[20261024:102634] 
+============================================================
+[20261024:102634] RIEPILOGO FINALE
+[20261024:102634] ============================================================
+[20261024:102634] File copiati   : 30
+[20261024:102634] File aggiornati: 0
+[20261024:102635] File saltati   : 5
+[20261024:102635] Errori         : 0
+[20261024:102635] Operazione completata senza errori.
+PYT.END: ROBOCOPY 20261024:102635
+END: 20261024:102635
+PYT.START: 20261017 20261024:105952
+PYT.START:  20261024:105952
+Errore: direttiva '' non riconosciuta.
+PYT.END:  20261024:105952
+END: 20261024:105952
+PYT.START: 20261017 20261024:110039
+PYT.START: REQDOC 20261024:110039
+[20261024:110039] Fase 1: Lettura e parsing di requirements_x64_309.txt
+[20261024:110039]   Trovate 18 librerie (0 righe saltate)
+[20261024:110039] Fase 2: Lettura metadata locali (importlib.metadata)
+[20261024:110039]   Metadata locali ok, da arricchire online: 0
+[20261024:110039] Fase 4: Scrittura del Markdown in requirements_x64_309.md
+[20261024:110039] Riepilogo - Documentate: 18, arricchite via PyPI: 0, senza dati: 0, righe saltate: 0
+Markdown scritto in: requirements_x64_309.md
+PYT.END: REQDOC 20261024:110039
+END: 20261024:110039
+PYT.START: 20261017 20261024:110356
+PYT.START:  20261024:110356
+Errore: direttiva '' non riconosciuta.
+PYT.END:  20261024:110356
+END: 20261024:110356
+PYT.START: 20261017 20261025:223243
+PYT.START: ROBOCOPY 20261025:223243
+[20261025:223243] Fase 1: Lettura e validazione del file di configurazione JSON
+[20261025:223243] Configurazione letta: 5 action(s) trovate
+[20261025:223243] 
+============================================================
+[20261025:223243] AZIONE: copy_v
+[20261025:223243] ============================================================
+[20261025:223243]   path_source: G:\Il mio Drive\Progetti\pyt_pyn
+[20261025:223243]   path_dest:   v:\Scripts
+[20261025:223243]   mode:        overwrite
+[20261025:223243]   files:       3 file(s)
+[20261025:223243] ERRORE: Impossibile creare destinazione v:\Scripts: [WinError 3] Impossibile trovare il percorso specificato: 'v:\\'
+[20261025:223243] 
+============================================================
+[20261025:223243] AZIONE: copy_adminscripts
+[20261025:223243] ============================================================
+[20261025:223243]   path_source: G:\Il mio Drive\Progetti\pyt_pyn
+[20261025:223243]   path_dest:   G:\Il mio Drive\Progetti\adminscripts
+[20261025:223243]   mode:        overwrite
+[20261025:223243]   files:       3 file(s)
+[20261025:223243]   Elaborazione: pyt.*
+[20261025:223243]     Trovati 4 file(s) per pattern: pyt.*
+[20261025:223243]     Elaborazione: pyt.cmd
+[20261025:223243]       COPIATO: pyt.cmd
+[20261025:223243]     Elaborazione: pyt.py
+[20261025:223243]       COPIATO: pyt.py
+[20261025:223243]     Elaborazione: pyt.sh
+[20261025:223244]       COPIATO: pyt.sh
+[20261025:223244]     Elaborazione: pyt.log
+[20261025:223244]       COPIATO: pyt.log
+[20261025:223244]   Elaborazione: pyn.*
+[20261025:223244]     Trovati 2 file(s) per pattern: pyn.*
+[20261025:223244]     Elaborazione: pyn.cmd
+[20261025:223244]       COPIATO: pyn.cmd
+[20261025:223244]     Elaborazione: pyn.sh
+[20261025:223244]       COPIATO: pyn.sh
+[20261025:223244]   Elaborazione: pyy_report.*
+[20261025:223244]     SALTATO (nessun file corrispondente al pattern): pyy_report.*
+[20261025:223244] 
+============================================================
+[20261025:223244] AZIONE: copy_adminscripts_github
+[20261025:223244] ============================================================
+[20261025:223244]   path_source: G:\Il mio Drive\Progetti\pyt_pyn
+[20261025:223244]   path_dest:   G:\Il mio Drive\Github\adminscripts
+[20261025:223244]   mode:        overwrite
+[20261025:223244]   files:       3 file(s)
+[20261025:223244]   Elaborazione: pyt.*
+[20261025:223244]     Trovati 4 file(s) per pattern: pyt.*
+[20261025:223244]     Elaborazione: pyt.cmd
+[20261025:223245]       COPIATO: pyt.cmd
+[20261025:223245]     Elaborazione: pyt.py
+[20261025:223245]       COPIATO: pyt.py
+[20261025:223245]     Elaborazione: pyt.sh
+[20261025:223245]       COPIATO: pyt.sh
+[20261025:223245]     Elaborazione: pyt.log
