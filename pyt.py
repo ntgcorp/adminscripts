@@ -34,7 +34,7 @@ except ImportError:
 # ==============================================================================
 # VARIABILI GLOBALI E COSTANTI
 # ==============================================================================
-PYT_VER = "20261017"
+PYT_VER = "20261102"
 QEMU_IMG = r"X:\_Applic\Qemu\qemu-img.exe"
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 LOG_FILE = os.path.join(SCRIPT_DIR, "pyt.log")
@@ -90,9 +90,12 @@ def parse_argv(argv):
                 directives.append((parts[0].lower().replace(".", "_"), parts[1:]))
         return directives
     
-    # 3. Singola direttiva - filtra stringhe vuote dai parametri
+# 3. Singola direttiva - filtra stringhe vuote dai parametri
     filtered_params = [p for p in args[1:] if p and p.strip()]
-    # Converte i punti in underscore per compatibilità con i nomi funzione
+    # Direttiva vuota (es. chiamata da wrapper senza comando) -> help
+    if not args[0] or not args[0].strip():
+        return [(None, filtered_params)]
+    # Converte i punti in underscore per compatibilit�� con i nomi funzione
     directive_name = args[0].lower().replace(".", "_")
     return [(directive_name, filtered_params)]
 

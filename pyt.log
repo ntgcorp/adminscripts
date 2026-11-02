@@ -829,3 +829,262 @@ PYT.START: ROBOCOPY 20261025:223243
 [20261025:223245]     Elaborazione: pyt.sh
 [20261025:223245]       COPIATO: pyt.sh
 [20261025:223245]     Elaborazione: pyt.log
+[20261025:223245]       COPIATO: pyt.log
+[20261025:223245]   Elaborazione: pyn.*
+[20261025:223245]     Trovati 2 file(s) per pattern: pyn.*
+[20261025:223245]     Elaborazione: pyn.cmd
+[20261025:223245]       COPIATO: pyn.cmd
+[20261025:223245]     Elaborazione: pyn.sh
+[20261025:223245]       COPIATO: pyn.sh
+[20261025:223245]   Elaborazione: pyy_report.*
+[20261025:223245]     SALTATO (nessun file corrispondente al pattern): pyy_report.*
+[20261025:223245] 
+============================================================
+[20261025:223245] AZIONE: copy_k
+[20261025:223245] ============================================================
+[20261025:223245]   path_source: G:\Il mio Drive\Progetti\pyt_pyn
+[20261025:223245]   path_dest:   k:\Tools
+[20261025:223245]   mode:        overwrite
+[20261025:223245]   files:       3 file(s)
+[20261025:223245]   Elaborazione: pyt.*
+[20261025:223245]     Trovati 4 file(s) per pattern: pyt.*
+[20261025:223246]     Elaborazione: pyt.cmd
+[20261025:223246]       COPIATO: pyt.cmd
+[20261025:223246]     Elaborazione: pyt.py
+[20261025:223246]       COPIATO: pyt.py
+[20261025:223246]     Elaborazione: pyt.sh
+[20261025:223246]       COPIATO: pyt.sh
+[20261025:223246]     Elaborazione: pyt.log
+[20261025:223246]       COPIATO: pyt.log
+[20261025:223246]   Elaborazione: pyn.*
+[20261025:223246]     Trovati 2 file(s) per pattern: pyn.*
+[20261025:223246]     Elaborazione: pyn.cmd
+[20261025:223247]       COPIATO: pyn.cmd
+[20261025:223247]     Elaborazione: pyn.sh
+[20261025:223247]       COPIATO: pyn.sh
+[20261025:223247]   Elaborazione: pyy_report.*
+[20261025:223247]     SALTATO (nessun file corrispondente al pattern): pyy_report.*
+[20261025:223247] 
+============================================================
+[20261025:223247] AZIONE: copy_g
+[20261025:223247] ============================================================
+[20261025:223247]   path_source: G:\Il mio Drive\Progetti\pyt_pyn
+[20261025:223247]   path_dest:   v:\Scripts
+[20261025:223247]   mode:        overwrite
+[20261025:223247]   files:       3 file(s)
+[20261025:223247] ERRORE: Impossibile creare destinazione v:\Scripts: [WinError 3] Impossibile trovare il percorso specificato: 'v:\\'
+[20261025:223247] 
+============================================================
+[20261025:223247] RIEPILOGO FINALE
+[20261025:223247] ============================================================
+[20261025:223247] File copiati   : 18
+[20261025:223247] File aggiornati: 0
+[20261025:223247] File saltati   : 3
+[20261025:223247] Errori         : 2
+[20261025:223247] ATTENZIONE: Sono presenti errori. Controlla il log per dettagli.
+PYT.END: ROBOCOPY 20261025:223247
+END: 20261025:223247
+PYT.START: 20261017 20261028:205744
+PYT.START:  20261028:205744
+Errore: direttiva '' non riconosciuta.
+PYT.END:  20261028:205744
+END: 20261028:205744
+PYT.START: 20261017 20261102:113545
+END: 20261102:113545
+PYT.START: 20261017 20261102:113555
+END: 20261102:113555
+[20261102:113601] Fase 1: Lettura della lista C:\Users\User\AppData\Local\Temp\tmpqgrrsotn\lista.txt
+[20261102:113601]   Trovate 5 voci in lista
+[20261102:113601]   SALTATO (non trovato): C:\Users\User\AppData\Local\Temp\tmpqgrrsotn\base\mancante.txt
+[20261102:113601] Fase 2: Cancellazione di 2 FILE
+[20261102:113601]   ELIMINATO FILE: C:\Users\User\AppData\Local\Temp\tmpqgrrsotn\base\a.txt
+[20261102:113601]   ELIMINATO FILE: C:\Users\User\AppData\Local\Temp\tmpqgrrsotn\base\noprefix.txt
+[20261102:113601] Fase 3: Cancellazione di 2 DIR
+[20261102:113601]   ELIMINATA DIR: C:\Users\User\AppData\Local\Temp\tmpqgrrsotn\base\sub
+[20261102:113601]   ELIMINATA DIR: C:\Users\User\AppData\Local\Temp\tmpqgrrsotn\base\plain_dir
+[20261102:113601] Riepilogo - File eliminati: 2, Cartelle eliminate: 2, Saltati: 1, Errori: 0
+[20261102:113601] Fase 1: Lettura della lista C:\Users\User\AppData\Local\Temp\tmpuyoff5df\lista.txt
+[20261102:113601]   Trovate 1 voci in lista
+[20261102:113601] Fase 2: Cancellazione di 1 FILE
+[20261102:113602]   ELIMINATO FILE: C:\Users\User\AppData\Local\Temp\tmpuyoff5df\evil.txt
+[20261102:113602] Fase 3: Cancellazione di 0 DIR
+[20261102:113602] Riepilogo - File eliminati: 1, Cartelle eliminate: 0, Saltati: 0, Errori: 0
+[20261102:113602] Fase 1: Lettura spazio totale disco e spazio libero
+[20261102:113602] Fase 2: Lettura spazio occupato per ogni singola cartella
+  $Recycle.Bin: 0.00 GB
+  $SysReset: 0.03 GB
+  $Windows.~WS: 0.00 GB
+  $WinREAgent: 0.00 GB
+  AMD: 0.12 GB
+  Applic: 0.35 GB
+  Boot: 0.02 GB
+  Dist: 0.82 GB
+  Documents and Settings: 0.00 GB
+  drived: 23.91 GB
+  ESD: 0.00 GB
+  inetpub: 0.00 GB
+  Intel: 0.00 GB
+  LJP1100_P1560_P1600_Full_Solution: 0.27 GB
+  Logs: 0.00 GB
+  OneDrive: 0.29 GB
+  OneDriveBusiness: 0.62 GB
+  OneDriveTemp: 0.00 GB
+  PerfLogs: 0.00 GB
+  Podman: 0.00 GB
+  Program Files: 15.76 GB
+  Program Files (x86): 17.33 GB
+  ProgramData: 4.60 GB
+  Programmi: 0.00 GB
+  Recovery: 0.00 GB
+  selenium: 0.22 GB
+  seleniumbasic: 0.04 GB
+  seleniumbasic - Copia: 0.04 GB
+  Store: 0.24 GB
+  System Volume Information: 0.00 GB
+  Temp: 0.00 GB
+  Users: 122.51 GB
+  VM: 4.59 GB
+Errore: file di direttive nonexistent.txt non trovato.
+PYT.START: 20261102 20261102:115432
+PYT.START: ROBOCOPY 20261102:115432
+[20261102:115432] Fase 1: Lettura e validazione del file di configurazione JSON
+ERRORE [robocopy]: JSON malformato: Expecting ',' delimiter: line 43 column 2 (char 1021)
+PYT.END: ROBOCOPY 20261102:115432
+END: 20261102:115432
+PYT.START: 20261102 20261102:115830
+END: 20261102:115830
+PYT.START: 20261102 20261102:115855
+PYT.START: ROBOCOPY 20261102:115855
+[20261102:115855] Fase 1: Lettura e validazione del file di configurazione JSON
+ERRORE [robocopy]: JSON malformato: Expecting ',' delimiter: line 23 column 2 (char 503)
+PYT.END: ROBOCOPY 20261102:115855
+END: 20261102:115855
+PYT.START: 20261102 20261102:115921
+PYT.START: ROBOCOPY 20261102:115921
+[20261102:115921] Fase 1: Lettura e validazione del file di configurazione JSON
+[20261102:115921] Configurazione letta: 4 action(s) trovate
+[20261102:115921] 
+============================================================
+[20261102:115921] AZIONE: copy_v
+[20261102:115921] ============================================================
+[20261102:115921]   path_source: G:\Il mio Drive\Progetti\pyt_pyn
+[20261102:115921]   path_dest:   v:\Scripts
+[20261102:115921]   mode:        overwrite
+[20261102:115921]   files:       6 file(s)
+[20261102:115921]   Elaborazione: pyt.*
+[20261102:115921]     Trovati 4 file(s) per pattern: pyt.*
+[20261102:115921]     Elaborazione: pyt.cmd
+[20261102:115921]       COPIATO: pyt.cmd
+[20261102:115921]     Elaborazione: pyt.py
+[20261102:115921]       COPIATO: pyt.py
+[20261102:115921]     Elaborazione: pyt.sh
+[20261102:115921]       COPIATO: pyt.sh
+[20261102:115921]     Elaborazione: pyt.log
+[20261102:115921]       COPIATO: pyt.log
+[20261102:115921]   Elaborazione: pyn.*
+[20261102:115921]     Trovati 2 file(s) per pattern: pyn.*
+[20261102:115921]     Elaborazione: pyn.cmd
+[20261102:115921]       COPIATO: pyn.cmd
+[20261102:115921]     Elaborazione: pyn.sh
+[20261102:115922]       COPIATO: pyn.sh
+[20261102:115922]   Elaborazione: pyt_report.*
+[20261102:115922]     Trovati 1 file(s) per pattern: pyt_report.*
+[20261102:115922]     Elaborazione: pyt_report.py
+[20261102:115922]       COPIATO: pyt_report.py
+[20261102:115922]   Elaborazione: pyt_form*.*
+[20261102:115922]     Trovati 2 file(s) per pattern: pyt_form*.*
+[20261102:115922]     Elaborazione: pyt_form.py
+[20261102:115922]       COPIATO: pyt_form.py
+[20261102:115922]     Elaborazione: pyt_form_man.md
+[20261102:115922]       COPIATO: pyt_form_man.md
+[20261102:115922]   Elaborazione: requirements*.*
+[20261102:115922]     Trovati 8 file(s) per pattern: requirements*.*
+[20261102:115922]     Elaborazione: requirements_X64.md
+[20261102:115922]       COPIATO: requirements_X64.md
+[20261102:115922]     Elaborazione: requirements_X64.txt
+[20261102:115922]       COPIATO: requirements_X64.txt
+[20261102:115922]     Elaborazione: requirements_mach0vdi.txt
+[20261102:115922]       COPIATO: requirements_mach0vdi.txt
+[20261102:115922]     Elaborazione: requirements_X64_LIGHT.txt
+[20261102:115922]       COPIATO: requirements_X64_LIGHT.txt
+[20261102:115922]     Elaborazione: requirements_X64_309.txt
+[20261102:115922]       COPIATO: requirements_X64_309.txt
+[20261102:115922]     Elaborazione: requirements_X64_309_LIGHT.txt
+[20261102:115922]       COPIATO: requirements_X64_309_LIGHT.txt
+[20261102:115922]     Elaborazione: requirements_x64_309.md
+[20261102:115922]       COPIATO: requirements_x64_309.md
+[20261102:115922]     Elaborazione: requirements_X32_309.txt
+[20261102:115922]       COPIATO: requirements_X32_309.txt
+[20261102:115922]   Elaborazione: x.cmd
+[20261102:115922]     COPIATO: x.cmd
+[20261102:115922] 
+============================================================
+[20261102:115922] AZIONE: copy_adminscripts
+[20261102:115922] ============================================================
+[20261102:115922]   path_source: G:\Il mio Drive\Progetti\pyt_pyn
+[20261102:115922]   path_dest:   G:\Il mio Drive\Progetti\adminscripts
+[20261102:115922]   mode:        overwrite
+[20261102:115922]   files:       6 file(s)
+[20261102:115923]   Elaborazione: pyt.*
+[20261102:115923]     Trovati 4 file(s) per pattern: pyt.*
+[20261102:115923]     Elaborazione: pyt.cmd
+[20261102:115923]       COPIATO: pyt.cmd
+[20261102:115923]     Elaborazione: pyt.py
+[20261102:115923]       COPIATO: pyt.py
+[20261102:115923]     Elaborazione: pyt.sh
+[20261102:115923]       COPIATO: pyt.sh
+[20261102:115923]     Elaborazione: pyt.log
+[20261102:115924]       COPIATO: pyt.log
+[20261102:115924]   Elaborazione: pyn.*
+[20261102:115924]     Trovati 2 file(s) per pattern: pyn.*
+[20261102:115924]     Elaborazione: pyn.cmd
+[20261102:115925]       COPIATO: pyn.cmd
+[20261102:115925]     Elaborazione: pyn.sh
+[20261102:115925]       COPIATO: pyn.sh
+[20261102:115925]   Elaborazione: pyt_report.*
+[20261102:115925]     Trovati 1 file(s) per pattern: pyt_report.*
+[20261102:115925]     Elaborazione: pyt_report.py
+[20261102:115925]       COPIATO: pyt_report.py
+[20261102:115925]   Elaborazione: pyt_form*.*
+[20261102:115925]     Trovati 2 file(s) per pattern: pyt_form*.*
+[20261102:115925]     Elaborazione: pyt_form.py
+[20261102:115926]       COPIATO: pyt_form.py
+[20261102:115926]     Elaborazione: pyt_form_man.md
+[20261102:115926]       COPIATO: pyt_form_man.md
+[20261102:115926]   Elaborazione: requirements*.*
+[20261102:115926]     Trovati 8 file(s) per pattern: requirements*.*
+[20261102:115926]     Elaborazione: requirements_X64.md
+[20261102:115926]       COPIATO: requirements_X64.md
+[20261102:115926]     Elaborazione: requirements_X64.txt
+[20261102:115926]       COPIATO: requirements_X64.txt
+[20261102:115926]     Elaborazione: requirements_mach0vdi.txt
+[20261102:115926]       COPIATO: requirements_mach0vdi.txt
+[20261102:115926]     Elaborazione: requirements_X64_LIGHT.txt
+[20261102:115926]       COPIATO: requirements_X64_LIGHT.txt
+[20261102:115926]     Elaborazione: requirements_X64_309.txt
+[20261102:115926]       COPIATO: requirements_X64_309.txt
+[20261102:115926]     Elaborazione: requirements_X64_309_LIGHT.txt
+[20261102:115926]       COPIATO: requirements_X64_309_LIGHT.txt
+[20261102:115926]     Elaborazione: requirements_x64_309.md
+[20261102:115926]       COPIATO: requirements_x64_309.md
+[20261102:115926]     Elaborazione: requirements_X32_309.txt
+[20261102:115926]       COPIATO: requirements_X32_309.txt
+[20261102:115926]   Elaborazione: x.cmd
+[20261102:115926]     COPIATO: x.cmd
+[20261102:115926] 
+============================================================
+[20261102:115926] AZIONE: copy_adminscripts_github
+[20261102:115926] ============================================================
+[20261102:115926]   path_source: G:\Il mio Drive\Progetti\pyt_pyn
+[20261102:115926]   path_dest:   G:\Il mio Drive\Github\adminscripts
+[20261102:115926]   mode:        overwrite
+[20261102:115926]   files:       6 file(s)
+[20261102:115926]   Elaborazione: pyt.*
+[20261102:115926]     Trovati 4 file(s) per pattern: pyt.*
+[20261102:115926]     Elaborazione: pyt.cmd
+[20261102:115926]       COPIATO: pyt.cmd
+[20261102:115927]     Elaborazione: pyt.py
+[20261102:115927]       COPIATO: pyt.py
+[20261102:115927]     Elaborazione: pyt.sh
+[20261102:115927]       COPIATO: pyt.sh
+[20261102:115927]     Elaborazione: pyt.log

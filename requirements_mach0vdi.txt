@@ -1,0 +1,33 @@
+# Librerie per elaborazione file (Access, win32com, requests, csv, Excel)
+# Allineate a Python 3.9.4 (V:\TOOLS\PythonX32\App\Python) - win32.
+# Versioni esatte risolte da pip per wheel 32-bit compatibili con 3.9.4.
+# csv e' modulo stdlib (nessun pacchetto pip richiesto).
+
+# --- File Access (.accdb/.mdb) via driver ODBC ---
+pyodbc==5.3.0
+
+# --- win32com (automazione Office) ---
+pywin32==312
+pywin32-ctypes==0.2.3
+
+# --- requests (HTTP) ---
+requests==2.32.5
+urllib3==2.6.3
+certifi==2026.10.23
+idna==3.20
+charset-normalizer==3.5.2
+
+# --- Excel .xlsx (openpyxl), .xls lettura (xlrd) e .xls legacy scrittura (xlwt) ---
+openpyxl==3.1.5
+et_xmlfile==2.0.0
+xlrd==2.0.2
+xlwt==1.3.0
+
+# --- Elaborazione tabellare ---
+numpy==2.0.2
+python-dateutil==3.0.0
+pytz==2026.5
+six==1.17.0
+tzdata==2026.5
+
+pandas==2.3.3  # NESSUNA wheel win32: richiede compilazione sorgente (MSVC)

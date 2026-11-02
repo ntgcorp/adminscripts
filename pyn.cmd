@@ -1,5 +1,6 @@
 @ECHO OFF
 REM ORIGINALE SU PC GOMERA - LAUNCHER PYTHON / PODMAN / ALTRO VIA CMD - BASH
+REM VERSIONE 20261031 - Lancio script: argomenti raccolti in loop, niente "" per parametri assenti (no apici vuoti finali)
 REM VERSIONE 20261010 - Rename x->py (test<-pytest, mod<-pymod), pip help in zona Python, stub x/pymod/pip in py
 REM VERSIONE 20261011 - podman export <image> <file.tar> (save) e import <file.tar> (load)
 REM VERSIONE 20261022 - py envzero (ambiente nullo: python base App\Python\Python.exe, no venv) e py envmake (crea ambiente a livello di PYTHON%PY_TYPE%)
@@ -44,7 +45,7 @@ REM VERSIONE 20250405 - CORREZIONI - INSTALLAZIONE CRYPTOGRAFY - FORSE PSUTIL
 REM VERSIONE 20250203 - DEFAULT X64
 REM VERSIONE 20250130 - GESTIONE MIGLIORE RUNTIME
 
-SET PYN_VER=20261022
+SET PYN_VER=20261031
 
 REM PER PRIMO
 :SETUP
@@ -259,8 +260,19 @@ ECHO   Controlla che PY_PATH esista e che il venv non punti a una base mancante 
 ECHO   Ricrea l'ambiente con: pyn.cmd py env %PY_ENV% (dopo aver cancellato la cartella)
 GOTO :END
 :RUN_GO
-ECHO CLI: "%PY_CMD%" "%PAR1%" "%PAR2%" "%~3" "%~4" "%~5" "%~6" "%~7" "%~8" "%~9"
-"%PY_CMD%" "%PAR1%" "%PAR2%" "%~3" "%~4" "%~5" "%~6" "%~7" "%~8" "%~9"
+REM Raccolta argomenti senza aggiungere "" per i parametri assenti (evita apici vuoti finali)
+setlocal enabledelayedexpansion
+set "RUN_ARGS="
+:RUN_GO_LOOP
+IF "%~1"=="" GOTO :RUN_GO_EXEC
+SET "RUN_ARGS=!RUN_ARGS! "%~1""
+SHIFT
+GOTO :RUN_GO_LOOP
+:RUN_GO_EXEC
+IF DEFINED RUN_ARGS SET "RUN_ARGS=!RUN_ARGS:~1!"
+ECHO CLI: "%PY_CMD%" !RUN_ARGS!
+"%PY_CMD%" !RUN_ARGS!
+endlocal
 GOTO :END
 
 :ENV
