@@ -1,5 +1,6 @@
 #!/bin/bash
-# pyn.sh - Launcher Linux per Python portable / PODMAN / CHROME / BASH / PANDOC
+# pyn.sh - Launcher Linux per Python / PODMAN / CHROME / BASH / PANDOC
+# VERSIONE 20261102 - Tolto PY_TYPE e ricerca python portabile: lancia direttamente e solo python3 (venv $PY_ENV opzionale in SCRIPT_DIR); requirements.txt senza suffisso tipo
 # VERSIONE 20261011 - podman export <image> <file.tar> (save) e import <file.tar> (load)
 # VERSIONE 20261015 - podman stop (tutti) e reset (rm -f tutti); help mirato pip-podman-pandoc
 # VERSIONE 20261014 - podman list image rinominato images
@@ -11,11 +12,10 @@
 # VERSIONE 20260810 - REFACTOR bug critici (delayed expansion, doppia exec, path hardcoded) + uscite OS-specifiche
 set -e
 
-PYN_VER="20261015"
+PYN_VER="20261102"
 
 # --- SETUP ---
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PY_TYPE="${PY_TYPE:-X64}"
 PY_ENV="${PY_ENV:-myenv}"
 PATH_SCRIPTS="${PATH_SCRIPTS:-/mnt/gdrive/Scripts}"
 # Normalizza: senza slash finale (tranne radice /)
@@ -224,50 +224,18 @@ if [[ "$1" == --chrome-internal ]]; then
     exit 0
 fi
 
-# --- Calcolo PY_PATH (traduzione pyn.cmd:45-80) ---
-PARENT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-PATHP_01="$HOME/APPLIC/PYTHON${PY_TYPE}"
-PATHP_02="/opt/APPLIC/PYTHON${PY_TYPE}"
-PATHP_03="/mnt/k/Tools/Python${PY_TYPE}"
-# Fallback legacy Windows mount su Linux
-if [ ! -d "$PATHP_03" ] && [ -d "/k/Tools/Python${PY_TYPE}" ]; then PATHP_03="/k/Tools/Python${PY_TYPE}"; fi
-PATHP_XX="$PARENT_DIR/TOOLS/PYTHON${PY_TYPE}"
-
-PY_PATH=""
-
-# Caso VDI.MACH0 - priorita assoluta a K: se flag esiste e path valido
-if [ -f "/mnt/k/MACH0_PROD.TXT" ] || [ -f "/k/MACH0_PROD.TXT" ] || [ -f "K:/MACH0_PROD.TXT" ]; then
-    for cand in "$PATHP_03/bin/python3" "$PATHP_03/bin/python" "$PATHP_03/python3" "$PATHP_03/python"; do
-        if [ -x "$cand" ]; then PY_PATH="$PATHP_03"; break; fi
-    done
-    if [ -z "$PY_PATH" ] && [ -d "$PATHP_03" ]; then PY_PATH="$PATHP_03"; fi
-fi
-
-# Override PATHP_ENV se definito
-if [ -z "$PY_PATH" ] && [ -n "$PATHP_ENV" ]; then
-    for cand in "$PATHP_ENV/bin/python3" "$PATHP_ENV/bin/python" "$PATHP_ENV/python3" "$PATHP_ENV/python"; do
-        if [ -x "$cand" ]; then PY_PATH="$PATHP_ENV"; break; fi
-    done
-    if [ -z "$PY_PATH" ] && [ -d "$PATHP_ENV" ]; then PY_PATH="$PATHP_ENV"; fi
-fi
-
-# Ricerca in ordine D:->C:->K:->XX (mappati su Linux)
-if [ -z "$PY_PATH" ]; then
-    for cand_path in "$PATHP_01" "$PATHP_02" "$PATHP_03" "$PATHP_XX"; do
-        for bin in "$cand_path/bin/python3" "$cand_path/bin/python" "$cand_path/python3" "$cand_path/python"; do
-            if [ -x "$bin" ]; then PY_PATH="$cand_path"; break 2; fi
-        done
-        if [ -d "$cand_path" ] && [ -n "$(ls -A "$cand_path" 2>/dev/null)" ]; then PY_PATH="$cand_path"; break; fi
-    done
-fi
-
-echo "LAUNCHER PYTHON PORTABLE NTGCORP $PYN_VER: Tipo $PY_TYPE: Path: $PY_PATH Env: $PY_ENV"
-if [ -z "$PY_PATH" ]; then echo "PYN: Attenzione, non esiste la cartella PYTHON${PY_TYPE} richiesta" >&2; exit 1; fi
-
-# PY_CMD su Linux: venv bin/python, non Scripts\PYTHON.EXE
-PY_CMD="$PY_PATH/$PY_ENV/bin/python3"
-if [ ! -x "$PY_CMD" ]; then PY_CMD="$PY_PATH/$PY_ENV/bin/python"; fi
+# --- Python: niente PY_TYPE, si lancia direttamente e solo python3 ---
+# Eventuale venv $PY_ENV si cerca solo accanto allo script (SCRIPT_DIR/$PY_ENV); altrimenti python3 di sistema
+PY_CMD="$SCRIPT_DIR/$PY_ENV/bin/python3"
+if [ ! -x "$PY_CMD" ]; then PY_CMD="$SCRIPT_DIR/$PY_ENV/bin/python"; fi
+if [ ! -x "$PY_CMD" ]; then PY_CMD="python3"; fi
 PY_PIP="$PY_CMD -m pip"
+
+echo "LAUNCHER PYTHON PORTABLE NTGCORP $PYN_VER: python3: $PY_CMD Env: $PY_ENV"
+if [ ! -x "$PY_CMD" ] && ! command -v "$PY_CMD" >/dev/null 2>&1; then
+    echo "PYN: python3 non trovato" >&2
+    exit 1
+fi
 
 # --- Dispatch Python ---
 # pip: direttiva con sub-direttive (check|pc|dna|pu|i|u|ulist|uexec|re|ri) + passthrough
@@ -276,7 +244,7 @@ if [[ "$1" == "pip" ]]; then
     SUB="$1"
     case "$SUB" in
         check) exec $PY_CMD -m pip check ;;
-        dna) rm -rf "$PY_PATH/lib/python"*/site-packages/~dna 2>/dev/null; rm -rf "$PY_PATH/$PY_ENV/lib/python"*/site-packages/~dna 2>/dev/null; exit 0 ;;
+        dna) rm -rf "$SCRIPT_DIR/$PY_ENV/lib/python"*/site-packages/~dna 2>/dev/null; exit 0 ;;
         pc) exec $PY_CMD -m pip cache purge ;;
         pu) exec $PY_CMD -m pip install --upgrade pip ;;
         i) shift; exec $PY_CMD -m pip install --upgrade --only-binary=:all: "$@" ;;
@@ -309,12 +277,12 @@ if [[ "$1" == "pip" ]]; then
             exit 0
             ;;
         re)
-            $PY_CMD -m pip freeze > "requirements_${PY_TYPE}.txt"
-            awk -F== '{print $1}' "requirements_${PY_TYPE}.txt" > "requirements_${PY_TYPE}_LIGHT.txt"
+            $PY_CMD -m pip freeze > "requirements.txt"
+            awk -F== '{print $1}' "requirements.txt" > "requirements_LIGHT.txt"
             exit 0
             ;;
         ri)
-            REQ_FILE="requirements_${PY_TYPE}.txt"
+            REQ_FILE="requirements.txt"
             SKIPPED=""
             while IFS= read -r line || [ -n "$line" ]; do
                 [[ "$line" =~ ^#.* ]] && continue
@@ -360,18 +328,16 @@ if [[ "$1" == "py" ]]; then
         env)
             if [ -z "$3" ]; then echo "Manca nome ambiente" >&2; exit 1; fi
             PY_ENV="$3"
-            if [ -d "$PY_PATH/$PY_ENV" ]; then echo "Ambiente $PY_ENV trovato."; exit 0; fi
+            ENV_DIR="$SCRIPT_DIR/$PY_ENV"
+            if [ -d "$ENV_DIR" ]; then echo "Ambiente $PY_ENV trovato."; exit 0; fi
             echo "Ambiente $PY_ENV non trovato. Creazione in corso..."
-            PY_BASE="$PY_PATH/bin/python3"
-            [ -x "$PY_BASE" ] || PY_BASE="$PY_PATH/bin/python"
-            [ -x "$PY_BASE" ] || PY_BASE="python3"
-            exec "$PY_BASE" -m venv "$PY_PATH/$PY_ENV"
+            exec python3 -m venv "$ENV_DIR"
             ;;
         script)
             shift 2
             EXE="$1"; shift || true
             if [ -z "$EXE" ]; then echo "Manca exe" >&2; exit 1; fi
-            exec "$PY_PATH/$PY_ENV/bin/$EXE" "$@"
+            exec "$SCRIPT_DIR/$PY_ENV/bin/$EXE" "$@"
             ;;
         mod) shift 2; exec $PY_CMD -m "$@" ;;
         pip|pip_*) echo "[ERRORE] py $SUB spostato in pip: usa pip <sub> (es. pip check)" >&2; exit 1 ;;
@@ -385,7 +351,7 @@ if [[ "$1" == "py" ]]; then
         pip) shift 2; exec $PY_CMD -m pip "$@" ;;
         version) exec $PY_CMD --version ;;
         pip_check) exec $PY_CMD -m pip check ;;
-        pip_dna) rm -rf "$PY_PATH/lib/python"*/site-packages/~dna 2>/dev/null; rm -rf "$PY_PATH/$PY_ENV/lib/python"*/site-packages/~dna 2>/dev/null; exit 0 ;;
+        pip_dna) rm -rf "$SCRIPT_DIR/$PY_ENV/lib/python"*/site-packages/~dna 2>/dev/null; exit 0 ;;
         pip_pc) exec $PY_CMD -m pip cache purge ;;
         pip_pu) exec $PY_CMD -m pip install --upgrade pip ;;
         pip_i) shift 2; exec $PY_CMD -m pip install --upgrade --only-binary=:all: "$@" ;;
@@ -418,12 +384,12 @@ if [[ "$1" == "py" ]]; then
             exit 0
             ;;
         pip_re)
-            $PY_CMD -m pip freeze > "requirements_${PY_TYPE}.txt"
-            awk -F== '{print $1}' "requirements_${PY_TYPE}.txt" > "requirements_${PY_TYPE}_LIGHT.txt"
+            $PY_CMD -m pip freeze > "requirements.txt"
+            awk -F== '{print $1}' "requirements.txt" > "requirements_LIGHT.txt"
             exit 0
             ;;
         pip_ri)
-            REQ_FILE="requirements_${PY_TYPE}.txt"
+            REQ_FILE="requirements.txt"
             SKIPPED=""
             while IFS= read -r line || [ -n "$line" ]; do
                 [[ "$line" =~ ^#.* ]] && continue

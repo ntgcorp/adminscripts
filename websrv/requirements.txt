@@ -1,0 +1,24 @@
+# ntwebsrv - Python Dependencies
+# Install with: pip install -r requirements.txt
+
+# Core web framework
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+
+# Form data & file upload parsing
+python-multipart>=0.0.6
+
+# Rate limiting
+slowapi>=0.1.9
+
+# File type detection (magic numbers)
+# Windows: use python-magic-bin instead of python-magic
+python-magic>=0.4.27; sys_platform != "win32"
+python-magic-bin>=0.4.27; sys_platform == "win32"
+
+# Data validation & settings
+pydantic>=2.5.0
+pydantic-settings>=2.1.0
+
+# HTTP client for Python client
+requests>=2.31.0

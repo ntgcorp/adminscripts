@@ -1088,3 +1088,348 @@ PYT.START: ROBOCOPY 20261102:115921
 [20261102:115927]     Elaborazione: pyt.sh
 [20261102:115927]       COPIATO: pyt.sh
 [20261102:115927]     Elaborazione: pyt.log
+[20261102:115927]       COPIATO: pyt.log
+[20261102:115927]   Elaborazione: pyn.*
+[20261102:115927]     Trovati 2 file(s) per pattern: pyn.*
+[20261102:115927]     Elaborazione: pyn.cmd
+[20261102:115927]       COPIATO: pyn.cmd
+[20261102:115927]     Elaborazione: pyn.sh
+[20261102:115927]       COPIATO: pyn.sh
+[20261102:115927]   Elaborazione: pyt_report.*
+[20261102:115927]     Trovati 1 file(s) per pattern: pyt_report.*
+[20261102:115927]     Elaborazione: pyt_report.py
+[20261102:115927]       COPIATO: pyt_report.py
+[20261102:115927]   Elaborazione: pyt_form*.*
+[20261102:115927]     Trovati 2 file(s) per pattern: pyt_form*.*
+[20261102:115927]     Elaborazione: pyt_form.py
+[20261102:115927]       COPIATO: pyt_form.py
+[20261102:115927]     Elaborazione: pyt_form_man.md
+[20261102:115927]       COPIATO: pyt_form_man.md
+[20261102:115927]   Elaborazione: requirements*.*
+[20261102:115927]     Trovati 8 file(s) per pattern: requirements*.*
+[20261102:115927]     Elaborazione: requirements_X64.md
+[20261102:115927]       COPIATO: requirements_X64.md
+[20261102:115927]     Elaborazione: requirements_X64.txt
+[20261102:115927]       COPIATO: requirements_X64.txt
+[20261102:115927]     Elaborazione: requirements_mach0vdi.txt
+[20261102:115927]       COPIATO: requirements_mach0vdi.txt
+[20261102:115927]     Elaborazione: requirements_X64_LIGHT.txt
+[20261102:115928]       COPIATO: requirements_X64_LIGHT.txt
+[20261102:115928]     Elaborazione: requirements_X64_309.txt
+[20261102:115928]       COPIATO: requirements_X64_309.txt
+[20261102:115928]     Elaborazione: requirements_X64_309_LIGHT.txt
+[20261102:115928]       COPIATO: requirements_X64_309_LIGHT.txt
+[20261102:115928]     Elaborazione: requirements_x64_309.md
+[20261102:115928]       COPIATO: requirements_x64_309.md
+[20261102:115928]     Elaborazione: requirements_X32_309.txt
+[20261102:115928]       COPIATO: requirements_X32_309.txt
+[20261102:115928]   Elaborazione: x.cmd
+[20261102:115928]     COPIATO: x.cmd
+[20261102:115928] 
+============================================================
+[20261102:115928] AZIONE: copy_g
+[20261102:115928] ============================================================
+[20261102:115928]   path_source: G:\Il mio Drive\Progetti\pyt_pyn
+[20261102:115928]   path_dest:   v:\Scripts
+[20261102:115928]   mode:        overwrite
+[20261102:115928]   files:       6 file(s)
+[20261102:115928]   Elaborazione: pyt.*
+[20261102:115928]     Trovati 4 file(s) per pattern: pyt.*
+[20261102:115928]     Elaborazione: pyt.cmd
+[20261102:115928]       COPIATO: pyt.cmd
+[20261102:115928]     Elaborazione: pyt.py
+[20261102:115928]       COPIATO: pyt.py
+[20261102:115928]     Elaborazione: pyt.sh
+[20261102:115928]       COPIATO: pyt.sh
+[20261102:115928]     Elaborazione: pyt.log
+[20261102:115928]       COPIATO: pyt.log
+[20261102:115928]   Elaborazione: pyn.*
+[20261102:115928]     Trovati 2 file(s) per pattern: pyn.*
+[20261102:115928]     Elaborazione: pyn.cmd
+[20261102:115928]       COPIATO: pyn.cmd
+[20261102:115928]     Elaborazione: pyn.sh
+[20261102:115928]       COPIATO: pyn.sh
+[20261102:115928]   Elaborazione: pyy_report.*
+[20261102:115928]     SALTATO (nessun file corrispondente al pattern): pyy_report.*
+[20261102:115928]   Elaborazione: pyt_form*.*
+[20261102:115928]     Trovati 2 file(s) per pattern: pyt_form*.*
+[20261102:115929]     Elaborazione: pyt_form.py
+[20261102:115929]       COPIATO: pyt_form.py
+[20261102:115929]     Elaborazione: pyt_form_man.md
+[20261102:115929]       COPIATO: pyt_form_man.md
+[20261102:115929]   Elaborazione: requirements*.*
+[20261102:115929]     Trovati 8 file(s) per pattern: requirements*.*
+[20261102:115929]     Elaborazione: requirements_X64.md
+[20261102:115929]       COPIATO: requirements_X64.md
+[20261102:115929]     Elaborazione: requirements_X64.txt
+[20261102:115929]       COPIATO: requirements_X64.txt
+[20261102:115929]     Elaborazione: requirements_mach0vdi.txt
+[20261102:115929]       COPIATO: requirements_mach0vdi.txt
+[20261102:115929]     Elaborazione: requirements_X64_LIGHT.txt
+[20261102:115929]       COPIATO: requirements_X64_LIGHT.txt
+[20261102:115929]     Elaborazione: requirements_X64_309.txt
+[20261102:115929]       COPIATO: requirements_X64_309.txt
+[20261102:115929]     Elaborazione: requirements_X64_309_LIGHT.txt
+[20261102:115929]       COPIATO: requirements_X64_309_LIGHT.txt
+[20261102:115929]     Elaborazione: requirements_x64_309.md
+[20261102:115929]       COPIATO: requirements_x64_309.md
+[20261102:115929]     Elaborazione: requirements_X32_309.txt
+[20261102:115929]       COPIATO: requirements_X32_309.txt
+[20261102:115929]   Elaborazione: x.cmd
+[20261102:115929]     COPIATO: x.cmd
+[20261102:115929] 
+============================================================
+[20261102:115929] RIEPILOGO FINALE
+[20261102:115929] ============================================================
+[20261102:115929] File copiati   : 71
+[20261102:115929] File aggiornati: 0
+[20261102:115929] File saltati   : 1
+[20261102:115929] Errori         : 0
+[20261102:115929] Operazione completata senza errori.
+PYT.END: ROBOCOPY 20261102:115929
+END: 20261102:115929
+PYT.START: 20261102 20261102:150024
+PYT.START: GREP 20261102:150024
+GREP.START: 20261102:150024 grep pattern="errore" file: C:\Users\User\AppData\Local\Temp\opencode\grep_test\a.txt C:\Users\User\AppData\Local\Temp\opencode\grep_test\b.txt (2 da cercare)
+FILE: C:\Users\User\AppData\Local\Temp\opencode\grep_test\a.txt
+3: errore smoothing
+1 corrispondenze in a.txt
+GREP.END: 20261102:150024 - corrispondenze: 1, file con match: 1/2, errori: 0
+PYT.END: GREP 20261102:150024
+END: 20261102:150024
+PYT.START: 20261102 20261102:150038
+PYT.START: GREP 20261102:150038
+GREP.START: 20261102:150038 grep -i pattern="errore" file: C:\Users\User\AppData\Local\Temp\opencode\grep_test\a.txt (1 da cercare)
+FILE: C:\Users\User\AppData\Local\Temp\opencode\grep_test\a.txt
+ERRORE [grep]: 'charmap' codec can't encode character '\ufeff' in position 3: character maps to <undefined>
+PYT.END: GREP 20261102:150038
+END: 20261102:150038
+PYT.START: 20261102 20261102:150039
+PYT.START: GREP 20261102:150039
+GREP.START: 20261102:150039 grep -v pattern="proble" file: C:\Users\User\AppData\Local\Temp\opencode\grep_test\b.txt (1 da cercare)
+FILE: C:\Users\User\AppData\Local\Temp\opencode\grep_test\b.txt
+ERRORE [grep]: 'charmap' codec can't encode character '\ufeff' in position 3: character maps to <undefined>
+PYT.END: GREP 20261102:150039
+END: 20261102:150039
+PYT.START: 20261102 20261102:150057
+PYT.START: GREP 20261102:150057
+GREP.START: 20261102:150057 grep -i pattern="errore" file: C:\Users\User\AppData\Local\Temp\opencode\grep_test\a.txt (1 da cercare)
+FILE: C:\Users\User\AppData\Local\Temp\opencode\grep_test\a.txt
+ERRORE [grep]: 'charmap' codec can't encode character '\ufeff' in position 3: character maps to <undefined>
+PYT.END: GREP 20261102:150057
+END: 20261102:150057
+PYT.START: 20261102 20261102:150058
+PYT.START: GREP 20261102:150058
+GREP.START: 20261102:150058 grep -v pattern="proble" file: C:\Users\User\AppData\Local\Temp\opencode\grep_test\b.txt (1 da cercare)
+FILE: C:\Users\User\AppData\Local\Temp\opencode\grep_test\b.txt
+ERRORE [grep]: 'charmap' codec can't encode character '\ufeff' in position 3: character maps to <undefined>
+PYT.END: GREP 20261102:150058
+END: 20261102:150058
+PYT.START: 20261102 20261102:150205
+PYT.START: GREP 20261102:150205
+GREP.START: 20261102:150205 grep -i pattern="errore" file: C:\Users\User\AppData\Local\Temp\opencode\grep_test\a.txt (1 da cercare)
+FILE: C:\Users\User\AppData\Local\Temp\opencode\grep_test\a.txt
+1: Errore 1
+3: errore smoothing
+2 corrispondenze in a.txt
+GREP.END: 20261102:150205 - corrispondenze: 2, file con match: 1/1, errori: 0
+PYT.END: GREP 20261102:150205
+END: 20261102:150205
+PYT.START: 20261102 20261102:150216
+PYT.START: GREP 20261102:150216
+GREP.START: 20261102:150216 grep -v pattern="proble" file: C:\Users\User\AppData\Local\Temp\opencode\grep_test\b.txt (1 da cercare)
+FILE: C:\Users\User\AppData\Local\Temp\opencode\grep_test\b.txt
+1: ERROR x
+2: ok
+2 corrispondenze in b.txt
+GREP.END: 20261102:150216 - corrispondenze: 2, file con match: 1/1, errori: 0
+PYT.END: GREP 20261102:150216
+END: 20261102:150216
+PYT.START: 20261102 20261102:150220
+PYT.START: GREP 20261102:150220
+GREP.START: 20261102:150220 grep -r -p "C:\Users\User\AppData\Local\Temp\opencode\grep_test" pattern="errore" file: * (4 da cercare)
+FILE: C:\Users\User\AppData\Local\Temp\opencode\grep_test\a.txt
+3: errore smoothing
+1 corrispondenze in a.txt
+FILE: C:\Users\User\AppData\Local\Temp\opencode\grep_test\sub\c.txt
+1: errore profondo
+1 corrispondenze in c.txt
+GREP.END: 20261102:150220 - corrispondenze: 2, file con match: 2/4, errori: 0
+PYT.END: GREP 20261102:150220
+END: 20261102:150220
+PYT.START: 20261102 20261102:150236
+PYT.START: GREP 20261102:150236
+GREP.START: 20261102:150236 grep -i pattern="errore" file: C:\Users\User\AppData\Local\Temp\opencode\grep_test\*.txt (2 da cercare)
+FILE: C:\Users\User\AppData\Local\Temp\opencode\grep_test\a.txt
+1: Errore 1
+3: errore smoothing
+2 corrispondenze in a.txt
+GREP.END: 20261102:150236 - corrispondenze: 2, file con match: 1/2, errori: 0
+PYT.END: GREP 20261102:150236
+END: 20261102:150236
+PYT.START: 20261102 20261102:150238
+PYT.START: GREP 20261102:150238
+ERRORE [grep]: Nessun file da cercare: C:\Users\User\AppData\Local\Temp\opencode\grep_test\inesistente.txt: non trovato
+PYT.END: GREP 20261102:150238
+END: 20261102:150238
+PYT.START: 20261102 20261102:150251
+PYT.START: GREP 20261102:150251
+ERRORE [grep]: Nessun file: indicare i file o -p/--path.
+PYT.END: GREP 20261102:150251
+END: 20261102:150251
+PYT.START: 20261102 20261102:150253
+PYT.START: GREP 20261102:150253
+GREP.START: 20261102:150253 grep -p "C:\Users\User\AppData\Local\Temp\opencode\grep_test" pattern="profondo" file: * (3 da cercare)
+Nessuna corrispondenza trovata
+GREP.END: 20261102:150253 - corrispondenze: 0, file con match: 0/3, errori: 0
+PYT.END: GREP 20261102:150253
+END: 20261102:150253
+Errore: file di direttive nonexistent.txt non trovato.
+PYT.START: 20261102 20261102:151421
+PYT.START: GREP 20261102:151421
+GREP.START: 20261102:151421 grep -i -v -r -p "C:\Users\User\AppData\Local\Temp\opencode\grep_test" pattern="zzzz_inesistente" file: * (4 da cercare)
+FILE: C:\Users\User\AppData\Local\Temp\opencode\grep_test\a.txt
+1: Errore 1
+2: nessun problema
+3: errore smoothing
+3 corrispondenze in a.txt
+FILE: C:\Users\User\AppData\Local\Temp\opencode\grep_test\b.txt
+1: ERROR x
+2: ok
+2 corrispondenze in b.txt
+FILE: C:\Users\User\AppData\Local\Temp\opencode\grep_test\sub\c.txt
+1: errore profondo
+2: fine
+2 corrispondenze in c.txt
+GREP.END: 20261102:151421 - corrispondenze: 7, file con match: 3/4, errori: 0
+PYT.END: GREP 20261102:151421
+END: 20261102:151421
+PYT.START: 20261102 20261107:204529
+PYT.START: ROBOCOPY 20261107:204529
+[20261107:204529] Fase 1: Lettura e validazione del file di configurazione JSON
+[20261107:204529] Configurazione letta: 4 action(s) trovate
+[20261107:204529] 
+============================================================
+[20261107:204529] AZIONE: copy_v
+[20261107:204529] ============================================================
+[20261107:204529]   path_source: G:\Il mio Drive\Progetti\pyt_pyn
+[20261107:204529]   path_dest:   v:\Scripts
+[20261107:204529]   mode:        overwrite
+[20261107:204529]   files:       6 file(s)
+[20261107:204529]   Elaborazione: pyt.*
+[20261107:204529]     Trovati 4 file(s) per pattern: pyt.*
+[20261107:204529]     Elaborazione: pyt.cmd
+[20261107:204529]       COPIATO: pyt.cmd
+[20261107:204529]     Elaborazione: pyt.py
+[20261107:204529]       COPIATO: pyt.py
+[20261107:204530]     Elaborazione: pyt.sh
+[20261107:204530]       COPIATO: pyt.sh
+[20261107:204530]     Elaborazione: pyt.log
+[20261107:204530]       COPIATO: pyt.log
+[20261107:204530]   Elaborazione: pyn.*
+[20261107:204530]     Trovati 2 file(s) per pattern: pyn.*
+[20261107:204530]     Elaborazione: pyn.cmd
+[20261107:204530]       COPIATO: pyn.cmd
+[20261107:204530]     Elaborazione: pyn.sh
+[20261107:204530]       COPIATO: pyn.sh
+[20261107:204530]   Elaborazione: pyt_report.*
+[20261107:204530]     Trovati 1 file(s) per pattern: pyt_report.*
+[20261107:204530]     Elaborazione: pyt_report.py
+[20261107:204530]       COPIATO: pyt_report.py
+[20261107:204530]   Elaborazione: pyt_form*.*
+[20261107:204530]     Trovati 2 file(s) per pattern: pyt_form*.*
+[20261107:204530]     Elaborazione: pyt_form.py
+[20261107:204530]       COPIATO: pyt_form.py
+[20261107:204530]     Elaborazione: pyt_form_man.md
+[20261107:204530]       COPIATO: pyt_form_man.md
+[20261107:204530]   Elaborazione: requirements*.*
+[20261107:204530]     Trovati 8 file(s) per pattern: requirements*.*
+[20261107:204530]     Elaborazione: requirements_X64.md
+[20261107:204530]       COPIATO: requirements_X64.md
+[20261107:204530]     Elaborazione: requirements_X64.txt
+[20261107:204530]       COPIATO: requirements_X64.txt
+[20261107:204530]     Elaborazione: requirements_mach0vdi.txt
+[20261107:204530]       COPIATO: requirements_mach0vdi.txt
+[20261107:204530]     Elaborazione: requirements_X64_LIGHT.txt
+[20261107:204530]       COPIATO: requirements_X64_LIGHT.txt
+[20261107:204530]     Elaborazione: requirements_X64_309.txt
+[20261107:204531]       COPIATO: requirements_X64_309.txt
+[20261107:204531]     Elaborazione: requirements_X64_309_LIGHT.txt
+[20261107:204531]       COPIATO: requirements_X64_309_LIGHT.txt
+[20261107:204531]     Elaborazione: requirements_x64_309.md
+[20261107:204531]       COPIATO: requirements_x64_309.md
+[20261107:204531]     Elaborazione: requirements_X32_309.txt
+[20261107:204531]       COPIATO: requirements_X32_309.txt
+[20261107:204531]   Elaborazione: x.cmd
+[20261107:204531]     COPIATO: x.cmd
+[20261107:204531] 
+============================================================
+[20261107:204531] AZIONE: copy_adminscripts
+[20261107:204531] ============================================================
+[20261107:204531]   path_source: G:\Il mio Drive\Progetti\pyt_pyn
+[20261107:204531]   path_dest:   G:\Il mio Drive\Progetti\adminscripts
+[20261107:204531]   mode:        overwrite
+[20261107:204531]   files:       6 file(s)
+[20261107:204531]   Elaborazione: pyt.*
+[20261107:204531]     Trovati 4 file(s) per pattern: pyt.*
+[20261107:204531]     Elaborazione: pyt.cmd
+[20261107:204531]       COPIATO: pyt.cmd
+[20261107:204531]     Elaborazione: pyt.py
+[20261107:204531]       COPIATO: pyt.py
+[20261107:204531]     Elaborazione: pyt.sh
+[20261107:204531]       COPIATO: pyt.sh
+[20261107:204531]     Elaborazione: pyt.log
+[20261107:204531]       COPIATO: pyt.log
+[20261107:204531]   Elaborazione: pyn.*
+[20261107:204531]     Trovati 2 file(s) per pattern: pyn.*
+[20261107:204531]     Elaborazione: pyn.cmd
+[20261107:204532]       COPIATO: pyn.cmd
+[20261107:204532]     Elaborazione: pyn.sh
+[20261107:204532]       COPIATO: pyn.sh
+[20261107:204532]   Elaborazione: pyt_report.*
+[20261107:204532]     Trovati 1 file(s) per pattern: pyt_report.*
+[20261107:204532]     Elaborazione: pyt_report.py
+[20261107:204532]       COPIATO: pyt_report.py
+[20261107:204532]   Elaborazione: pyt_form*.*
+[20261107:204532]     Trovati 2 file(s) per pattern: pyt_form*.*
+[20261107:204532]     Elaborazione: pyt_form.py
+[20261107:204532]       COPIATO: pyt_form.py
+[20261107:204532]     Elaborazione: pyt_form_man.md
+[20261107:204532]       COPIATO: pyt_form_man.md
+[20261107:204532]   Elaborazione: requirements*.*
+[20261107:204532]     Trovati 8 file(s) per pattern: requirements*.*
+[20261107:204532]     Elaborazione: requirements_X64.md
+[20261107:204532]       COPIATO: requirements_X64.md
+[20261107:204532]     Elaborazione: requirements_X64.txt
+[20261107:204532]       COPIATO: requirements_X64.txt
+[20261107:204532]     Elaborazione: requirements_mach0vdi.txt
+[20261107:204532]       COPIATO: requirements_mach0vdi.txt
+[20261107:204532]     Elaborazione: requirements_X64_LIGHT.txt
+[20261107:204532]       COPIATO: requirements_X64_LIGHT.txt
+[20261107:204532]     Elaborazione: requirements_X64_309.txt
+[20261107:204532]       COPIATO: requirements_X64_309.txt
+[20261107:204532]     Elaborazione: requirements_X64_309_LIGHT.txt
+[20261107:204533]       COPIATO: requirements_X64_309_LIGHT.txt
+[20261107:204533]     Elaborazione: requirements_x64_309.md
+[20261107:204533]       COPIATO: requirements_x64_309.md
+[20261107:204533]     Elaborazione: requirements_X32_309.txt
+[20261107:204533]       COPIATO: requirements_X32_309.txt
+[20261107:204533]   Elaborazione: x.cmd
+[20261107:204533]     COPIATO: x.cmd
+[20261107:204533] 
+============================================================
+[20261107:204533] AZIONE: copy_adminscripts_github
+[20261107:204533] ============================================================
+[20261107:204533]   path_source: G:\Il mio Drive\Progetti\pyt_pyn
+[20261107:204533]   path_dest:   G:\Il mio Drive\Github\adminscripts
+[20261107:204533]   mode:        overwrite
+[20261107:204533]   files:       6 file(s)
+[20261107:204533]   Elaborazione: pyt.*
+[20261107:204533]     Trovati 4 file(s) per pattern: pyt.*
+[20261107:204533]     Elaborazione: pyt.cmd
+[20261107:204533]       COPIATO: pyt.cmd
+[20261107:204533]     Elaborazione: pyt.py
+[20261107:204533]       COPIATO: pyt.py
+[20261107:204533]     Elaborazione: pyt.sh
+[20261107:204533]       COPIATO: pyt.sh
+[20261107:204533]     Elaborazione: pyt.log

@@ -1,0 +1,31 @@
+{
+  "config": {
+    "path_dest": "G:/Il mio Drive/Progetti/Applic_ntg/ntwebsrv/dati",
+    "path_log": "ntwebsrv.log",
+    "host": "0.0.0.0",
+    "port": 8000,
+    "max_file_size_mb": 100,
+    "download_dir": "condivisi",
+    "exec_timeout_sec": 60,
+    "allowed_scripts": {
+      "backup_db": ["bash", "/opt/scripts/backup.sh"],
+      "pulisci_log": ["bash", "/opt/scripts/clean_logs.sh"],
+      "status_docker": ["docker", "ps"],
+      "system_info": ["bash", "-c", "uptime && df -h && free -m"]
+    }
+  },
+  "users": [
+    {
+      "mail": "admin@azienda.it",
+      "name": "Amministratore Sistema",
+      "key": "K7x9mP2qR4",
+      "keyhash": "admin_base_secret_unico_1"
+    },
+    {
+      "mail": "client@partner.com",
+      "name": "Client Partner",
+      "key": "",
+      "keyhash": "partner_base_secret_unico_2"
+    }
+  ]
+}

@@ -1,4 +1,5 @@
 @ECHO OFF
+REM VERSIONE 20261102 - Tolto PY_BASETYPE: solo PY_TYPE (X32/X64/W64) per costruzione path PYTHON%PY_TYPE%; echo stato senza PY_BASETYPE
 REM ORIGINALE SU PC GOMERA - LAUNCHER PYTHON / PODMAN / ALTRO VIA CMD - BASH
 REM VERSIONE 20261031 - Lancio script: argomenti raccolti in loop, niente "" per parametri assenti (no apici vuoti finali)
 REM VERSIONE 20261010 - Rename x->py (test<-pytest, mod<-pymod), pip help in zona Python, stub x/pymod/pip in py
@@ -45,16 +46,13 @@ REM VERSIONE 20250405 - CORREZIONI - INSTALLAZIONE CRYPTOGRAFY - FORSE PSUTIL
 REM VERSIONE 20250203 - DEFAULT X64
 REM VERSIONE 20250130 - GESTIONE MIGLIORE RUNTIME
 
-SET PYN_VER=20261031
+SET PYN_VER=20261102
 
 REM PER PRIMO
 :SETUP
 SET PY_SCRIPT=%0
 SET PY_P0=%~dp0
 IF "%PY_TYPE%"=="" SET PY_TYPE=X64
-REM Estrae base type (es. X64 da X64_309) per costruzione path e glob
-FOR /F "delims=_" %%T IN ("%PY_TYPE%") DO SET "PY_BASETYPE=%%T"
-IF "%PY_BASETYPE%"=="" SET "PY_BASETYPE=X64"
 SET PY_PATH=
 SET "PAR1=%~1"
 SET "PAR2=%~2"
@@ -82,109 +80,109 @@ IF "%~1"=="help" GOTO :HELP
 REM POSSIBILI PATH - ordine documentato: K: (se MACH0) > D: > C: > portableai > XX (TOOLS locale)
 for %%I in ("%~dp0..") do set "PATH_PADRE=%%~fI"
 
-SET "PATHP_01=V:\Tools\PYTHON%PY_BASETYPE%"
-SET "PATHP_02=D:\APPLIC\PYTHON%PY_BASETYPE%"
-SET "PATHP_03=C:\APPLIC\PYTHON%PY_BASETYPE%"
-SET "PATHP_04=C:\portableai\Tools\PYTHON%PY_BASETYPE%"
-SET "PATHP_05=V:\portableai\Tools\PYTHON%PY_BASETYPE%"
-SET "PATHP_06=K:\Tools\Python%PY_BASETYPE%"
-SET "PATHP_XX=%PATH_PADRE%\TOOLS\PYTHON%PY_BASETYPE%"
+SET "PATHP_01=V:\Tools\PYTHON%PY_TYPE%"
+SET "PATHP_02=D:\APPLIC\PYTHON%PY_TYPE%"
+SET "PATHP_03=C:\APPLIC\PYTHON%PY_TYPE%"
+SET "PATHP_04=C:\portableai\Tools\PYTHON%PY_TYPE%"
+SET "PATHP_05=V:\portableai\Tools\PYTHON%PY_TYPE%"
+SET "PATHP_06=K:\Tools\Python%PY_TYPE%"
+SET "PATHP_XX=%PATH_PADRE%\TOOLS\PYTHON%PY_TYPE%"
 
 REM Cerca varianti con suffisso versione: PRIMA controlla path base (senza suffisso), POI versionati
 REM V:\Tools
-IF EXIST "V:\Tools\PYTHON%PY_BASETYPE%\python.exe" SET "PATHP_01=V:\Tools\PYTHON%PY_BASETYPE%"
-IF EXIST "V:\Tools\PYTHON%PY_BASETYPE%\App\python.exe" SET "PATHP_01=V:\Tools\PYTHON%PY_BASETYPE%"
-IF EXIST "V:\Tools\PYTHON%PY_BASETYPE%\App\Python\python.exe" SET "PATHP_01=V:\Tools\PYTHON%PY_BASETYPE%"
-IF NOT DEFINED PATHP_01 FOR /D %%D IN ("V:\Tools\PYTHON%PY_BASETYPE%_*") DO (
+IF EXIST "V:\Tools\PYTHON%PY_TYPE%\python.exe" SET "PATHP_01=V:\Tools\PYTHON%PY_TYPE%"
+IF EXIST "V:\Tools\PYTHON%PY_TYPE%\App\python.exe" SET "PATHP_01=V:\Tools\PYTHON%PY_TYPE%"
+IF EXIST "V:\Tools\PYTHON%PY_TYPE%\App\Python\python.exe" SET "PATHP_01=V:\Tools\PYTHON%PY_TYPE%"
+IF NOT DEFINED PATHP_01 FOR /D %%D IN ("V:\Tools\PYTHON%PY_TYPE%_*") DO (
     IF EXIST "%%D\python.exe" SET "PATHP_01=%%D"
     IF EXIST "%%D\App\python.exe" SET "PATHP_01=%%D"
     IF EXIST "%%D\App\Python\python.exe" SET "PATHP_01=%%D"
 )
-IF NOT DEFINED PATHP_01 FOR /D %%D IN ("V:\Tools\PYTHON%PY_BASETYPE%*") DO (
+IF NOT DEFINED PATHP_01 FOR /D %%D IN ("V:\Tools\PYTHON%PY_TYPE%*") DO (
     IF EXIST "%%D\python.exe" SET "PATHP_01=%%D"
     IF EXIST "%%D\App\python.exe" SET "PATHP_01=%%D"
     IF EXIST "%%D\App\Python\python.exe" SET "PATHP_01=%%D"
 )
 REM D:\APPLIC
-IF EXIST "D:\APPLIC\PYTHON%PY_BASETYPE%\python.exe" SET "PATHP_02=D:\APPLIC\PYTHON%PY_BASETYPE%"
-IF EXIST "D:\APPLIC\PYTHON%PY_BASETYPE%\App\python.exe" SET "PATHP_02=D:\APPLIC\PYTHON%PY_BASETYPE%"
-IF EXIST "D:\APPLIC\PYTHON%PY_BASETYPE%\App\Python\python.exe" SET "PATHP_02=D:\APPLIC\PYTHON%PY_BASETYPE%"
-IF NOT DEFINED PATHP_02 FOR /D %%D IN ("D:\APPLIC\PYTHON%PY_BASETYPE%_*") DO (
+IF EXIST "D:\APPLIC\PYTHON%PY_TYPE%\python.exe" SET "PATHP_02=D:\APPLIC\PYTHON%PY_TYPE%"
+IF EXIST "D:\APPLIC\PYTHON%PY_TYPE%\App\python.exe" SET "PATHP_02=D:\APPLIC\PYTHON%PY_TYPE%"
+IF EXIST "D:\APPLIC\PYTHON%PY_TYPE%\App\Python\python.exe" SET "PATHP_02=D:\APPLIC\PYTHON%PY_TYPE%"
+IF NOT DEFINED PATHP_02 FOR /D %%D IN ("D:\APPLIC\PYTHON%PY_TYPE%_*") DO (
     IF EXIST "%%D\python.exe" SET "PATHP_02=%%D"
     IF EXIST "%%D\App\python.exe" SET "PATHP_02=%%D"
     IF EXIST "%%D\App\Python\python.exe" SET "PATHP_02=%%D"
 )
-IF NOT DEFINED PATHP_02 FOR /D %%D IN ("D:\APPLIC\PYTHON%PY_BASETYPE%*") DO (
+IF NOT DEFINED PATHP_02 FOR /D %%D IN ("D:\APPLIC\PYTHON%PY_TYPE%*") DO (
     IF EXIST "%%D\python.exe" SET "PATHP_02=%%D"
     IF EXIST "%%D\App\python.exe" SET "PATHP_02=%%D"
     IF EXIST "%%D\App\Python\python.exe" SET "PATHP_02=%%D"
 )
 REM C:\APPLIC
-IF EXIST "C:\APPLIC\PYTHON%PY_BASETYPE%\python.exe" SET "PATHP_03=C:\APPLIC\PYTHON%PY_BASETYPE%"
-IF EXIST "C:\APPLIC\PYTHON%PY_BASETYPE%\App\python.exe" SET "PATHP_03=C:\APPLIC\PYTHON%PY_BASETYPE%"
-IF EXIST "C:\APPLIC\PYTHON%PY_BASETYPE%\App\Python\python.exe" SET "PATHP_03=C:\APPLIC\PYTHON%PY_BASETYPE%"
-IF NOT DEFINED PATHP_03 FOR /D %%D IN ("C:\APPLIC\PYTHON%PY_BASETYPE%_*") DO (
+IF EXIST "C:\APPLIC\PYTHON%PY_TYPE%\python.exe" SET "PATHP_03=C:\APPLIC\PYTHON%PY_TYPE%"
+IF EXIST "C:\APPLIC\PYTHON%PY_TYPE%\App\python.exe" SET "PATHP_03=C:\APPLIC\PYTHON%PY_TYPE%"
+IF EXIST "C:\APPLIC\PYTHON%PY_TYPE%\App\Python\python.exe" SET "PATHP_03=C:\APPLIC\PYTHON%PY_TYPE%"
+IF NOT DEFINED PATHP_03 FOR /D %%D IN ("C:\APPLIC\PYTHON%PY_TYPE%_*") DO (
     IF EXIST "%%D\python.exe" SET "PATHP_03=%%D"
     IF EXIST "%%D\App\python.exe" SET "PATHP_03=%%D"
     IF EXIST "%%D\App\Python\python.exe" SET "PATHP_03=%%D"
 )
-IF NOT DEFINED PATHP_03 FOR /D %%D IN ("C:\APPLIC\PYTHON%PY_BASETYPE%*") DO (
+IF NOT DEFINED PATHP_03 FOR /D %%D IN ("C:\APPLIC\PYTHON%PY_TYPE%*") DO (
     IF EXIST "%%D\python.exe" SET "PATHP_03=%%D"
     IF EXIST "%%D\App\python.exe" SET "PATHP_03=%%D"
     IF EXIST "%%D\App\Python\python.exe" SET "PATHP_03=%%D"
 )
 REM C:\portableai\Tools
-IF EXIST "C:\portableai\Tools\PYTHON%PY_BASETYPE%\python.exe" SET "PATHP_04=C:\portableai\Tools\PYTHON%PY_BASETYPE%"
-IF EXIST "C:\portableai\Tools\PYTHON%PY_BASETYPE%\App\python.exe" SET "PATHP_04=C:\portableai\Tools\PYTHON%PY_BASETYPE%"
-IF EXIST "C:\portableai\Tools\PYTHON%PY_BASETYPE%\App\Python\python.exe" SET "PATHP_04=C:\portableai\Tools\PYTHON%PY_BASETYPE%"
-IF NOT DEFINED PATHP_04 FOR /D %%D IN ("C:\portableai\Tools\PYTHON%PY_BASETYPE%_*") DO (
+IF EXIST "C:\portableai\Tools\PYTHON%PY_TYPE%\python.exe" SET "PATHP_04=C:\portableai\Tools\PYTHON%PY_TYPE%"
+IF EXIST "C:\portableai\Tools\PYTHON%PY_TYPE%\App\python.exe" SET "PATHP_04=C:\portableai\Tools\PYTHON%PY_TYPE%"
+IF EXIST "C:\portableai\Tools\PYTHON%PY_TYPE%\App\Python\python.exe" SET "PATHP_04=C:\portableai\Tools\PYTHON%PY_TYPE%"
+IF NOT DEFINED PATHP_04 FOR /D %%D IN ("C:\portableai\Tools\PYTHON%PY_TYPE%_*") DO (
     IF EXIST "%%D\python.exe" SET "PATHP_04=%%D"
     IF EXIST "%%D\App\python.exe" SET "PATHP_04=%%D"
     IF EXIST "%%D\App\Python\python.exe" SET "PATHP_04=%%D"
 )
-IF NOT DEFINED PATHP_04 FOR /D %%D IN ("C:\portableai\Tools\PYTHON%PY_BASETYPE%*") DO (
+IF NOT DEFINED PATHP_04 FOR /D %%D IN ("C:\portableai\Tools\PYTHON%PY_TYPE%*") DO (
     IF EXIST "%%D\python.exe" SET "PATHP_04=%%D"
     IF EXIST "%%D\App\python.exe" SET "PATHP_04=%%D"
     IF EXIST "%%D\App\Python\python.exe" SET "PATHP_04=%%D"
 )
 REM V:\portableai\Tools
-IF EXIST "V:\portableai\Tools\PYTHON%PY_BASETYPE%\python.exe" SET "PATHP_05=V:\portableai\Tools\PYTHON%PY_BASETYPE%"
-IF EXIST "V:\portableai\Tools\PYTHON%PY_BASETYPE%\App\python.exe" SET "PATHP_05=V:\portableai\Tools\PYTHON%PY_BASETYPE%"
-IF EXIST "V:\portableai\Tools\PYTHON%PY_BASETYPE%\App\Python\python.exe" SET "PATHP_05=V:\portableai\Tools\PYTHON%PY_BASETYPE%"
-IF NOT DEFINED PATHP_05 FOR /D %%D IN ("V:\portableai\Tools\PYTHON%PY_BASETYPE%_*") DO (
+IF EXIST "V:\portableai\Tools\PYTHON%PY_TYPE%\python.exe" SET "PATHP_05=V:\portableai\Tools\PYTHON%PY_TYPE%"
+IF EXIST "V:\portableai\Tools\PYTHON%PY_TYPE%\App\python.exe" SET "PATHP_05=V:\portableai\Tools\PYTHON%PY_TYPE%"
+IF EXIST "V:\portableai\Tools\PYTHON%PY_TYPE%\App\Python\python.exe" SET "PATHP_05=V:\portableai\Tools\PYTHON%PY_TYPE%"
+IF NOT DEFINED PATHP_05 FOR /D %%D IN ("V:\portableai\Tools\PYTHON%PY_TYPE%_*") DO (
     IF EXIST "%%D\python.exe" SET "PATHP_05=%%D"
     IF EXIST "%%D\App\python.exe" SET "PATHP_05=%%D"
     IF EXIST "%%D\App\Python\python.exe" SET "PATHP_05=%%D"
 )
-IF NOT DEFINED PATHP_05 FOR /D %%D IN ("V:\portableai\Tools\PYTHON%PY_BASETYPE%*") DO (
+IF NOT DEFINED PATHP_05 FOR /D %%D IN ("V:\portableai\Tools\PYTHON%PY_TYPE%*") DO (
     IF EXIST "%%D\python.exe" SET "PATHP_05=%%D"
     IF EXIST "%%D\App\python.exe" SET "PATHP_05=%%D"
     IF EXIST "%%D\App\Python\python.exe" SET "PATHP_05=%%D"
 )
 REM K:\Tools
-IF EXIST "K:\Tools\Python%PY_BASETYPE%\python.exe" SET "PATHP_06=K:\Tools\Python%PY_BASETYPE%"
-IF EXIST "K:\Tools\Python%PY_BASETYPE%\App\python.exe" SET "PATHP_06=K:\Tools\Python%PY_BASETYPE%"
-IF EXIST "K:\Tools\Python%PY_BASETYPE%\App\Python\python.exe" SET "PATHP_06=K:\Tools\Python%PY_BASETYPE%"
-IF NOT DEFINED PATHP_06 FOR /D %%D IN ("K:\Tools\Python%PY_BASETYPE%_*") DO (
+IF EXIST "K:\Tools\Python%PY_TYPE%\python.exe" SET "PATHP_06=K:\Tools\Python%PY_TYPE%"
+IF EXIST "K:\Tools\Python%PY_TYPE%\App\python.exe" SET "PATHP_06=K:\Tools\Python%PY_TYPE%"
+IF EXIST "K:\Tools\Python%PY_TYPE%\App\Python\python.exe" SET "PATHP_06=K:\Tools\Python%PY_TYPE%"
+IF NOT DEFINED PATHP_06 FOR /D %%D IN ("K:\Tools\Python%PY_TYPE%_*") DO (
     IF EXIST "%%D\python.exe" SET "PATHP_06=%%D"
     IF EXIST "%%D\App\python.exe" SET "PATHP_06=%%D"
     IF EXIST "%%D\App\Python\python.exe" SET "PATHP_06=%%D"
 )
-IF NOT DEFINED PATHP_06 FOR /D %%D IN ("K:\Tools\Python%PY_BASETYPE%*") DO (
+IF NOT DEFINED PATHP_06 FOR /D %%D IN ("K:\Tools\Python%PY_TYPE%*") DO (
     IF EXIST "%%D\python.exe" SET "PATHP_06=%%D"
     IF EXIST "%%D\App\python.exe" SET "PATHP_06=%%D"
     IF EXIST "%%D\App\Python\python.exe" SET "PATHP_06=%%D"
 )
 REM XX (TOOLS locale)
-IF EXIST "%PATH_PADRE%\TOOLS\PYTHON%PY_BASETYPE%\python.exe" SET "PATHP_XX=%PATH_PADRE%\TOOLS\PYTHON%PY_BASETYPE%"
-IF EXIST "%PATH_PADRE%\TOOLS\PYTHON%PY_BASETYPE%\App\python.exe" SET "PATHP_XX=%PATH_PADRE%\TOOLS\PYTHON%PY_BASETYPE%"
-IF EXIST "%PATH_PADRE%\TOOLS\PYTHON%PY_BASETYPE%\App\Python\python.exe" SET "PATHP_XX=%PATH_PADRE%\TOOLS\PYTHON%PY_BASETYPE%"
-IF NOT DEFINED PATHP_XX FOR /D %%D IN ("%PATH_PADRE%\TOOLS\PYTHON%PY_BASETYPE%_*") DO (
+IF EXIST "%PATH_PADRE%\TOOLS\PYTHON%PY_TYPE%\python.exe" SET "PATHP_XX=%PATH_PADRE%\TOOLS\PYTHON%PY_TYPE%"
+IF EXIST "%PATH_PADRE%\TOOLS\PYTHON%PY_TYPE%\App\python.exe" SET "PATHP_XX=%PATH_PADRE%\TOOLS\PYTHON%PY_TYPE%"
+IF EXIST "%PATH_PADRE%\TOOLS\PYTHON%PY_TYPE%\App\Python\python.exe" SET "PATHP_XX=%PATH_PADRE%\TOOLS\PYTHON%PY_TYPE%"
+IF NOT DEFINED PATHP_XX FOR /D %%D IN ("%PATH_PADRE%\TOOLS\PYTHON%PY_TYPE%_*") DO (
     IF EXIST "%%D\python.exe" SET "PATHP_XX=%%D"
     IF EXIST "%%D\App\python.exe" SET "PATHP_XX=%%D"
     IF EXIST "%%D\App\Python\python.exe" SET "PATHP_XX=%%D"
 )
-IF NOT DEFINED PATHP_XX FOR /D %%D IN ("%PATH_PADRE%\TOOLS\PYTHON%PY_BASETYPE%*") DO (
+IF NOT DEFINED PATHP_XX FOR /D %%D IN ("%PATH_PADRE%\TOOLS\PYTHON%PY_TYPE%*") DO (
     IF EXIST "%%D\python.exe" SET "PATHP_XX=%%D"
     IF EXIST "%%D\App\python.exe" SET "PATHP_XX=%%D"
     IF EXIST "%%D\App\Python\python.exe" SET "PATHP_XX=%%D"
@@ -328,7 +326,7 @@ ECHO   PATHP_04=%PATHP_04%
 ECHO   PATHP_05=%PATHP_05%
 ECHO   PATHP_06=%PATHP_06%
 ECHO   PATHP_XX=%PATHP_XX%
-ECHO PY_TYPE=%PY_TYPE% PY_BASETYPE=%PY_BASETYPE% PY_ENV=%PY_ENV%
+ECHO PY_TYPE=%PY_TYPE% PY_ENV=%PY_ENV%
 GOTO :END
 
 :PY

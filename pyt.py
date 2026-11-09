@@ -8,6 +8,7 @@ import ftplib
 import stat
 import tempfile
 import glob
+import re
 import importlib.metadata
 
 # Importazione opzionale per librerie di terze parti
@@ -175,6 +176,14 @@ git.pull <config.json>
         Oggetti: THEME, WINDOW, LAYOUT, TEXT, LABEL, LIST, BUTTON, COMMAND.
         Modalita config.mode: TUI (console), GUI (tkinter), WEB (pagina+browser).
         Log in <fileform>.log, valori in <fileform>_results.json (o config.return.file).
+     grep [-i] [-v] [-r] [-p <path>] <pattern> [file|dir...]
+        Cerca un pattern (regex) in uno o piu' file o cartelle.
+        -i ignora maiuscole/minuscole; -v seleziona le righe NON corrispondenti;
+        -r ricerca ricorsiva nelle cartelle; -p <path> cartella base di ricerca
+        (senza file elencati cerca tutti i file di <path>, con file relativi li
+        risolve da lì; con -r scansiona anche le sottocartelle). Espande wildcard.
+        Stampa sopra i risultati il file di provenienza. Log GREP.START/GREP.END.
+        Funziona su Windows e Linux (spec: Prompt_pyt_grep.md).
     @ <nome_file>
        Esegue le direttive contenute nel file specificato
 """
@@ -2360,6 +2369,162 @@ def app_form(params):
     results_path = pyt_form.run_form(fileform, pyt_Print, pyt_Timestamp)
     pyt_Print(f"[{pyt_Timestamp()}] WRITE: {results_path}")
 
+def app_grep(params):
+    """Cerca un pattern (regex) in uno o piu' file o cartelle.
+    Opzioni: -i/--ignore-case (ignora maiuscole), -v/--invert-match (righe NON
+    corrispondenti), -r/--recursive (scansione ricorsiva delle cartelle),
+    -p <path>/--path=<path> (cartella base di ricerca: senza file elencati cerca
+    tutti i file di <path>, con file relativi li' risolve da <path>).
+    Espande le wildcard (*, ?, [..]). Stampa sopra i risultati il file di
+    provenienza. Log GREP.START (con i file da cercare) e GREP.END.
+    Solo stdlib (os, glob, re). Funziona su Windows e Linux."""
+    ignore_case = False
+    invert = False
+    recursive = False
+    base_path = None
+    positional = []
+    i = 0
+    while i < len(params):
+        arg = params[i].strip('"\'')
+        low = arg.lower()
+        if low in ("-i", "--ignore-case"):
+            ignore_case = True
+        elif low in ("-v", "--invert-match"):
+            invert = True
+        elif low in ("-r", "--recursive"):
+            recursive = True
+        elif low in ("-p", "--path"):
+            i += 1
+            if i >= len(params):
+                raise ValueError("L'opzione -p richiede il path di ricerca.")
+            base_path = params[i].strip('"\'')
+        elif low.startswith("--path="):
+            base_path = low.split("=", 1)[1]
+        elif arg.startswith("-") and len(arg) > 1:
+            raise ValueError(f"Opzione sconosciuta: {arg}")
+        else:
+            positional.append(arg)
+        i += 1
+
+    if not positional:
+        raise ValueError("Sintassi errata. Uso: grep [-i] [-v] [-r] [-p <path>] <pattern> [file|dir...]")
+    pattern = positional[0]
+    file_args = positional[1:]
+
+    if not pattern:
+        raise ValueError("Pattern vuoto.")
+    if not file_args and base_path is None:
+        raise ValueError("Nessun file: indicare i file o -p/--path.")
+
+    try:
+        flags = re.IGNORECASE if ignore_case else 0
+        regex = re.compile(pattern, flags)
+    except re.error as e:
+        raise ValueError(f"Espressione regolare non valida: {e}")
+
+    base_abs = os.path.abspath(base_path) if base_path else None
+    files = []
+    seen = set()
+    errors = []
+
+    def _add_file(fpath):
+        fpath_abs = os.path.abspath(fpath)
+        if fpath_abs not in seen:
+            seen.add(fpath_abs)
+            files.append(fpath_abs)
+
+    def _scan_dir(dpath):
+        if recursive:
+            for root, _dirs, fnames in os.walk(dpath):
+                for fn in fnames:
+                    _add_file(os.path.join(root, fn))
+        else:
+            for fn in os.listdir(dpath):
+                fpath_abs = os.path.join(dpath, fn)
+                if os.path.isfile(fpath_abs):
+                    _add_file(fpath_abs)
+
+    if file_args:
+        for fa in file_args:
+            target = fa if (not base_abs or os.path.isabs(fa)) else os.path.join(base_abs, fa)
+            if any(ch in target for ch in "*?["):
+                matched = glob.glob(target, recursive=True)
+                if matched:
+                    for m in sorted(matched):
+                        if os.path.isfile(m):
+                            _add_file(m)
+                        elif os.path.isdir(m):
+                            _scan_dir(m)
+                else:
+                    errors.append(f"{target}: maschera senza corrispondenze")
+            elif os.path.isdir(target):
+                _scan_dir(target)
+            elif os.path.isfile(target):
+                _add_file(target)
+            else:
+                errors.append(f"{target}: non trovato")
+    else:
+        if not os.path.isdir(base_abs):
+            raise FileNotFoundError(f"Cartella {base_abs} non trovata.")
+        for fn in os.listdir(base_abs):
+            fpath_abs = os.path.join(base_abs, fn)
+            if os.path.isfile(fpath_abs):
+                _add_file(fpath_abs)
+            elif os.path.isdir(fpath_abs) and recursive:
+                _scan_dir(fpath_abs)
+
+    if not files and errors:
+        raise FileNotFoundError("Nessun file da cercare: " + "; ".join(errors))
+
+    opts = ""
+    if ignore_case:
+        opts += " -i"
+    if invert:
+        opts += " -v"
+    if recursive:
+        opts += " -r"
+    if base_abs:
+        opts += f" -p \"{base_abs}\""
+    spec_files = " ".join(file_args) if file_args else "*"
+    pyt_Print(f"GREP.START: {pyt_Timestamp()} grep{opts} pattern=\"{pattern}\" file: {spec_files} ({len(files)} da cercare)")
+
+    def _is_binary(fpath):
+        try:
+            with open(fpath, "rb") as bf:
+                return b"\x00" in bf.read(8192)
+        except OSError as e:
+            errors.append(f"{fpath}: {e}")
+            return True
+
+    total_matches = 0
+    files_out = 0
+    for fpath_abs in files:
+        if _is_binary(fpath_abs):
+            continue
+        count_file = 0
+        try:
+            with open(fpath_abs, "r", encoding="utf-8-sig", errors="replace") as f:
+                for line_num, line in enumerate(f, 1):
+                    if bool(regex.search(line)) != invert:
+                        if count_file == 0:
+                            pyt_Print(f"FILE: {fpath_abs}")
+                            files_out += 1
+                        pyt_Print(f"{line_num}: {line.rstrip()}")
+                        count_file += 1
+                        total_matches += 1
+        except OSError as e:
+            errors.append(f"{fpath_abs}: {e}")
+            continue
+        if count_file:
+            pyt_Print(f"{count_file} corrispondenze in {os.path.basename(fpath_abs)}")
+
+    if total_matches == 0:
+        pyt_Print("Nessuna corrispondenza trovata")
+    for err in errors:
+        pyt_Print(f"grep: {err}")
+    pyt_Print(f"GREP.END: {pyt_Timestamp()} - corrispondenze: {total_matches}, "
+              f"file con match: {files_out}/{len(files)}, errori: {len(errors)}")
+
 # ==============================================================================
 # MOTORE DI ESECUZIONE
 # ==============================================================================
@@ -2388,6 +2553,13 @@ def esegui_direttive(directives):
             pyt_Print(f"PYT.END: {display_name.upper()} {pyt_Timestamp()}")
 
 def main():
+    # Console senza codifica corrispondente: sostituisce i caratteri non
+    # stampabili (BOM, unicode) con '?' invece di bloccare la direttiva
+    try:
+        sys.stdout.reconfigure(errors="replace")
+        sys.stderr.reconfigure(errors="replace")
+    except (AttributeError, ValueError):
+        pass
     pyt_Print(f"PYT.START: {PYT_VER} {pyt_Timestamp()}")
     try:
         directives = parse_argv(sys.argv)
