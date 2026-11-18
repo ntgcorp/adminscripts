@@ -1,4 +1,4 @@
-"""pyt_form - libreria esterna per la direttiva pyt form.
+﻿"""pyt_form - libreria esterna per la direttiva pyt form.
 
 Implementa Prompt_pyt_form.md: form TUI/GUI/WEB descritti in JSON.
 Solo stdlib (json, os, subprocess, shutil? no: json, os, subprocess, shlex,
@@ -156,7 +156,7 @@ def _ansi_wrap(text, theme, use_color):
 
 
 def render_form(objects, theme, use_color=True):
-    """Rende TUI §3 su canvas caratteri. Ritorna stringa (testabile)."""
+    """Rende TUI §3 su canvas caratteri. Ritorna stringa (REPLabile)."""
     wins = [o for o in objects.values() if isinstance(o, dict) and o.get("type") == "WINDOW"]
     win = wins[0]
     try:

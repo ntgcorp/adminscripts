@@ -1,4 +1,4 @@
-# pyt_form_man.md — Manuale del file JSON per `pyt form`
+﻿# pyt_form_man.md — Manuale del file JSON per `pyt form`
 
 Comando:
 
@@ -29,7 +29,7 @@ chiave = `id` univoco **alfanumerico** → oggetto con `type`.
 "win": { "type": "WINDOW", "title": "Titolo", "width": 60, "height": 16 }
 ```
 
-`title` testo in alto, `width`/`height` dimensioni (caratteri in TUI, ×8/×16 pixel in GUI).
+`title` REPLo in alto, `width`/`height` dimensioni (caratteri in TUI, ×8/×16 pixel in GUI).
 
 ### THEME (opzionale; se assente vale il default)
 
@@ -49,13 +49,13 @@ chiave = `id` univoco **alfanumerico** → oggetto con `type`.
 Area contenitore. `x`,`y` posizione in WINDOW (0 dal bordo), `width`,`height`
 dimensioni. TEXT, LABEL, LIST e BUTTON **devono** indicare `layout` esistente.
 
-### TEXT (testo modificabile, salvato in results)
+### TEXT (REPLo modificabile, salvato in results)
 
 ```json
 "txt1": { "type": "TEXT", "layout": "lay", "value": "Nome:" }
 ```
 
-Si modifica digitando `txt1=Nuovo testo`. Il valore finale finisce in results.
+Si modifica digitando `txt1=Nuovo REPLo`. Il valore finale finisce in results.
 
 ### LABEL (etichetta fissa: mostrata, mai salvata)
 
@@ -64,7 +64,7 @@ Si modifica digitando `txt1=Nuovo testo`. Il valore finale finisce in results.
           "size": 30, "position": "LEFT" }
 ```
 
-`caption` = testo; `size` = larghezza in caratteri (>0); `position` =
+`caption` = REPLo; `size` = larghezza in caratteri (>0); `position` =
 `LEFT` | `RIGHT` | `CENTER` (allineamento nella sua area).
 
 ### LIST (scelta da elenco, salvata in results)
@@ -105,7 +105,7 @@ di definizione). `command` = id del COMMAND (se manca si usa
 
 ```
 scelta> 1            → preme il bottone 1
-scelta> txt1=Mario   → modifica il testo
+scelta> txt1=Mario   → modifica il REPLo
 scelta> lst1=medio   → sceglie dalla lista
 scelta> 2            → preme Esci → scrive results e chiude
 ```

@@ -1,4 +1,4 @@
-PYT.START: 20261015 20261017:000756
+﻿PYT.START: 20261015 20261017:000756
 PYT.START:  20261017:000756
 Errore: direttiva '' non riconosciuta.
 PYT.END:  20261017:000756
@@ -103,7 +103,7 @@ Errore: file di direttive nonexistent.txt non trovato.
 [20261017:001902] Fase 2: Verifica esistenza della cartella source
 [20261017:001902] Fase 3: Verifica raggiungibilità di dest
 [20261017:001902] Fase 4: Sincronizzazione file
-[20261017:001902] COPIED: test.txt
+[20261017:001902] COPIED: REPL.txt
 [20261017:001902] Fase 5: Rimozione da dest dei file non presenti in source
 [20261017:001902] Fase 6: Scrittura del riepilogo
 [20261017:001902] Riepilogo - Copiati: 1, Aggiornati: 0, Rimossi: 0, Saltati: 0, Errori: 0
@@ -114,7 +114,7 @@ Errore: file di direttive nonexistent.txt non trovato.
 [20261017:001902] Fase 2: Verifica esistenza della cartella source
 [20261017:001902] Fase 3: Verifica raggiungibilità di dest
 [20261017:001903] Fase 4: Sincronizzazione file
-[20261017:001903] COPIED: test.txt
+[20261017:001903] COPIED: REPL.txt
 [20261017:001903] Fase 5: Rimozione da dest dei file non presenti in source
 [20261017:001903] Fase 6: Scrittura del riepilogo
 [20261017:001903] Riepilogo - Copiati: 1, Aggiornati: 0, Rimossi: 0, Saltati: 0, Errori: 0
@@ -141,7 +141,7 @@ Totale errori file          : 0
 [20261017:001903] Fase 4: Sincronizzazione file
 [20261017:001903] UPDATED: ._res.dat
 [20261017:001903] COPIED: archive.tar.gz
-[20261017:001903] COPIED: test.txt
+[20261017:001903] COPIED: REPL.txt
 [20261017:001903] Fase 5: Rimozione da dest dei file non presenti in source
 [20261017:001903] Fase 6: Scrittura del riepilogo
 [20261017:001903] Riepilogo - Copiati: 2, Aggiornati: 1, Rimossi: 0, Saltati: 0, Errori: 0
@@ -166,7 +166,7 @@ Totale errori file          : 0
 [20261017:001903] Fase 2: Verifica esistenza della cartella source
 [20261017:001903] Fase 3: Verifica raggiungibilità di dest
 [20261017:001903] Fase 4: Sincronizzazione file
-[20261017:001903] COPIED: test.txt
+[20261017:001903] COPIED: REPL.txt
 [20261017:001903] Fase 5: Rimozione da dest dei file non presenti in source
 [20261017:001903] Fase 6: Scrittura del riepilogo
 [20261017:001903] Riepilogo - Copiati: 1, Aggiornati: 0, Rimossi: 0, Saltati: 0, Errori: 0
@@ -191,7 +191,7 @@ Totale errori file          : 0
 [20261017:001904] Fase 2: Verifica esistenza della cartella source
 [20261017:001904] Fase 3: Verifica raggiungibilità di dest
 [20261017:001904] Fase 4: Sincronizzazione file
-[20261017:001904] COPIED: test.txt
+[20261017:001904] COPIED: REPL.txt
 [20261017:001904] Fase 5: Rimozione da dest dei file non presenti in source
 [20261017:001904] Fase 6: Scrittura del riepilogo
 [20261017:001904] Riepilogo - Copiati: 1, Aggiornati: 0, Rimossi: 0, Saltati: 0, Errori: 0
@@ -214,7 +214,7 @@ Totale errori file          : 0
 [20261017:001904] Configurazione letta: 1 action(s) trovate
 [20261017:001904] 
 ============================================================
-[20261017:001904] AZIONE: copy_test
+[20261017:001904] AZIONE: copy_REPL
 [20261017:001904] ============================================================
 [20261017:001904]   path_source: nonexistent_path
 [20261017:001904]   path_dest:   C:\Users\User\AppData\Local\Temp\tmpgpl087hk\dest
@@ -225,15 +225,15 @@ Totale errori file          : 0
 [20261017:001904] Configurazione letta: 1 action(s) trovate
 [20261017:001904] 
 ============================================================
-[20261017:001904] AZIONE: copy_test
+[20261017:001904] AZIONE: copy_REPL
 [20261017:001904] ============================================================
 [20261017:001904]   path_source: C:\Users\User\AppData\Local\Temp\tmprjlrdbkh\source
 [20261017:001904]   path_dest:   C:\Users\User\AppData\Local\Temp\tmprjlrdbkh\dest
 [20261017:001905]   mode:        old
 [20261017:001905]   files:       1 file(s)
-[20261017:001905]   Elaborazione: test.txt
-[20261017:001905]     RINOMINATO in .old: C:\Users\User\AppData\Local\Temp\tmprjlrdbkh\dest\test.txt -> C:\Users\User\AppData\Local\Temp\tmprjlrdbkh\dest\test.txt.old
-[20261017:001905]     COPIATO: test.txt
+[20261017:001905]   Elaborazione: REPL.txt
+[20261017:001905]     RINOMINATO in .old: C:\Users\User\AppData\Local\Temp\tmprjlrdbkh\dest\REPL.txt -> C:\Users\User\AppData\Local\Temp\tmprjlrdbkh\dest\REPL.txt.old
+[20261017:001905]     COPIATO: REPL.txt
 [20261017:001905] 
 ============================================================
 [20261017:001905] RIEPILOGO FINALE
@@ -247,14 +247,14 @@ Totale errori file          : 0
 [20261017:001905] Configurazione letta: 1 action(s) trovate
 [20261017:001905] 
 ============================================================
-[20261017:001905] AZIONE: copy_test
+[20261017:001905] AZIONE: copy_REPL
 [20261017:001905] ============================================================
 [20261017:001905]   path_source: C:\Users\User\AppData\Local\Temp\tmpj4t5cy4u\source
 [20261017:001905]   path_dest:   C:\Users\User\AppData\Local\Temp\tmpj4t5cy4u\dest
 [20261017:001905]   mode:        overwrite
 [20261017:001905]   files:       1 file(s)
-[20261017:001905]   Elaborazione: test.txt
-[20261017:001905]     COPIATO: test.txt
+[20261017:001905]   Elaborazione: REPL.txt
+[20261017:001905]     COPIATO: REPL.txt
 [20261017:001905] 
 ============================================================
 [20261017:001905] RIEPILOGO FINALE
@@ -268,7 +268,7 @@ Totale errori file          : 0
 [20261017:001905] Configurazione letta: 1 action(s) trovate
 [20261017:001905] 
 ============================================================
-[20261017:001905] AZIONE: copy_test
+[20261017:001905] AZIONE: copy_REPL
 [20261017:001905] ============================================================
 [20261017:001905]   path_source: nonexistent_path
 [20261017:001905]   path_dest:   C:\Users\User\AppData\Local\Temp\tmpbbmaot7p\dest
@@ -302,8 +302,8 @@ Totale errori file          : 0
 [20261017:001906]       COPIATO: file1.txt
 [20261017:001906]     Elaborazione: file2.txt
 [20261017:001906]       COPIATO: file2.txt
-[20261017:001906]     Elaborazione: test.txt
-[20261017:001906]       COPIATO: test.txt
+[20261017:001906]     Elaborazione: REPL.txt
+[20261017:001906]       COPIATO: REPL.txt
 [20261017:001906] 
 ============================================================
 [20261017:001906] RIEPILOGO FINALE
@@ -366,7 +366,7 @@ Markdown scritto in: C:\Users\User\AppData\Local\Temp\tmpfehgq2rs\requirements_X
 [20261017:001907] Fase 3: Volume C:\Users\User\AppData\Local\Temp\tmpd593rbi2\voldata:/data
 [20261017:001907] Fase 4: Porta 8080:80
 [20261017:001907] Fase 5: Verifica container 'web'
-[20261017:001907] Fase 6: Creazione container 'web' da 'img:test'
+[20261017:001907] Fase 6: Creazione container 'web' da 'img:REPL'
 [20261017:001907]   CREATO: web (abc123def456)
 
 [20261017:001907] RIEPILOGO FINALE
@@ -1190,8 +1190,8 @@ PYT.END: ROBOCOPY 20261102:115929
 END: 20261102:115929
 PYT.START: 20261102 20261102:150024
 PYT.START: GREP 20261102:150024
-GREP.START: 20261102:150024 grep pattern="errore" file: C:\Users\User\AppData\Local\Temp\opencode\grep_test\a.txt C:\Users\User\AppData\Local\Temp\opencode\grep_test\b.txt (2 da cercare)
-FILE: C:\Users\User\AppData\Local\Temp\opencode\grep_test\a.txt
+GREP.START: 20261102:150024 grep pattern="errore" file: C:\Users\User\AppData\Local\Temp\opencode\grep_REPL\a.txt C:\Users\User\AppData\Local\Temp\opencode\grep_REPL\b.txt (2 da cercare)
+FILE: C:\Users\User\AppData\Local\Temp\opencode\grep_REPL\a.txt
 3: errore smoothing
 1 corrispondenze in a.txt
 GREP.END: 20261102:150024 - corrispondenze: 1, file con match: 1/2, errori: 0
@@ -1199,36 +1199,36 @@ PYT.END: GREP 20261102:150024
 END: 20261102:150024
 PYT.START: 20261102 20261102:150038
 PYT.START: GREP 20261102:150038
-GREP.START: 20261102:150038 grep -i pattern="errore" file: C:\Users\User\AppData\Local\Temp\opencode\grep_test\a.txt (1 da cercare)
-FILE: C:\Users\User\AppData\Local\Temp\opencode\grep_test\a.txt
+GREP.START: 20261102:150038 grep -i pattern="errore" file: C:\Users\User\AppData\Local\Temp\opencode\grep_REPL\a.txt (1 da cercare)
+FILE: C:\Users\User\AppData\Local\Temp\opencode\grep_REPL\a.txt
 ERRORE [grep]: 'charmap' codec can't encode character '\ufeff' in position 3: character maps to <undefined>
 PYT.END: GREP 20261102:150038
 END: 20261102:150038
 PYT.START: 20261102 20261102:150039
 PYT.START: GREP 20261102:150039
-GREP.START: 20261102:150039 grep -v pattern="proble" file: C:\Users\User\AppData\Local\Temp\opencode\grep_test\b.txt (1 da cercare)
-FILE: C:\Users\User\AppData\Local\Temp\opencode\grep_test\b.txt
+GREP.START: 20261102:150039 grep -v pattern="proble" file: C:\Users\User\AppData\Local\Temp\opencode\grep_REPL\b.txt (1 da cercare)
+FILE: C:\Users\User\AppData\Local\Temp\opencode\grep_REPL\b.txt
 ERRORE [grep]: 'charmap' codec can't encode character '\ufeff' in position 3: character maps to <undefined>
 PYT.END: GREP 20261102:150039
 END: 20261102:150039
 PYT.START: 20261102 20261102:150057
 PYT.START: GREP 20261102:150057
-GREP.START: 20261102:150057 grep -i pattern="errore" file: C:\Users\User\AppData\Local\Temp\opencode\grep_test\a.txt (1 da cercare)
-FILE: C:\Users\User\AppData\Local\Temp\opencode\grep_test\a.txt
+GREP.START: 20261102:150057 grep -i pattern="errore" file: C:\Users\User\AppData\Local\Temp\opencode\grep_REPL\a.txt (1 da cercare)
+FILE: C:\Users\User\AppData\Local\Temp\opencode\grep_REPL\a.txt
 ERRORE [grep]: 'charmap' codec can't encode character '\ufeff' in position 3: character maps to <undefined>
 PYT.END: GREP 20261102:150057
 END: 20261102:150057
 PYT.START: 20261102 20261102:150058
 PYT.START: GREP 20261102:150058
-GREP.START: 20261102:150058 grep -v pattern="proble" file: C:\Users\User\AppData\Local\Temp\opencode\grep_test\b.txt (1 da cercare)
-FILE: C:\Users\User\AppData\Local\Temp\opencode\grep_test\b.txt
+GREP.START: 20261102:150058 grep -v pattern="proble" file: C:\Users\User\AppData\Local\Temp\opencode\grep_REPL\b.txt (1 da cercare)
+FILE: C:\Users\User\AppData\Local\Temp\opencode\grep_REPL\b.txt
 ERRORE [grep]: 'charmap' codec can't encode character '\ufeff' in position 3: character maps to <undefined>
 PYT.END: GREP 20261102:150058
 END: 20261102:150058
 PYT.START: 20261102 20261102:150205
 PYT.START: GREP 20261102:150205
-GREP.START: 20261102:150205 grep -i pattern="errore" file: C:\Users\User\AppData\Local\Temp\opencode\grep_test\a.txt (1 da cercare)
-FILE: C:\Users\User\AppData\Local\Temp\opencode\grep_test\a.txt
+GREP.START: 20261102:150205 grep -i pattern="errore" file: C:\Users\User\AppData\Local\Temp\opencode\grep_REPL\a.txt (1 da cercare)
+FILE: C:\Users\User\AppData\Local\Temp\opencode\grep_REPL\a.txt
 1: Errore 1
 3: errore smoothing
 2 corrispondenze in a.txt
@@ -1237,8 +1237,8 @@ PYT.END: GREP 20261102:150205
 END: 20261102:150205
 PYT.START: 20261102 20261102:150216
 PYT.START: GREP 20261102:150216
-GREP.START: 20261102:150216 grep -v pattern="proble" file: C:\Users\User\AppData\Local\Temp\opencode\grep_test\b.txt (1 da cercare)
-FILE: C:\Users\User\AppData\Local\Temp\opencode\grep_test\b.txt
+GREP.START: 20261102:150216 grep -v pattern="proble" file: C:\Users\User\AppData\Local\Temp\opencode\grep_REPL\b.txt (1 da cercare)
+FILE: C:\Users\User\AppData\Local\Temp\opencode\grep_REPL\b.txt
 1: ERROR x
 2: ok
 2 corrispondenze in b.txt
@@ -1247,11 +1247,11 @@ PYT.END: GREP 20261102:150216
 END: 20261102:150216
 PYT.START: 20261102 20261102:150220
 PYT.START: GREP 20261102:150220
-GREP.START: 20261102:150220 grep -r -p "C:\Users\User\AppData\Local\Temp\opencode\grep_test" pattern="errore" file: * (4 da cercare)
-FILE: C:\Users\User\AppData\Local\Temp\opencode\grep_test\a.txt
+GREP.START: 20261102:150220 grep -r -p "C:\Users\User\AppData\Local\Temp\opencode\grep_REPL" pattern="errore" file: * (4 da cercare)
+FILE: C:\Users\User\AppData\Local\Temp\opencode\grep_REPL\a.txt
 3: errore smoothing
 1 corrispondenze in a.txt
-FILE: C:\Users\User\AppData\Local\Temp\opencode\grep_test\sub\c.txt
+FILE: C:\Users\User\AppData\Local\Temp\opencode\grep_REPL\sub\c.txt
 1: errore profondo
 1 corrispondenze in c.txt
 GREP.END: 20261102:150220 - corrispondenze: 2, file con match: 2/4, errori: 0
@@ -1259,8 +1259,8 @@ PYT.END: GREP 20261102:150220
 END: 20261102:150220
 PYT.START: 20261102 20261102:150236
 PYT.START: GREP 20261102:150236
-GREP.START: 20261102:150236 grep -i pattern="errore" file: C:\Users\User\AppData\Local\Temp\opencode\grep_test\*.txt (2 da cercare)
-FILE: C:\Users\User\AppData\Local\Temp\opencode\grep_test\a.txt
+GREP.START: 20261102:150236 grep -i pattern="errore" file: C:\Users\User\AppData\Local\Temp\opencode\grep_REPL\*.txt (2 da cercare)
+FILE: C:\Users\User\AppData\Local\Temp\opencode\grep_REPL\a.txt
 1: Errore 1
 3: errore smoothing
 2 corrispondenze in a.txt
@@ -1269,7 +1269,7 @@ PYT.END: GREP 20261102:150236
 END: 20261102:150236
 PYT.START: 20261102 20261102:150238
 PYT.START: GREP 20261102:150238
-ERRORE [grep]: Nessun file da cercare: C:\Users\User\AppData\Local\Temp\opencode\grep_test\inesistente.txt: non trovato
+ERRORE [grep]: Nessun file da cercare: C:\Users\User\AppData\Local\Temp\opencode\grep_REPL\inesistente.txt: non trovato
 PYT.END: GREP 20261102:150238
 END: 20261102:150238
 PYT.START: 20261102 20261102:150251
@@ -1279,7 +1279,7 @@ PYT.END: GREP 20261102:150251
 END: 20261102:150251
 PYT.START: 20261102 20261102:150253
 PYT.START: GREP 20261102:150253
-GREP.START: 20261102:150253 grep -p "C:\Users\User\AppData\Local\Temp\opencode\grep_test" pattern="profondo" file: * (3 da cercare)
+GREP.START: 20261102:150253 grep -p "C:\Users\User\AppData\Local\Temp\opencode\grep_REPL" pattern="profondo" file: * (3 da cercare)
 Nessuna corrispondenza trovata
 GREP.END: 20261102:150253 - corrispondenze: 0, file con match: 0/3, errori: 0
 PYT.END: GREP 20261102:150253
@@ -1287,17 +1287,17 @@ END: 20261102:150253
 Errore: file di direttive nonexistent.txt non trovato.
 PYT.START: 20261102 20261102:151421
 PYT.START: GREP 20261102:151421
-GREP.START: 20261102:151421 grep -i -v -r -p "C:\Users\User\AppData\Local\Temp\opencode\grep_test" pattern="zzzz_inesistente" file: * (4 da cercare)
-FILE: C:\Users\User\AppData\Local\Temp\opencode\grep_test\a.txt
+GREP.START: 20261102:151421 grep -i -v -r -p "C:\Users\User\AppData\Local\Temp\opencode\grep_REPL" pattern="zzzz_inesistente" file: * (4 da cercare)
+FILE: C:\Users\User\AppData\Local\Temp\opencode\grep_REPL\a.txt
 1: Errore 1
 2: nessun problema
 3: errore smoothing
 3 corrispondenze in a.txt
-FILE: C:\Users\User\AppData\Local\Temp\opencode\grep_test\b.txt
+FILE: C:\Users\User\AppData\Local\Temp\opencode\grep_REPL\b.txt
 1: ERROR x
 2: ok
 2 corrispondenze in b.txt
-FILE: C:\Users\User\AppData\Local\Temp\opencode\grep_test\sub\c.txt
+FILE: C:\Users\User\AppData\Local\Temp\opencode\grep_REPL\sub\c.txt
 1: errore profondo
 2: fine
 2 corrispondenze in c.txt
@@ -1433,3 +1433,887 @@ PYT.START: ROBOCOPY 20261107:204529
 [20261107:204533]     Elaborazione: pyt.sh
 [20261107:204533]       COPIATO: pyt.sh
 [20261107:204533]     Elaborazione: pyt.log
+[20261107:204533]       COPIATO: pyt.log
+[20261107:204533]   Elaborazione: pyn.*
+[20261107:204533]     Trovati 2 file(s) per pattern: pyn.*
+[20261107:204533]     Elaborazione: pyn.cmd
+[20261107:204533]       COPIATO: pyn.cmd
+[20261107:204533]     Elaborazione: pyn.sh
+[20261107:204533]       COPIATO: pyn.sh
+[20261107:204533]   Elaborazione: pyt_report.*
+[20261107:204533]     Trovati 1 file(s) per pattern: pyt_report.*
+[20261107:204533]     Elaborazione: pyt_report.py
+[20261107:204534]       COPIATO: pyt_report.py
+[20261107:204534]   Elaborazione: pyt_form*.*
+[20261107:204534]     Trovati 2 file(s) per pattern: pyt_form*.*
+[20261107:204534]     Elaborazione: pyt_form.py
+[20261107:204534]       COPIATO: pyt_form.py
+[20261107:204534]     Elaborazione: pyt_form_man.md
+[20261107:204534]       COPIATO: pyt_form_man.md
+[20261107:204534]   Elaborazione: requirements*.*
+[20261107:204534]     Trovati 8 file(s) per pattern: requirements*.*
+[20261107:204534]     Elaborazione: requirements_X64.md
+[20261107:204534]       COPIATO: requirements_X64.md
+[20261107:204534]     Elaborazione: requirements_X64.txt
+[20261107:204534]       COPIATO: requirements_X64.txt
+[20261107:204534]     Elaborazione: requirements_mach0vdi.txt
+[20261107:204534]       COPIATO: requirements_mach0vdi.txt
+[20261107:204534]     Elaborazione: requirements_X64_LIGHT.txt
+[20261107:204534]       COPIATO: requirements_X64_LIGHT.txt
+[20261107:204534]     Elaborazione: requirements_X64_309.txt
+[20261107:204534]       COPIATO: requirements_X64_309.txt
+[20261107:204534]     Elaborazione: requirements_X64_309_LIGHT.txt
+[20261107:204534]       COPIATO: requirements_X64_309_LIGHT.txt
+[20261107:204534]     Elaborazione: requirements_x64_309.md
+[20261107:204534]       COPIATO: requirements_x64_309.md
+[20261107:204534]     Elaborazione: requirements_X32_309.txt
+[20261107:204534]       COPIATO: requirements_X32_309.txt
+[20261107:204534]   Elaborazione: x.cmd
+[20261107:204534]     COPIATO: x.cmd
+[20261107:204534] 
+============================================================
+[20261107:204534] AZIONE: copy_g
+[20261107:204535] ============================================================
+[20261107:204535]   path_source: G:\Il mio Drive\Progetti\pyt_pyn
+[20261107:204535]   path_dest:   v:\Scripts
+[20261107:204535]   mode:        overwrite
+[20261107:204535]   files:       6 file(s)
+[20261107:204535]   Elaborazione: pyt.*
+[20261107:204535]     Trovati 4 file(s) per pattern: pyt.*
+[20261107:204535]     Elaborazione: pyt.cmd
+[20261107:204535]       COPIATO: pyt.cmd
+[20261107:204535]     Elaborazione: pyt.py
+[20261107:204535]       COPIATO: pyt.py
+[20261107:204535]     Elaborazione: pyt.sh
+[20261107:204535]       COPIATO: pyt.sh
+[20261107:204535]     Elaborazione: pyt.log
+[20261107:204535]       COPIATO: pyt.log
+[20261107:204535]   Elaborazione: pyn.*
+[20261107:204535]     Trovati 2 file(s) per pattern: pyn.*
+[20261107:204535]     Elaborazione: pyn.cmd
+[20261107:204535]       COPIATO: pyn.cmd
+[20261107:204535]     Elaborazione: pyn.sh
+[20261107:204535]       COPIATO: pyn.sh
+[20261107:204535]   Elaborazione: pyy_report.*
+[20261107:204535]     SALTATO (nessun file corrispondente al pattern): pyy_report.*
+[20261107:204535]   Elaborazione: pyt_form*.*
+[20261107:204535]     Trovati 2 file(s) per pattern: pyt_form*.*
+[20261107:204535]     Elaborazione: pyt_form.py
+[20261107:204535]       COPIATO: pyt_form.py
+[20261107:204535]     Elaborazione: pyt_form_man.md
+[20261107:204535]       COPIATO: pyt_form_man.md
+[20261107:204535]   Elaborazione: requirements*.*
+[20261107:204535]     Trovati 8 file(s) per pattern: requirements*.*
+[20261107:204535]     Elaborazione: requirements_X64.md
+[20261107:204535]       COPIATO: requirements_X64.md
+[20261107:204535]     Elaborazione: requirements_X64.txt
+[20261107:204535]       COPIATO: requirements_X64.txt
+[20261107:204535]     Elaborazione: requirements_mach0vdi.txt
+[20261107:204535]       COPIATO: requirements_mach0vdi.txt
+[20261107:204535]     Elaborazione: requirements_X64_LIGHT.txt
+[20261107:204535]       COPIATO: requirements_X64_LIGHT.txt
+[20261107:204535]     Elaborazione: requirements_X64_309.txt
+[20261107:204535]       COPIATO: requirements_X64_309.txt
+[20261107:204535]     Elaborazione: requirements_X64_309_LIGHT.txt
+[20261107:204535]       COPIATO: requirements_X64_309_LIGHT.txt
+[20261107:204536]     Elaborazione: requirements_x64_309.md
+[20261107:204536]       COPIATO: requirements_x64_309.md
+[20261107:204536]     Elaborazione: requirements_X32_309.txt
+[20261107:204536]       COPIATO: requirements_X32_309.txt
+[20261107:204536]   Elaborazione: x.cmd
+[20261107:204536]     COPIATO: x.cmd
+[20261107:204536] 
+============================================================
+[20261107:204536] RIEPILOGO FINALE
+[20261107:204536] ============================================================
+[20261107:204536] File copiati   : 71
+[20261107:204536] File aggiornati: 0
+[20261107:204536] File saltati   : 1
+[20261107:204536] Errori         : 0
+[20261107:204536] Operazione completata senza errori.
+PYT.END: ROBOCOPY 20261107:204536
+END: 20261107:204536
+PYT.START: 20261102 20261112:081806
+END: 20261112:081806
+PYT.START: 20261102 20261112:082854
+END: 20261112:082854
+PYT.START: 20261102 20261112:082854
+END: 20261112:082854
+PYT.START: 20261102 20261112:082902
+PYT.START: DOC2MD 20261112:082902
+ERROR [doc2md]: File inesistente.docx non trovato.
+PYT.END: DOC2MD 20261112:082902
+END: 20261112:082902
+PYT.START: 20261102 20261112:082903
+PYT.START: GREP 20261112:082903
+ERROR [grep]: L'opzione -p richiede il path di ricerca.
+PYT.END: GREP 20261112:082903
+END: 20261112:082903
+PYT.START: 20261102 20261112:082919
+PYT.START: DOC2MD 20261112:082919
+ERROR [doc2md]: File inesistente.docx non trovato.
+PYT.END: DOC2MD 20261112:082919
+END: 20261112:082919
+PYT.START: 20261102 20261112:082920
+PYT.START: GREP 20261112:082920
+ERROR [grep]: L'opzione -p richiede il path di ricerca.
+PYT.END: GREP 20261112:082920
+END: 20261112:082920
+PYT.START: 20261102 20261112:082920
+PYT.START: WRONG.DIRECTIVE 20261112:082920
+Error: unknown directive 'wrong.directive'.
+PYT.END: WRONG.DIRECTIVE 20261112:082920
+END: 20261112:082920
+PYT.START: 20261102 20261112:083110
+PYT.START: DOC2MD 20261112:083110
+ERROR [doc2md]: File inesistente.docx not found.
+PYT.END: DOC2MD 20261112:083110
+END: 20261112:083110
+PYT.START: 20261102 20261112:083111
+PYT.START: GREP 20261112:083111
+ERROR [grep]: Option -p requires the search path.
+PYT.END: GREP 20261112:083111
+END: 20261112:083111
+PYT.START: 20261102 20261112:083121
+PYT.START: GREP 20261112:083121
+GREP.START: 20261112:083121 grep -i pattern="TODO" file: G:\Il mio Drive\Progetti\pyt_pyn\pyt.cmd (1 to search)
+No matches found
+GREP.END: 20261112:083121 - matches: 0, files with match: 0/1, errors: 0
+PYT.END: GREP 20261112:083121
+END: 20261112:083121
+PYT.START: 20261102 20261112:083122
+PYT.START: SYNC 20261112:083122
+[20261112:083122] Phase 1: Lettura e validazione del file di configurazione JSON
+  Keys found in JSON: ['source', 'destination', 'type']
+  No 'jobs' key found, treated as single job
+
+============================================================
+[20261112:083122] JOB 1/1: job_1
+============================================================
+ERROR in job 'job_1': Required key missing in JSON: dest
+
+============================================================
+GENERAL SUMMARY
+============================================================
+Jobs completed successfully: 0
+Failed jobs                : 1
+Total files copied         : 0
+Total files updated        : 0
+Total files removed        : 0
+Total files skipped        : 0
+Total file errors          : 0
+PYT.END: SYNC 20261112:083122
+END: 20261112:083122
+PYT.START: 20261102 20261112:083209
+PYT.START: SYNC 20261112:083209
+ERROR [sync]: Sintassi errata. Uso: sync <config.json>
+PYT.END: SYNC 20261112:083209
+END: 20261112:083209
+PYT.START: 20261102 20261112:083228
+PYT.START: SYNC 20261112:083228
+[20261112:083228] Phase 1: Reading and validating the JSON configuration file
+  Keys found in JSON: ['source', 'destination', 'type']
+  No 'jobs' key found, treated as single job
+
+============================================================
+[20261112:083228] JOB 1/1: job_1
+============================================================
+ERROR in job 'job_1': Required key missing in JSON: dest
+
+============================================================
+GENERAL SUMMARY
+============================================================
+Jobs completed successfully: 0
+Failed jobs                : 1
+Total files copied         : 0
+Total files updated        : 0
+Total files removed        : 0
+Total files skipped        : 0
+Total file errors          : 0
+PYT.END: SYNC 20261112:083228
+END: 20261112:083228
+PYT.START: 20261102 20261112:083237
+PYT.START: ROBOCOPY C:/NOPE.JSON 20261112:083237
+Error: unknown directive 'robocopy c:/nope.json'.
+PYT.END: ROBOCOPY C:/NOPE.JSON 20261112:083237
+END: 20261112:083237
+PYT.START: 20261102 20261112:083238
+PYT.START: DISK.CHECK 20261112:083238
+ERROR [disk.check]: Syntax error. Usage: disk_check <disk_name> <disk_report> <warning_pct>
+PYT.END: DISK.CHECK 20261112:083238
+END: 20261112:083238
+PYT.START: 20261102 20261112:083239
+PYT.START: 7Z.TS 20261112:083239
+ERROR [7z.ts]: Syntax error. Usage: 7z_ts <pathsource> [path7z]
+PYT.END: 7Z.TS 20261112:083239
+END: 20261112:083239
+PYT.START: 20261102 20261112:083239
+PYT.START: RIGHTLIST 20261112:083239
+ERROR [rightlist]: Syntax error. Usage: rightlist <path_sorgente> <path_verifica> <listfile.txt> (su Windows evitare il backslash finale dentro le virgolette: usare h: e non "h:\")
+PYT.END: RIGHTLIST 20261112:083239
+END: 20261112:083239
+PYT.START: 20261102 20261112:083240
+PYT.START: DELFILES 20261112:083240
+ERROR [delfiles]: Syntax error. Usage: delfiles <listfile.txt>
+PYT.END: DELFILES 20261112:083240
+END: 20261112:083240
+PYT.START: 20261102 20261112:083241
+PYT.START: GIT.PUSH 20261112:083241
+ERROR [git.push]: Syntax error. Usage: git.push <config.json>
+PYT.END: GIT.PUSH 20261112:083241
+END: 20261112:083241
+PYT.START: 20261102 20261112:083241
+PYT.START: GIT.PULL 20261112:083241
+ERROR [git.pull]: Syntax error. Usage: git.pull <config.json>
+PYT.END: GIT.PULL 20261112:083242
+END: 20261112:083242
+PYT.START: 20261102 20261112:083242
+PYT.START: PODMAN 20261112:083242
+ERROR [podman]: Syntax error. Usage: podman <config.json>
+PYT.END: PODMAN 20261112:083242
+END: 20261112:083242
+PYT.START: 20261102 20261112:083243
+PYT.START: REPORT 20261112:083243
+ERROR [report]: Syntax error. Usage: report <file_template> <file_json> <file_out_base>
+PYT.END: REPORT 20261112:083243
+END: 20261112:083243
+PYT.START: 20261102 20261112:083244
+PYT.START: FORM 20261112:083244
+ERROR [form]: Syntax error. Usage: form <fileform.json>
+PYT.END: FORM 20261112:083244
+END: 20261112:083244
+PYT.START: 20261102 20261112:083244
+PYT.START: REQDOC 20261112:083244
+ERROR [reqdoc]: Syntax error. Usage: reqdoc <requirements.txt>
+PYT.END: REQDOC 20261112:083244
+END: 20261112:083244
+PYT.START: 20261102 20261112:083245
+PYT.START: MD2HTML 20261112:083245
+ERROR [md2html]: Syntax error. Usage: md2html <f1> <f2>
+PYT.END: MD2HTML 20261112:083245
+END: 20261112:083245
+PYT.START: 20261102 20261112:083246
+PYT.START: MD2PAGE 20261112:083246
+ERROR [md2page]: Syntax error. Usage: md2page <f1> <f2>
+PYT.END: MD2PAGE 20261112:083246
+END: 20261112:083246
+PYT.START: 20261102 20261112:083247
+PYT.START: WSL.EXPORT 20261112:083247
+ERROR [wsl.export]: Syntax error. Usage: wsl_export <f1> <f2>
+PYT.END: WSL.EXPORT 20261112:083247
+END: 20261112:083247
+PYT.START: 20261102 20261112:083247
+PYT.START: VHDX2VMDK 20261112:083247
+ERROR [vhdx2vmdk]: Syntax error. Usage: vhdx2vmdk <f1> <f2>
+PYT.END: VHDX2VMDK 20261112:083247
+END: 20261112:083247
+PYT.START: 20261102 20261112:083319
+PYT.START: RIGHTLIST 20261112:083319
+ERROR [rightlist]: Syntax error. Usage: rightlist <path_source> <path_check> <listfile.txt> (on Windows avoid the trailing backslash inside quotes: use h: not "h:")
+PYT.END: RIGHTLIST 20261112:083319
+END: 20261112:083319
+PYT.START: 20261102 20261112:083601
+PYT.START: GREP 20261112:083601
+GREP.START: 20261112:083601 grep -i pattern="import" file: G:\Il mio Drive\Progetti\pyt_pyn\pyt.cmd (1 da cercare)
+Nessuna corrispondenza trovata
+GREP.END: 20261112:083601 - corrispondenze: 0, file con match: 0/1, errori: 0
+PYT.END: GREP 20261112:083601
+END: 20261112:083601
+PYT.START: 20261102 20261112:083602
+PYT.START: GREP 20261112:083602
+ERRORE [grep]: Opzione sconosciuta: -n
+PYT.END: GREP 20261112:083602
+END: 20261112:083602
+PYT.START: 20261102 20261112:083618
+PYT.START: GREP 20261112:083618
+GREP.START: 20261112:083618 grep -i pattern="non riconosciuta" file: G:\Il mio Drive\Progetti\pyt_pyn\pyt.py (1 da cercare)
+FILE: G:\Il mio Drive\Progetti\pyt_pyn\pyt.py
+95:     (r"^Errore: direttiva '(.+?)' non riconosciuta\.$", "Error: unknown directive '{0}'."),
+2928:                 pyt_Print(f"Errore: direttiva '{display_name}' non riconosciuta.")
+2 corrispondenze in pyt.py
+GREP.END: 20261112:083618 - corrispondenze: 2, file con match: 1/1, errori: 0
+PYT.END: GREP 20261112:083618
+END: 20261112:083618
+PYT.START: 20261102 20261112:083633
+PYT.START: GREP 20261112:083633
+GREP.START: 20261112:083633 grep -i pattern="non riconosciuta" file: G:\Il mio Drive\Progetti\pyt_pyn\pyt.py (1 da cercare)
+FILE: G:\Il mio Drive\Progetti\pyt_pyn\pyt.py
+98:     (r"^Errore: direttiva '(.+?)' non riconosciuta\.$", "Error: unknown directive '{0}'."),
+2931:                 pyt_Print(f"Errore: direttiva '{display_name}' non riconosciuta.")
+2 corrispondenze in pyt.py
+GREP.END: 20261112:083633 - corrispondenze: 2, file con match: 1/1, errori: 0
+PYT.END: GREP 20261112:083633
+END: 20261112:083633
+Errore: file di direttive nonexistent.txt non trovato.
+PYT.START: 20261102 20261112:083810
+PYT.START: GREP 20261112:083810
+GREP.START: 20261112:083810 grep -i pattern="def pyt" file: G:\Il mio Drive\Progetti\pyt_pyn\pyt.py (1 to search)
+FILE: G:\Il mio Drive\Progetti\pyt_pyn\pyt.py
+326: def pyt_Translate(msg):
+344: def pyt_Timestamp():
+348: def pyt_Print(stringa):
+358: def pyt_End():
+4 matches in pyt.py
+GREP.END: 20261112:083810 - matches: 4, files with match: 1/1, errors: 0
+PYT.END: GREP 20261112:083811
+END: 20261112:083811
+PYT.START: 20261102 20261112:083816
+END: 20261112:083816
+PYT.START: 20261102 20261112:083821
+END: 20261112:083821
+PYT.START: 20261102 20261112:083824
+END: 20261112:083824
+PYT.START: 20261112 20261112:091622
+END: 20261112:091622
+PYT.START: 20261112 20261112:091659
+END: 20261112:091659
+PYT.START: 20261112 20261116:222333
+END: 20261116:222333
+PYT.START: 20261112 20261116:222936
+END: 20261116:222936
+PYT.START: 20261112 20261116:222949
+END: 20261116:222949
+PYT.START: 20261116 20261116:223215
+END: 20261116:223215
+Errore: file di direttive nonexistent.txt non trovato.
+PYT.START: 20261116 20261116:230244
+PYT.START: GREP 20261116:230244
+GREP.START: 20261116:230244 grep -s "HI" pattern="hello" file: C:\Users\User\AppData\Local\Temp\opencode\REPL1.txt C:\Users\User\AppData\Local\Temp\opencode\REPL2.txt (2 da cercare)
+MODIFICATO: C:\Users\User\AppData\Local\Temp\opencode\REPL1.txt - 2 sostituzioni
+MODIFICATO: C:\Users\User\AppData\Local\Temp\opencode\REPL2.txt - 2 sostituzioni
+GREP.END: 20261116:230246 - file modificati: 2, sostituzioni totali: 4, file con match: 2/2, errori: 0
+PYT.END: GREP 20261116:230246
+END: 20261116:230246
+PYT.START: 20261116 20261116:230305
+PYT.START: GREP 20261116:230305
+GREP.START: 20261116:230305 grep -s "HI" pattern="hello" file: C:\Users\User\AppData\Local\Temp\opencode\REPL1.txt C:\Users\User\AppData\Local\Temp\opencode\REPL2.txt (2 da cercare)
+MODIFICATO: C:\Users\User\AppData\Local\Temp\opencode\REPL1.txt - 2 sostituzioni
+MODIFICATO: C:\Users\User\AppData\Local\Temp\opencode\REPL2.txt - 2 sostituzioni
+GREP.END: 20261116:230307 - file modificati: 2, sostituzioni totali: 4, file con match: 2/2, errori: 0
+PYT.END: GREP 20261116:230307
+END: 20261116:230307
+PYT.START: 20261116 20261116:230312
+PYT.START: GREP 20261116:230312
+GREP.START: 20261116:230312 grep -r -s "REPL" pattern="REPL" file: G:\Il mio Drive\Progetti\pyt_pyn (100 da cercare)
+MODIFICATO: G:\Il mio Drive\Progetti\pyt_pyn\pyt.py - 15 sostituzioni
+MODIFICATO: G:\Il mio Drive\Progetti\pyt_pyn\Prompt_pyt.md - 9 sostituzioni
+MODIFICATO: G:\Il mio Drive\Progetti\pyt_pyn\Prompt_pyn.md - 20 sostituzioni
+MODIFICATO: G:\Il mio Drive\Progetti\pyt_pyn\pyn.cmd - 9 sostituzioni
+MODIFICATO: G:\Il mio Drive\Progetti\pyt_pyn\AGENTS.md - 2 sostituzioni
+MODIFICATO: G:\Il mio Drive\Progetti\pyt_pyn\pyt_REPL.py - 181 sostituzioni
+MODIFICATO: G:\Il mio Drive\Progetti\pyt_pyn\pyt_git_template.json - 1 sostituzioni
+MODIFICATO: G:\Il mio Drive\Progetti\pyt_pyn\REPL_git_commit.json - 2 sostituzioni
+MODIFICATO: G:\Il mio Drive\Progetti\pyt_pyn\pyn.sh - 5 sostituzioni
+MODIFICATO: G:\Il mio Drive\Progetti\pyt_pyn\Prompt_x.md - 1 sostituzioni
+MODIFICATO: G:\Il mio Drive\Progetti\pyt_pyn\pyt_podman_template.json - 1 sostituzioni
+MODIFICATO: G:\Il mio Drive\Progetti\pyt_pyn\Prompt_pyt_form.md - 6 sostituzioni
+MODIFICATO: G:\Il mio Drive\Progetti\pyt_pyn\pyt_form.py - 1 sostituzioni
+MODIFICATO: G:\Il mio Drive\Progetti\pyt_pyn\pyt.log - 55 sostituzioni
+MODIFICATO: G:\Il mio Drive\Progetti\pyt_pyn\pyt_form_man.md - 5 sostituzioni
+MODIFICATO: G:\Il mio Drive\Progetti\pyt_pyn\sync_job1.log - 1 sostituzioni
+MODIFICATO: G:\Il mio Drive\Progetti\pyt_pyn\sync_job2.log - 1 sostituzioni
+MODIFICATO: G:\Il mio Drive\Progetti\pyt_pyn\sync_test.log - 3 sostituzioni
+MODIFICATO: G:\Il mio Drive\Progetti\pyt_pyn\requirements_X64.md - 230 sostituzioni
+MODIFICATO: G:\Il mio Drive\Progetti\pyt_pyn\requirements_x64_309.md - 7 sostituzioni
+MODIFICATO: G:\Il mio Drive\Progetti\pyt_pyn\Prompt_pyt_grep.md - 4 sostituzioni
+MODIFICATO: G:\Il mio Drive\Progetti\pyt_pyn\_Versioni\pyn_master.cmd - 2 sostituzioni
+MODIFICATO: G:\Il mio Drive\Progetti\pyt_pyn\_Versioni\pyt_git_prompt.txt - 1 sostituzioni
+MODIFICATO: G:\Il mio Drive\Progetti\pyt_pyn\_Versioni\Prompt_pyt (2).md - 6 sostituzioni
+MODIFICATO: G:\Il mio Drive\Progetti\pyt_pyn\_Versioni\Prompt_pyn (2).md - 3 sostituzioni
+MODIFICATO: G:\Il mio Drive\Progetti\pyt_pyn\_Versioni\pyn_ok_20261007.cmd - 2 sostituzioni
+MODIFICATO: G:\Il mio Drive\Progetti\pyt_pyn\_Versioni\Versione_20261112\pyt.log - 44 sostituzioni
+MODIFICATO: G:\Il mio Drive\Progetti\pyt_pyn\_Versioni\Versione_20261112\Prompt_pyt.md - 9 sostituzioni
+MODIFICATO: G:\Il mio Drive\Progetti\pyt_pyn\_Versioni\Versione_20261112\pyt.py - 2 sostituzioni
+MODIFICATO: G:\Il mio Drive\Progetti\pyt_pyn\_Versioni\Versione_20261112\pyn.cmd - 9 sostituzioni
+MODIFICATO: G:\Il mio Drive\Progetti\pyt_pyn\_Versioni\Versione_20261112\Prompt_pyn.md - 22 sostituzioni
+MODIFICATO: G:\Il mio Drive\Progetti\pyt_pyn\_Versioni\Versione_20261112\pyn.sh - 5 sostituzioni
+MODIFICATO: G:\Il mio Drive\Progetti\pyt_pyn\Log\pyt.log - 18 sostituzioni
+MODIFICATO: G:\Il mio Drive\Progetti\pyt_pyn\Log\sync_areefile.log - 22 sostituzioni
+MODIFICATO: G:\Il mio Drive\Progetti\pyt_pyn\Log\sync_Backup.log - 12 sostituzioni
+MODIFICATO: G:\Il mio Drive\Progetti\pyt_pyn\Log\sync_clouddrive.log - 1 sostituzioni
+MODIFICATO: G:\Il mio Drive\Progetti\pyt_pyn\Support\openrouter_catalog.txt - 2 sostituzioni
+GREP.END: 20261116:230354 - file modificati: 37, sostituzioni totali: 719, file con match: 37/100, errori: 0
+PYT.END: GREP 20261116:230354
+END: 20261116:230354
+PYT.START: 20261116 20261116:230404
+PYT.START: GREP 20261116:230404
+ERRORE [grep]: Con -s/--replace il pattern deve essere REPLo fisso (niente metacaratteri regex: .^$*+?{}[]\|()).
+PYT.END: GREP 20261116:230404
+END: 20261116:230404
+PYT.START: 20261116 20261116:230409
+PYT.START: GREP 20261116:230409
+GREP.START: 20261116:230409 grep -i pattern="hello" file: C:\Users\User\AppData\Local\Temp\opencode\test1.txt (1 da cercare)
+Nessuna corrispondenza trovata
+GREP.END: 20261116:230409 - corrispondenze: 0, file con match: 0/1, errori: 0
+PYT.END: GREP 20261116:230409
+END: 20261116:230409
+PYT.START: 20261116 20261116:230414
+PYT.START: GREP 20261116:230414
+GREP.START: 20261116:230414 grep pattern="HI" file: C:\Users\User\AppData\Local\Temp\opencode\test1.txt (1 da cercare)
+FILE: C:\Users\User\AppData\Local\Temp\opencode\test1.txt
+1: HI world
+2: HI again
+2 corrispondenze in test1.txt
+GREP.END: 20261116:230414 - corrispondenze: 2, file con match: 1/1, errori: 0
+PYT.END: GREP 20261116:230414
+END: 20261116:230414
+PYT.START: 20261116 20261116:230419
+PYT.START: GREP 20261116:230419
+GREP.START: 20261116:230419 grep -s "BYE" pattern="HI" file: C:\Users\User\AppData\Local\Temp\opencode\test1.txt (1 da cercare)
+MODIFICATO: C:\Users\User\AppData\Local\Temp\opencode\test1.txt - 2 sostituzioni
+GREP.END: 20261116:230420 - file modificati: 1, sostituzioni totali: 2, file con match: 1/1, errori: 0
+PYT.END: GREP 20261116:230420
+END: 20261116:230421
+PYT.START: 20261116 20261116:230432
+END: 20261116:230432
+PYT.START: 20261116 20261116:230448
+END: 20261116:230448
+PYT.START: 20261116 20261116:230519
+PYT.START: GREP 20261116:230519
+GREP.START: 20261116:230519 grep -i -s "X" pattern="hello" file: C:\Users\User\AppData\Local\Temp\opencode\test3.txt (1 da cercare)
+MODIFICATO: C:\Users\User\AppData\Local\Temp\opencode\test3.txt - 3 sostituzioni
+GREP.END: 20261116:230520 - file modificati: 1, sostituzioni totali: 3, file con match: 1/1, errori: 0
+PYT.END: GREP 20261116:230520
+END: 20261116:230520
+PYT.START: 20261116 20261116:231449
+PYT.START: GREP 20261116:231449
+GREP.START: 20261116:231449 grep -s "X" pattern="hello" file: C:\Users\User\AppData\Local\Temp\opencode\test4.txt (1 da cercare)
+SIMULAZIONE: C:\Users\User\AppData\Local\Temp\opencode\test4.txt - 2 sostituzioni
+  - hello world
+  + X world
+  - hello again
+  + X again
+GREP.END: 20261116:231449 - SIMULAZIONE: file da modificare: 1, sostituzioni totali: 2, file con match: 1/1, errori: 0
+PYT.END: GREP 20261116:231449
+END: 20261116:231449
+PYT.START: 20261116 20261116:231455
+PYT.START: GREP 20261116:231455
+GREP.START: 20261116:231455 grep -s "X" pattern="hello" file: C:\Users\User\AppData\Local\Temp\opencode\test4.txt (1 da cercare)
+MODIFICATO: C:\Users\User\AppData\Local\Temp\opencode\test4.txt - 2 sostituzioni
+GREP.END: 20261116:231456 - file modificati: 1, sostituzioni totali: 2, file con match: 1/1, errori: 0
+PYT.END: GREP 20261116:231456
+END: 20261116:231456
+PYT.START: 20261116 20261116:231524
+PYT.START: GREP 20261116:231524
+GREP.START: 20261116:231524 grep -s "DONE" pattern="test" file: C:\Users\User\AppData\Local\Temp\opencode\test5.txt (1 da cercare)
+SIMULAZIONE: C:\Users\User\AppData\Local\Temp\opencode\test5.txt - 2 sostituzioni
+  - test one
+  + DONE one
+  - test two
+  + DONE two
+GREP.END: 20261116:231524 - SIMULAZIONE: file da modificare: 1, sostituzioni totali: 2, file con match: 1/1, errori: 0
+PYT.END: GREP 20261116:231524
+END: 20261116:231524
+PYT.START: 20261116 20261116:231530
+PYT.START: GREP 20261116:231530
+GREP.START: 20261116:231530 grep -r -s "XXX" pattern="import" file: G:\Il mio Drive\Progetti\pyt_pyn (100 da cercare)
+SIMULAZIONE: G:\Il mio Drive\Progetti\pyt_pyn\pyt.py - 32 sostituzioni
+  - import sys
+  + XXX sys
+  - import os
+  + XXX os
+  - import subprocess
+  + XXX subprocess
+  ... e altre 29 modifiche
+SIMULAZIONE: G:\Il mio Drive\Progetti\pyt_pyn\Prompt_pyt.md - 9 sostituzioni
+  -         Dati locali (importlib.metadata) + arricchimento PyPI online se disponibile.
+  +         Dati locali (XXXlib.metadata) + arricchimento PyPI online se disponibile.
+  - **Nota importante sui percorsi UNC in JSON:**  
+  + **Nota XXXante sui percorsi UNC in JSON:**  
+  - - **Fase 2:** Metadata locali via `importlib.metadata` (nome normalizzato case-insensitive): `Version`, `Summary`, `Home-page` (fallback prima `Project-URL`), `Requires-Dist` ripuliti dai marker dopo `;`. Pacchetti assenti o illeggibili → versione pinned o `n/d`, segnati per la Fase 3.
+  + - **Fase 2:** Metadata locali via `XXXlib.metadata` (nome normalizzato case-insensitive): `Version`, `Summary`, `Home-page` (fallback prima `Project-URL`), `Requires-Dist` ripuliti dai marker dopo `;`. Pacchetti assenti o illeggibili → versione pinned o `n/d`, segnati per la Fase 3.
+  ... e altre 6 modifiche
+SIMULAZIONE: G:\Il mio Drive\Progetti\pyt_pyn\Prompt_pyn.md - 8 sostituzioni
+  - | **20261011** | **Direttiva `pod` rinominata `podman`**: `machine start|stop` (sostituisce `start`/`end`), `crun <container> <image>` (`run --name`, senza mount), `cstop <container>`, `image set <image>` (export `POD_IMAGE`), `list machines|image|containers|all`, `export <image> <file.tar>` (`save`), `import <file.tar>` (`load`); tolti `x`/`end`/`start`/help vecchi, stub `pod`; `opt` e passthrough conservati; rimosso ogni `pod` isolato (stub e target `list pod`): help solo containers/images/machines. Stessa struttura in `pyn.sh` (`--pod-internal`). |
+  + | **20261011** | **Direttiva `pod` rinominata `podman`**: `machine start|stop` (sostituisce `start`/`end`), `crun <container> <image>` (`run --name`, senza mount), `cstop <container>`, `image set <image>` (export `POD_IMAGE`), `list machines|image|containers|all`, `export <image> <file.tar>` (`save`), `XXX <file.tar>` (`load`); tolti `x`/`end`/`start`/help vecchi, stub `pod`; `opt` e passthrough conservati; rimosso ogni `pod` isolato (stub e target `list pod`): help solo containers/images/machines. Stessa struttura in `pyn.sh` (`--pod-internal`). |
+  - | **20250803** | PYN MASTER: gestione upgrade "SOLO su NTGCORP" con flag. Comandi `reqx` (export) e `reqi` (import). |
+  + | **20250803** | PYN MASTER: gestione upgrade "SOLO su NTGCORP" con flag. Comandi `reqx` (export) e `reqi` (XXX). |
+  - REM                   - comandi x reqx - pip requirements export e x reqi - pip requirements import
+  + REM                   - comandi x reqx - pip requirements export e x reqi - pip requirements XXX
+  ... e altre 5 modifiche
+SIMULAZIONE: G:\Il mio Drive\Progetti\pyt_pyn\pyn.cmd - 4 sostituzioni
+  - REM VERSIONE 20261011 - podman export <image> <file.tar> (save) e import <file.tar> (load)
+  + REM VERSIONE 20261011 - podman export <image> <file.tar> (save) e XXX <file.tar> (load)
+  - REM                   - comandi x reqx - pip requirements export e x reqi - pip requirements import
+  + REM                   - comandi x reqx - pip requirements export e x reqi - pip requirements XXX
+  - IF /I "%~2"=="import" GOTO :PODMAN_IMPORT
+  + IF /I "%~2"=="XXX" GOTO :PODMAN_IMPORT
+  ... e altre 1 modifiche
+SIMULAZIONE: G:\Il mio Drive\Progetti\pyt_pyn\AGENTS.md - 1 sostituzioni
+  - | Python libs: `pypandoc`, `markdown`, `paramiko`, `requests` | `pyt.py` | Optional imports, checked at runtime |
+  + | Python libs: `pypandoc`, `markdown`, `paramiko`, `requests` | `pyt.py` | Optional XXXs, checked at runtime |
+SIMULAZIONE: G:\Il mio Drive\Progetti\pyt_pyn\pyt_test.py - 16 sostituzioni
+  - import unitREPL
+  + XXX unitREPL
+  - import os
+  + XXX os
+  - import sys
+  + XXX sys
+  ... e altre 13 modifiche
+SIMULAZIONE: G:\Il mio Drive\Progetti\pyt_pyn\Prompt_pyt_report.md - 1 sostituzioni
+  -  E una libreria esterna a pyt di nome pyt_report e viene importata solo se viene utilizzata questa direttiva.  
+  +  E una libreria esterna a pyt di nome pyt_report e viene XXXata solo se viene utilizzata questa direttiva.  
+SIMULAZIONE: G:\Il mio Drive\Progetti\pyt_pyn\pyn.sh - 4 sostituzioni
+  - # VERSIONE 20261011 - podman export <image> <file.tar> (save) e import <file.tar> (load)
+  + # VERSIONE 20261011 - podman export <image> <file.tar> (save) e XXX <file.tar> (load)
+  - PYN.SH podman import file.tar. Importa immagine da file tar
+  + PYN.SH podman XXX file.tar. Importa immagine da file tar
+  -         import)
+  +         XXX)
+  ... e altre 1 modifiche
+SIMULAZIONE: G:\Il mio Drive\Progetti\pyt_pyn\list.txt - 105 sostituzioni
+  - DIR W:\_Backup\_CloudBackup\GDrive_Eshop\Ebook\Sviluppo e WebDesign\Php\php\phpbb\csv_user_import_V1.2.4
+  + DIR W:\_Backup\_CloudBackup\GDrive_Eshop\Ebook\Sviluppo e WebDesign\Php\php\phpbb\csv_user_XXX_V1.2.4
+  - FILE W:\_Backup\_CloudBackup\GDrive_Eshop\Ebook\Sviluppo e WebDesign\Php\php\phpbb\csv_user_import_V1.2.4.zip
+  + FILE W:\_Backup\_CloudBackup\GDrive_Eshop\Ebook\Sviluppo e WebDesign\Php\php\phpbb\csv_user_XXX_V1.2.4.zip
+  - DIR W:\_Backup\_CloudBackup\GDrive_Eshop\Ebook\Sviluppo e WebDesign\Php\php\phpbb\csv_user_import_V1.2.4\csv_user_import
+  + DIR W:\_Backup\_CloudBackup\GDrive_Eshop\Ebook\Sviluppo e WebDesign\Php\php\phpbb\csv_user_XXX_V1.2.4\csv_user_XXX
+  ... e altre 102 modifiche
+SIMULAZIONE: G:\Il mio Drive\Progetti\pyt_pyn\Prompt_pyt_form.md - 4 sostituzioni
+  -  libreria esterna di nome pyt_form, importata **solo** quando viene usata la direttiva form (lazy import dentro app_form, come app_report importa pyt_report).  
+  +  libreria esterna di nome pyt_form, XXXata **solo** quando viene usata la direttiva form (lazy XXX dentro app_form, come app_report XXXa pyt_report).  
+  -          import pyt_form                        # lazy, come pyt_report  
+  +          XXX pyt_form                        # lazy, come pyt_report  
+SIMULAZIONE: G:\Il mio Drive\Progetti\pyt_pyn\pyt_report.py - 2 sostituzioni
+  - import os
+  + XXX os
+  - import html
+  + XXX html
+SIMULAZIONE: G:\Il mio Drive\Progetti\pyt_pyn\pyt_form.py - 14 sostituzioni
+  - import html as _html
+  + XXX html as _html
+  - import json
+  + XXX json
+  - import os
+  + XXX os
+  ... e altre 11 modifiche
+SIMULAZIONE: G:\Il mio Drive\Progetti\pyt_pyn\pyt.log - 38 sostituzioni
+  - [20261017:001907] Fase 2: Lettura metadata locali (importlib.metadata)
+  + [20261017:001907] Fase 2: Lettura metadata locali (XXXlib.metadata)
+  - [20261017:001907] Fase 2: Lettura metadata locali (importlib.metadata)
+  + [20261017:001907] Fase 2: Lettura metadata locali (XXXlib.metadata)
+  - [20261024:110039] Fase 2: Lettura metadata locali (importlib.metadata)
+  + [20261024:110039] Fase 2: Lettura metadata locali (XXXlib.metadata)
+  ... e altre 35 modifiche
+SIMULAZIONE: G:\Il mio Drive\Progetti\pyt_pyn\test_solana_libs.py - 2 sostituzioni
+  - import solana
+  + XXX solana
+  - import solders
+  + XXX solders
+SIMULAZIONE: G:\Il mio Drive\Progetti\pyt_pyn\pipupgrade.txt - 1 sostituzioni
+  - importlib_metadata
+  + XXXlib_metadata
+SIMULAZIONE: G:\Il mio Drive\Progetti\pyt_pyn\requirements_X64.md - 5 sostituzioni
+  - | importlib_metadata | 9.0.1 | Read metadata from Python packages | zipp>=3.20, pyREPL!=8.1.*,>=6, packaging, pyfakefs, pyREPL-perf>=0.17, sphinx>=3.5, jaraco.packaging>=9.3, rst.linker>=1.9, furo, sphinx-lint, jaraco.tidelift>=1.4, ipython, pyREPL-checkdocs>=2.14, pyREPL-ruff>=0.2.1, pyREPL-cov, pyREPL-enabler>=3.4, pyREPL-mypy>=1.0.1 | https://github.com/python/importlib_metadata |
+  + | XXXlib_metadata | 9.0.1 | Read metadata from Python packages | zipp>=3.20, pyREPL!=8.1.*,>=6, packaging, pyfakefs, pyREPL-perf>=0.17, sphinx>=3.5, jaraco.packaging>=9.3, rst.linker>=1.9, furo, sphinx-lint, jaraco.tidelift>=1.4, ipython, pyREPL-checkdocs>=2.14, pyREPL-ruff>=0.2.1, pyREPL-cov, pyREPL-enabler>=3.4, pyREPL-mypy>=1.0.1 | https://github.com/python/XXXlib_metadata |
+  - | keyring | 25.7.0 | Store and access your passwords safely. | pywin32-ctypes>=0.2.0, SecretStorage>=3.2, jeepney>=0.4.2, importlib_metadata>=4.11.4, jaraco.classes, jaraco.functools, jaraco.context, pyREPL!=8.1.*,>=6, pyfakefs, sphinx>=3.5, jaraco.packaging>=9.3, rst.linker>=1.9, furo, sphinx-lint, jaraco.tidelift>=1.4, pyREPL-checkdocs>=2.4, pyREPL-ruff>=0.2.1, pyREPL-cov, pyREPL-enabler>=3.4, pyREPL-mypy>=1.0.1, pygobject-stubs, shtab, types-pywin32, shtab>=1.1.0 | https://github.com/jaraco/keyring |
+  + | keyring | 25.7.0 | Store and access your passwords safely. | pywin32-ctypes>=0.2.0, SecretStorage>=3.2, jeepney>=0.4.2, XXXlib_metadata>=4.11.4, jaraco.classes, jaraco.functools, jaraco.context, pyREPL!=8.1.*,>=6, pyfakefs, sphinx>=3.5, jaraco.packaging>=9.3, rst.linker>=1.9, furo, sphinx-lint, jaraco.tidelift>=1.4, pyREPL-checkdocs>=2.4, pyREPL-ruff>=0.2.1, pyREPL-cov, pyREPL-enabler>=3.4, pyREPL-mypy>=1.0.1, pygobject-stubs, shtab, types-pywin32, shtab>=1.1.0 | https://github.com/jaraco/keyring |
+  - | setuptools | 84.0.0 | Most extensible Python build backend with support for C/C++ extension modules | pyREPL!=8.1.*,>=6, virtualenv>=13.0.0, wheel>=0.44.0, pip>=19.1, packaging>=24.2, jaraco.envs>=2.2, pyREPL-xdist>=3, jaraco.path>=3.7.2, build[virtualenv]>=1.0.3, filelock>=3.4.0, ini2toml[lite]>=0.14, tomli-w>=1.0.0, pyREPL-timeout, pyREPL-perf, jaraco.develop>=7.21, pyREPL-home>=0.5, pyREPL-subprocess, pyproject-hooks!=1.1, jaraco.REPL>=5.5, sphinx>=3.5, jaraco.packaging>=9.3, rst.linker>=1.9, furo, sphinx-lint, jaraco.tidelift>=1.4, pygments-github-lexers==0.0.5, sphinx-favicon, sphinx-inline-tabs, sphinx-reredirects, sphinxcontrib-towncrier, sphinx-notfound-page<2,>=1, pyproject-hooks!=1.1, towncrier<24.7, packaging>=24.2, more_itertools>=8.8, jaraco.text>=3.7, importlib_metadata>=6, tomli>=2.0.1, wheel>=0.43.0, jaraco.functools>=4, more_itertools, pyREPL-checkdocs>=2.14, pyREPL-ruff>=0.2.1, ruff>=0.13.0, pyREPL-cov, pyREPL-enabler>=3.4, pyREPL-mypy>=1.0.1, mypy==1.18.*, importlib_metadata>=7.0.2, jaraco.develop>=7.21 | https://github.com/pypa/setuptools |
+  + | setuptools | 84.0.0 | Most extensible Python build backend with support for C/C++ extension modules | pyREPL!=8.1.*,>=6, virtualenv>=13.0.0, wheel>=0.44.0, pip>=19.1, packaging>=24.2, jaraco.envs>=2.2, pyREPL-xdist>=3, jaraco.path>=3.7.2, build[virtualenv]>=1.0.3, filelock>=3.4.0, ini2toml[lite]>=0.14, tomli-w>=1.0.0, pyREPL-timeout, pyREPL-perf, jaraco.develop>=7.21, pyREPL-home>=0.5, pyREPL-subprocess, pyproject-hooks!=1.1, jaraco.REPL>=5.5, sphinx>=3.5, jaraco.packaging>=9.3, rst.linker>=1.9, furo, sphinx-lint, jaraco.tidelift>=1.4, pygments-github-lexers==0.0.5, sphinx-favicon, sphinx-inline-tabs, sphinx-reredirects, sphinxcontrib-towncrier, sphinx-notfound-page<2,>=1, pyproject-hooks!=1.1, towncrier<24.7, packaging>=24.2, more_itertools>=8.8, jaraco.text>=3.7, XXXlib_metadata>=6, tomli>=2.0.1, wheel>=0.43.0, jaraco.functools>=4, more_itertools, pyREPL-checkdocs>=2.14, pyREPL-ruff>=0.2.1, ruff>=0.13.0, pyREPL-cov, pyREPL-enabler>=3.4, pyREPL-mypy>=1.0.1, mypy==1.18.*, XXXlib_metadata>=7.0.2, jaraco.develop>=7.21 | https://github.com/pypa/setuptools |
+  ... e altre 2 modifiche
+SIMULAZIONE: G:\Il mio Drive\Progetti\pyt_pyn\requirements_X64.txt - 1 sostituzioni
+  - importlib_metadata==9.0.1
+  + XXXlib_metadata==9.0.1
+SIMULAZIONE: G:\Il mio Drive\Progetti\pyt_pyn\requirements_X64_LIGHT.txt - 4 sostituzioni
+  - importlib_metadata 
+  + XXXlib_metadata 
+  - importlib_metadata 
+  + XXXlib_metadata 
+  - importlib_metadata 
+  + XXXlib_metadata 
+  ... e altre 1 modifiche
+SIMULAZIONE: G:\Il mio Drive\Progetti\pyt_pyn\Prompt_pyt_grep.md - 4 sostituzioni
+  - import argparse
+  + XXX argparse
+  - import re
+  + XXX re
+  - import sys
+  + XXX sys
+  ... e altre 1 modifiche
+SIMULAZIONE: G:\Il mio Drive\Progetti\pyt_pyn\_Versioni\pyn_master.cmd - 1 sostituzioni
+  - REM                   - comandi x reqx - pip requirements export e x reqi - pip requirements import
+  + REM                   - comandi x reqx - pip requirements export e x reqi - pip requirements XXX
+SIMULAZIONE: G:\Il mio Drive\Progetti\pyt_pyn\_Versioni\pyt_report.py - 2 sostituzioni
+  - import os
+  + XXX os
+  - import html
+  + XXX html
+SIMULAZIONE: G:\Il mio Drive\Progetti\pyt_pyn\_Versioni\Prompt_pyt (2).md - 5 sostituzioni
+  - **Ultimo aggiornamento:** Allineato a `pyt.py:32` `PYT_VER="20260923"`. Aggiunta specifica wrapper `pyt.sh` Linux (`python3`, unico path custom via `PY_ENV`/`PY_END`) + wrapper `pyt.cmd` Windows. Corretti import `glob`, fasi `md2page`, wildcard `robocopy` e validazione `sync` per fedeltà a `pyt.py`.
+  + **Ultimo aggiornamento:** Allineato a `pyt.py:32` `PYT_VER="20260923"`. Aggiunta specifica wrapper `pyt.sh` Linux (`python3`, unico path custom via `PY_ENV`/`PY_END`) + wrapper `pyt.cmd` Windows. Corretti XXX `glob`, fasi `md2page`, wildcard `robocopy` e validazione `sync` per fedeltà a `pyt.py`.
+  - **Nota importante sui percorsi UNC in JSON:**  
+  + **Nota XXXante sui percorsi UNC in JSON:**  
+  - Genera report da template e dati JSON utilizzando la libreria esterna `pyt_report` (importata solo quando viene invocata questa direttiva).
+  + Genera report da template e dati JSON utilizzando la libreria esterna `pyt_report` (XXXata solo quando viene invocata questa direttiva).
+  ... e altre 2 modifiche
+SIMULAZIONE: G:\Il mio Drive\Progetti\pyt_pyn\_Versioni\Prompt_pyn (2).md - 2 sostituzioni
+  - | **20250803** | PYN MASTER: gestione upgrade "SOLO su NTGCORP" con flag. Comandi `reqx` (export) e `reqi` (import). |
+  + | **20250803** | PYN MASTER: gestione upgrade "SOLO su NTGCORP" con flag. Comandi `reqx` (export) e `reqi` (XXX). |
+  - REM                   - comandi x reqx - pip requirements export e x reqi - pip requirements import
+  + REM                   - comandi x reqx - pip requirements export e x reqi - pip requirements XXX
+SIMULAZIONE: G:\Il mio Drive\Progetti\pyt_pyn\_Versioni\pyn_ok_20261007.cmd - 1 sostituzioni
+  - REM                   - comandi x reqx - pip requirements export e x reqi - pip requirements import
+  + REM                   - comandi x reqx - pip requirements export e x reqi - pip requirements XXX
+SIMULAZIONE: G:\Il mio Drive\Progetti\pyt_pyn\_Versioni\Versione_20261112\pyt.log - 4 sostituzioni
+  - [20261017:001907] Fase 2: Lettura metadata locali (importlib.metadata)
+  + [20261017:001907] Fase 2: Lettura metadata locali (XXXlib.metadata)
+  - [20261017:001907] Fase 2: Lettura metadata locali (importlib.metadata)
+  + [20261017:001907] Fase 2: Lettura metadata locali (XXXlib.metadata)
+  - [20261024:110039] Fase 2: Lettura metadata locali (importlib.metadata)
+  + [20261024:110039] Fase 2: Lettura metadata locali (XXXlib.metadata)
+  ... e altre 1 modifiche
+SIMULAZIONE: G:\Il mio Drive\Progetti\pyt_pyn\_Versioni\Versione_20261112\Prompt_pyt.md - 9 sostituzioni
+  -         Dati locali (importlib.metadata) + arricchimento PyPI online se disponibile.
+  +         Dati locali (XXXlib.metadata) + arricchimento PyPI online se disponibile.
+  - **Nota importante sui percorsi UNC in JSON:**  
+  + **Nota XXXante sui percorsi UNC in JSON:**  
+  - - **Fase 2:** Metadata locali via `importlib.metadata` (nome normalizzato case-insensitive): `Version`, `Summary`, `Home-page` (fallback prima `Project-URL`), `Requires-Dist` ripuliti dai marker dopo `;`. Pacchetti assenti o illeggibili → versione pinned o `n/d`, segnati per la Fase 3.
+  + - **Fase 2:** Metadata locali via `XXXlib.metadata` (nome normalizzato case-insensitive): `Version`, `Summary`, `Home-page` (fallback prima `Project-URL`), `Requires-Dist` ripuliti dai marker dopo `;`. Pacchetti assenti o illeggibili → versione pinned o `n/d`, segnati per la Fase 3.
+  ... e altre 6 modifiche
+SIMULAZIONE: G:\Il mio Drive\Progetti\pyt_pyn\_Versioni\Versione_20261112\pyt.py - 30 sostituzioni
+  - import sys
+  + XXX sys
+  - import os
+  + XXX os
+  - import subprocess
+  + XXX subprocess
+  ... e altre 27 modifiche
+SIMULAZIONE: G:\Il mio Drive\Progetti\pyt_pyn\_Versioni\Versione_20261112\pyn.cmd - 4 sostituzioni
+  - REM VERSIONE 20261011 - podman export <image> <file.tar> (save) e import <file.tar> (load)
+  + REM VERSIONE 20261011 - podman export <image> <file.tar> (save) e XXX <file.tar> (load)
+  - REM                   - comandi x reqx - pip requirements export e x reqi - pip requirements import
+  + REM                   - comandi x reqx - pip requirements export e x reqi - pip requirements XXX
+  - IF /I "%~2"=="import" GOTO :PODMAN_IMPORT
+  + IF /I "%~2"=="XXX" GOTO :PODMAN_IMPORT
+  ... e altre 1 modifiche
+SIMULAZIONE: G:\Il mio Drive\Progetti\pyt_pyn\_Versioni\Versione_20261112\Prompt_pyn.md - 8 sostituzioni
+  - | **20261011** | **Direttiva `pod` rinominata `podman`**: `machine start|stop` (sostituisce `start`/`end`), `crun <container> <image>` (`run --name`, senza mount), `cstop <container>`, `image set <image>` (export `POD_IMAGE`), `list machines|image|containers|all`, `export <image> <file.tar>` (`save`), `import <file.tar>` (`load`); tolti `x`/`end`/`start`/help vecchi, stub `pod`; `opt` e passthrough conservati; rimosso ogni `pod` isolato (stub e target `list pod`): help solo containers/images/machines. Stessa struttura in `pyn.sh` (`--pod-internal`). |
+  + | **20261011** | **Direttiva `pod` rinominata `podman`**: `machine start|stop` (sostituisce `start`/`end`), `crun <container> <image>` (`run --name`, senza mount), `cstop <container>`, `image set <image>` (export `POD_IMAGE`), `list machines|image|containers|all`, `export <image> <file.tar>` (`save`), `XXX <file.tar>` (`load`); tolti `x`/`end`/`start`/help vecchi, stub `pod`; `opt` e passthrough conservati; rimosso ogni `pod` isolato (stub e target `list pod`): help solo containers/images/machines. Stessa struttura in `pyn.sh` (`--pod-internal`). |
+  - | **20250803** | PYN MASTER: gestione upgrade "SOLO su NTGCORP" con flag. Comandi `reqx` (export) e `reqi` (import). |
+  + | **20250803** | PYN MASTER: gestione upgrade "SOLO su NTGCORP" con flag. Comandi `reqx` (export) e `reqi` (XXX). |
+  - REM                   - comandi x reqx - pip requirements export e x reqi - pip requirements import
+  + REM                   - comandi x reqx - pip requirements export e x reqi - pip requirements XXX
+  ... e altre 5 modifiche
+SIMULAZIONE: G:\Il mio Drive\Progetti\pyt_pyn\_Versioni\Versione_20261112\pyn.sh - 4 sostituzioni
+  - # VERSIONE 20261011 - podman export <image> <file.tar> (save) e import <file.tar> (load)
+  + # VERSIONE 20261011 - podman export <image> <file.tar> (save) e XXX <file.tar> (load)
+  - PYN.SH podman import file.tar. Importa immagine da file tar
+  + PYN.SH podman XXX file.tar. Importa immagine da file tar
+  -         import)
+  +         XXX)
+  ... e altre 1 modifiche
+SIMULAZIONE: G:\Il mio Drive\Progetti\pyt_pyn\MenoImportanti\rsync.py - 7 sostituzioni
+  - import argparse
+  + XXX argparse
+  - import json
+  + XXX json
+  - import os
+  + XXX os
+  ... e altre 4 modifiche
+SIMULAZIONE: G:\Il mio Drive\Progetti\pyt_pyn\Log\pyt.log - 5 sostituzioni
+  - [20260908:230505] COPIED: _Applic\Bash\mingw64\libexec\git-core\git-quiltimport
+  + [20260908:230505] COPIED: _Applic\Bash\mingw64\libexec\git-core\git-quiltXXX
+  - [20260908:230513] COPIED: _Applic\Bash\mingw64\share\doc\git-doc\git-quiltimport.html
+  + [20260908:230513] COPIED: _Applic\Bash\mingw64\share\doc\git-doc\git-quiltXXX.html
+  - [20260908:230516] COPIED: _Applic\Bash\mingw64\share\doc\git-doc\git-fast-import.adoc
+  + [20260908:230516] COPIED: _Applic\Bash\mingw64\share\doc\git-doc\git-fast-XXX.adoc
+  ... e altre 2 modifiche
+SIMULAZIONE: G:\Il mio Drive\Progetti\pyt_pyn\Log\sync_areefile.log - 5 sostituzioni
+  - [20260908:230505] COPIED: _Applic\Bash\mingw64\libexec\git-core\git-quiltimport
+  + [20260908:230505] COPIED: _Applic\Bash\mingw64\libexec\git-core\git-quiltXXX
+  - [20260908:230513] COPIED: _Applic\Bash\mingw64\share\doc\git-doc\git-quiltimport.html
+  + [20260908:230513] COPIED: _Applic\Bash\mingw64\share\doc\git-doc\git-quiltXXX.html
+  - [20260908:230516] COPIED: _Applic\Bash\mingw64\share\doc\git-doc\git-fast-import.adoc
+  + [20260908:230516] COPIED: _Applic\Bash\mingw64\share\doc\git-doc\git-fast-XXX.adoc
+  ... e altre 2 modifiche
+SIMULAZIONE: G:\Il mio Drive\Progetti\pyt_pyn\Log\sync_Backup.log - 14 sostituzioni
+  - [20260908:232323] COPIED: GDrive_Elisa\ElisaProgetti\Portogallo\Gmail - M712GE _ Aggiornamento importante per tutti i passeggeri.pdf
+  + [20260908:232323] COPIED: GDrive_Elisa\ElisaProgetti\Portogallo\Gmail - M712GE _ Aggiornamento XXXante per tutti i passeggeri.pdf
+  - [20260908:232339] COPIED: GDrive_Eshop\Ebook\.obsidian\plugins\epub-importer\main.js
+  + [20260908:232339] COPIED: GDrive_Eshop\Ebook\.obsidian\plugins\epub-XXXer\main.js
+  - [20260908:232339] COPIED: GDrive_Eshop\Ebook\.obsidian\plugins\epub-importer\manifest.json
+  + [20260908:232339] COPIED: GDrive_Eshop\Ebook\.obsidian\plugins\epub-XXXer\manifest.json
+  ... e altre 11 modifiche
+SIMULAZIONE: G:\Il mio Drive\Progetti\pyt_pyn\Support\openrouter_catalog.txt - 1 sostituzioni
+  - import requests
+  + XXX requests
+GREP.END: 20261116:231537 - SIMULAZIONE: file da modificare: 35, sostituzioni totali: 357, file con match: 35/100, errori: 0
+PYT.END: GREP 20261116:231537
+END: 20261116:231537
+PYT.START: 20261116 20261116:231543
+PYT.START: GREP 20261116:231543
+ERRORE [grep]: Con -s/--replace/-sx/--simulate il pattern deve essere REPLo fisso (niente metacaratteri regex: .^$*+?{}[]\|()).
+PYT.END: GREP 20261116:231543
+END: 20261116:231543
+PYT.START: 20261116 20261116:231549
+END: 20261116:231549
+PYT.START: 20261116 20261116:231557
+PYT.START: GREP 20261116:231557
+GREP.START: 20261116:231557 grep -i pattern="x" file: C:\Users\User\AppData\Local\Temp\opencode\test4.txt (1 da cercare)
+FILE: C:\Users\User\AppData\Local\Temp\opencode\test4.txt
+1: X world
+2: X again
+2 corrispondenze in test4.txt
+GREP.END: 20261116:231557 - corrispondenze: 2, file con match: 1/1, errori: 0
+PYT.END: GREP 20261116:231557
+END: 20261116:231557
+PYT.START: 20261116 20261116:233936
+END: 20261116:233936
+PYT.START: 20261116 20261116:234124
+PYT.START: GREP 20261116:234124
+GREP.START: 20261116:234124 grep -s "certifo" pattern="certifi" file: requirement*.txt (6 da cercare)
+SIMULAZIONE: G:\Il mio Drive\Progetti\pyt_pyn\requirements_X32_309.txt - 1 sostituzioni
+  - certifi==2026.10.23
+  + certifo==2026.10.23
+SIMULAZIONE: G:\Il mio Drive\Progetti\pyt_pyn\requirements_X64.txt - 1 sostituzioni
+  - certifi==2026.7.22
+  + certifo==2026.7.22
+SIMULAZIONE: G:\Il mio Drive\Progetti\pyt_pyn\requirements_X64_309.txt - 1 sostituzioni
+  - certifi==2026.10.23
+  + certifo==2026.10.23
+SIMULAZIONE: G:\Il mio Drive\Progetti\pyt_pyn\requirements_X64_309_LIGHT.txt - 1 sostituzioni
+  - certifi 
+  + certifo 
+SIMULAZIONE: G:\Il mio Drive\Progetti\pyt_pyn\requirements_X64_LIGHT.txt - 5 sostituzioni
+  - certifi 
+  + certifo 
+  - certifi 
+  + certifo 
+  - certifi 
+  + certifo 
+  ... e altre 2 modifiche
+SIMULAZIONE: G:\Il mio Drive\Progetti\pyt_pyn\requirements_mach0vdi.txt - 1 sostituzioni
+  - certifi==2026.10.23
+  + certifo==2026.10.23
+GREP.END: 20261116:234124 - SIMULAZIONE: file da modificare: 6, sostituzioni totali: 10, file con match: 6/6, errori: 0
+PYT.END: GREP 20261116:234124
+END: 20261116:234124
+PYT.START: 20261116 20261117:134920
+PYT.START: ROBOCOPY 20261117:134920
+[20261117:134920] Fase 1: Lettura e validazione del file di configurazione JSON
+[20261117:134920] Configurazione letta: 4 action(s) trovate
+[20261117:134920] 
+============================================================
+[20261117:134920] AZIONE: copy_v
+[20261117:134920] ============================================================
+[20261117:134920]   path_source: G:\Il mio Drive\Progetti\pyt_pyn
+[20261117:134920]   path_dest:   v:\Scripts
+[20261117:134920]   mode:        overwrite
+[20261117:134920]   files:       6 file(s)
+[20261117:134920]   Elaborazione: pyt.*
+[20261117:134920]     Trovati 4 file(s) per pattern: pyt.*
+[20261117:134920]     Elaborazione: pyt.cmd
+[20261117:134920]       COPIATO: pyt.cmd
+[20261117:134920]     Elaborazione: pyt.py
+[20261117:134920]       COPIATO: pyt.py
+[20261117:134920]     Elaborazione: pyt.sh
+[20261117:134920]       COPIATO: pyt.sh
+[20261117:134920]     Elaborazione: pyt.log
+[20261117:134920]       COPIATO: pyt.log
+[20261117:134920]   Elaborazione: pyn.*
+[20261117:134920]     Trovati 2 file(s) per pattern: pyn.*
+[20261117:134920]     Elaborazione: pyn.cmd
+[20261117:134921]       COPIATO: pyn.cmd
+[20261117:134921]     Elaborazione: pyn.sh
+[20261117:134921]       COPIATO: pyn.sh
+[20261117:134921]   Elaborazione: pyt_report.*
+[20261117:134921]     Trovati 1 file(s) per pattern: pyt_report.*
+[20261117:134921]     Elaborazione: pyt_report.py
+[20261117:134921]       COPIATO: pyt_report.py
+[20261117:134921]   Elaborazione: pyt_form*.*
+[20261117:134921]     Trovati 2 file(s) per pattern: pyt_form*.*
+[20261117:134921]     Elaborazione: pyt_form.py
+[20261117:134921]       COPIATO: pyt_form.py
+[20261117:134921]     Elaborazione: pyt_form_man.md
+[20261117:134921]       COPIATO: pyt_form_man.md
+[20261117:134921]   Elaborazione: requirements*.*
+[20261117:134921]     Trovati 8 file(s) per pattern: requirements*.*
+[20261117:134921]     Elaborazione: requirements_X64.md
+[20261117:134921]       COPIATO: requirements_X64.md
+[20261117:134921]     Elaborazione: requirements_X64.txt
+[20261117:134921]       COPIATO: requirements_X64.txt
+[20261117:134921]     Elaborazione: requirements_mach0vdi.txt
+[20261117:134921]       COPIATO: requirements_mach0vdi.txt
+[20261117:134921]     Elaborazione: requirements_X64_LIGHT.txt
+[20261117:134921]       COPIATO: requirements_X64_LIGHT.txt
+[20261117:134921]     Elaborazione: requirements_X64_309.txt
+[20261117:134921]       COPIATO: requirements_X64_309.txt
+[20261117:134921]     Elaborazione: requirements_X64_309_LIGHT.txt
+[20261117:134921]       COPIATO: requirements_X64_309_LIGHT.txt
+[20261117:134921]     Elaborazione: requirements_x64_309.md
+[20261117:134921]       COPIATO: requirements_x64_309.md
+[20261117:134921]     Elaborazione: requirements_X32_309.txt
+[20261117:134921]       COPIATO: requirements_X32_309.txt
+[20261117:134921]   Elaborazione: x.cmd
+[20261117:134922]     COPIATO: x.cmd
+[20261117:134922] 
+============================================================
+[20261117:134922] AZIONE: copy_adminscripts
+[20261117:134922] ============================================================
+[20261117:134922]   path_source: G:\Il mio Drive\Progetti\pyt_pyn
+[20261117:134922]   path_dest:   G:\Il mio Drive\Progetti\adminscripts
+[20261117:134922]   mode:        overwrite
+[20261117:134922]   files:       6 file(s)
+[20261117:134922]   Elaborazione: pyt.*
+[20261117:134922]     Trovati 4 file(s) per pattern: pyt.*
+[20261117:134922]     Elaborazione: pyt.cmd
+[20261117:134922]       COPIATO: pyt.cmd
+[20261117:134922]     Elaborazione: pyt.py
+[20261117:134923]       COPIATO: pyt.py
+[20261117:134923]     Elaborazione: pyt.sh
+[20261117:134924]       COPIATO: pyt.sh
+[20261117:134924]     Elaborazione: pyt.log
+[20261117:134924]       COPIATO: pyt.log
+[20261117:134924]   Elaborazione: pyn.*
+[20261117:134924]     Trovati 2 file(s) per pattern: pyn.*
+[20261117:134924]     Elaborazione: pyn.cmd
+[20261117:134924]       COPIATO: pyn.cmd
+[20261117:134924]     Elaborazione: pyn.sh
+[20261117:134924]       COPIATO: pyn.sh
+[20261117:134925]   Elaborazione: pyt_report.*
+[20261117:134925]     Trovati 1 file(s) per pattern: pyt_report.*
+[20261117:134925]     Elaborazione: pyt_report.py
+[20261117:134925]       COPIATO: pyt_report.py
+[20261117:134925]   Elaborazione: pyt_form*.*
+[20261117:134925]     Trovati 2 file(s) per pattern: pyt_form*.*
+[20261117:134925]     Elaborazione: pyt_form.py
+[20261117:134926]       COPIATO: pyt_form.py
+[20261117:134926]     Elaborazione: pyt_form_man.md
+[20261117:134927]       COPIATO: pyt_form_man.md
+[20261117:134927]   Elaborazione: requirements*.*
+[20261117:134927]     Trovati 8 file(s) per pattern: requirements*.*
+[20261117:134927]     Elaborazione: requirements_X64.md
+[20261117:134927]       COPIATO: requirements_X64.md
+[20261117:134927]     Elaborazione: requirements_X64.txt
+[20261117:134928]       COPIATO: requirements_X64.txt
+[20261117:134928]     Elaborazione: requirements_mach0vdi.txt
+[20261117:134929]       COPIATO: requirements_mach0vdi.txt
+[20261117:134929]     Elaborazione: requirements_X64_LIGHT.txt
+[20261117:134929]       COPIATO: requirements_X64_LIGHT.txt
+[20261117:134929]     Elaborazione: requirements_X64_309.txt
+[20261117:134930]       COPIATO: requirements_X64_309.txt
+[20261117:134930]     Elaborazione: requirements_X64_309_LIGHT.txt
+[20261117:134931]       COPIATO: requirements_X64_309_LIGHT.txt
+[20261117:134931]     Elaborazione: requirements_x64_309.md
+[20261117:134931]       COPIATO: requirements_x64_309.md
+[20261117:134931]     Elaborazione: requirements_X32_309.txt
+[20261117:134932]       COPIATO: requirements_X32_309.txt
+[20261117:134932]   Elaborazione: x.cmd
+[20261117:134933]     COPIATO: x.cmd
+[20261117:134933] 
+============================================================
+[20261117:134933] AZIONE: copy_adminscripts_github
+[20261117:134933] ============================================================
+[20261117:134933]   path_source: G:\Il mio Drive\Progetti\pyt_pyn
+[20261117:134933]   path_dest:   G:\Il mio Drive\Github\adminscripts
+[20261117:134933]   mode:        overwrite
+[20261117:134933]   files:       6 file(s)
+[20261117:134933]   Elaborazione: pyt.*
+[20261117:134933]     Trovati 4 file(s) per pattern: pyt.*
+[20261117:134933]     Elaborazione: pyt.cmd
+[20261117:134934]       COPIATO: pyt.cmd
+[20261117:134934]     Elaborazione: pyt.py
+[20261117:134934]       COPIATO: pyt.py
+[20261117:134934]     Elaborazione: pyt.sh
+[20261117:134935]       COPIATO: pyt.sh
+[20261117:134935]     Elaborazione: pyt.log

@@ -1,4 +1,4 @@
-import sys
+﻿import sys
 import os
 import subprocess
 import shutil
@@ -10,6 +10,7 @@ import tempfile
 import glob
 import re
 import importlib.metadata
+import locale
 
 # Importazione opzionale per librerie di terze parti
 try:
@@ -35,10 +36,307 @@ except ImportError:
 # ==============================================================================
 # VARIABILI GLOBALI E COSTANTI
 # ==============================================================================
-PYT_VER = "20261102"
+PYT_VER = "20261116"
 QEMU_IMG = r"X:\_Applic\Qemu\qemu-img.exe"
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 LOG_FILE = os.path.join(SCRIPT_DIR, "pyt.log")
+
+# ==============================================================================
+# LINGUA E TRADUZIONI (IT/EN)
+# Lingua rilevata dal computer: italiano -> messaggi italiani, altrimenti inglese.
+# Override manuale: variabile d'ambiente PYT_LANG=it oppure PYT_LANG=en.
+# ==============================================================================
+def _pyt_DetectLang():
+    """Rileva la lingua del computer: 'it' se italiano, 'en' altrimenti."""
+    env = os.environ.get("PYT_LANG", "").strip().lower()
+    if env in ("it", "ita", "it_it", "it-it", "italian"):
+        return "it"
+    if env in ("en", "eng", "en_us", "en-us", "english"):
+        return "en"
+    try:
+        import warnings
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            loc = locale.getdefaultlocale()[0]
+        if loc and str(loc).lower().startswith("it"):
+            return "it"
+    except Exception:
+        pass
+    if os.name == "nt":
+        try:
+            import ctypes
+            lid = ctypes.windll.kernel32.GetUserDefaultUILanguage() & 0x00FF
+            if lid == 0x10:  # 0x0410 = italiano
+                return "it"
+        except Exception:
+            pass
+    return "en"
+
+PYT_LANG = _pyt_DetectLang()
+
+_PYT_MSG_EN = []  # lista di (regex_compilata, template_en)
+
+def _pyt_AddMsg(it_pattern, en_template):
+    """Registra una regola di traduzione IT->EN (i valori dinamici diventano {0},{1}...)."""
+    try:
+        _PYT_MSG_EN.append((re.compile(it_pattern, re.S), en_template))
+    except re.error:
+        pass
+
+# Tabella di traduzione dei messaggi a schermo (IT -> EN).
+# Il pattern matcha il messaggio AL MOMENTO DELLA STAMPA (valori gia' interpolati);
+# i gruppi catturati sostituiscono i segnaposto {0},{1},... nel template inglese.
+# Ordine: prima i pattern piu' specifici, poi i generici.
+_PYT_MSG_LIST = [
+    # --- sistemi delle fasi (generico: [ts] Fase N: ...) ---
+    (r"^\[([^\]]+)\]\s*Fase (\d+): (.*)$", "[{0}] Phase {1}: {2}"),
+    # --- messaggi fatale/parsing ---
+    (r"^Errore fatale imprevisto: (.*)$", "Unexpected fatal error: {0}"),
+    (r"^Errore fatale: nessuna direttiva valida trovata\.$", "Fatal error: no valid directive found."),
+    (r"^Errore: file di direttive (.+?) non trovato\.$", "Error: directive file {0} not found."),
+    (r"^Errore: file di direttive non specificato dopo @\.$", "Error: directive file not specified after @."),
+    (r"^Errore: direttiva '(.+?)' non riconosciuta\.$", "Error: unknown directive '{0}'."),
+    # --- log ---
+    (r"^( {0,2})Impossibile scrivere sul log (.+?): (.*)$", "{0}Cannot write to log {1}: {2}"),
+    (r"^( {0,2})Impossibile scrivere sul log: (.*)$", "{0}Cannot write to log: {1}"),
+    (r"^( {0,2})Attenzione: permessi insufficienti per leggere alcune cartelle\.$", "{0}Warning: insufficient permissions to read some folders."),
+    # --- ERRORE generico con direttiva ---
+    (r"^ERRORE \[(.+?)\]: (.*)$", "ERROR [{0}]: {1}"),
+    (r"^ERRORE nel job '(.+?)': (.*)$", "ERROR in job '{0}': {1}"),
+    # --- grep ---
+    (r"^GREP\.START: (.*) \((\d+) da cercare\)$", "GREP.START: {0} ({1} to search)"),
+    (r"^GREP\.END: (.*) - corrispondenze: (\d+), file con match: (\d+)/(\d+), errori: (\d+)$",
+     "GREP.END: {0} - matches: {1}, files with match: {2}/{3}, errors: {4}"),
+    (r"^(\d+) corrispondenze in (.+)$", "{0} matches in {1}"),
+    (r"^Nessuna corrispondenza trovata$", "No matches found"),
+    (r"^Nessun file da cercare: (.*)$", "No files to search: {0}"),
+    (r"^Nessun file: indicare i file o -p/--path\.$", "No files: specify files or -p/--path."),
+    (r"^Espressione regolare non valida: (.*)$", "Invalid regular expression: {0}"),
+    (r"^Pattern vuoto\.$", "Empty pattern."),
+    (r"^L'opzione -p richiede il path di ricerca\.$", "Option -p requires the search path."),
+    (r"^Opzione sconosciuta: (.*)$", "Unknown option: {0}"),
+    # --- conversioni / output file ---
+    (r"^Convertito con successo: (.*)$", "Successfully converted: {0}"),
+    (r"^Convertito (.+?) in (.+)$", "Converted {0} to {1}"),
+    (r"^Markdown scritto in: (.*)$", "Markdown written to: {0}"),
+    (r"^Pagina HTML generata con successo: (.*)$", "HTML page successfully generated: {0}"),
+    (r"^Lista scritta in: (.*)$", "List written to: {0}"),
+    (r"^Creato: (.*)$", "Created: {0}"),
+    (r"^Container '(.+?)' esportato in: (.*)$", "Container '{0}' exported to: {1}"),
+    (r"^Script batch generato\. Eseguirlo per avviare la sincronizzazione\.$",
+     "Batch script generated. Run it to start synchronization."),
+    (r"^\[OK\] Script generato con successo in: (.*)$", "[OK] Script successfully generated in: {0}"),
+    (r"^\[OK\] Script generato \(sovrascritto\) in: (.*)$", "[OK] Script generated (overwritten) in: {0}"),
+    # --- disk_check / riepiloghi ---
+    (r"^  Cartelle    : (.+?) \((.*?)\)$", "  Folders     : {0} ({1})"),
+    (r"^  Sorgente    : (.*)$", "  Source      : {0}"),
+    (r"^  Destinazione: (.*)$", "  Destination : {0}"),
+    (r"^  File output : (.*)$", "  Output file : {0}"),
+    (r"^WARNING: Spazio usato (.+?)% supera la soglia di (.+?)%$", "WARNING: Used space {0}% exceeds threshold of {1}%"),
+    (r"^RIEPILOGO GENERALE$", "GENERAL SUMMARY"),
+    (r"^Totale file copiati         : (.*)$", "Total files copied         : {0}"),
+    (r"^Totale file aggiornati      : (.*)$", "Total files updated        : {0}"),
+    (r"^Totale file rimossi         : (.*)$", "Total files removed        : {0}"),
+    (r"^Totale file saltati         : (.*)$", "Total files skipped        : {0}"),
+    (r"^Totale errori file          : (.*)$", "Total file errors          : {0}"),
+    (r"^Job completati con successo : (.*)$", "Jobs completed successfully: {0}"),
+    (r"^Job falliti                 : (.*)$", "Failed jobs                : {0}"),
+    (r"^\n\[(.+?)\] RIEPILOGO FINALE$", "\n[{0}] FINAL SUMMARY"),
+    (r"^\n\[(.+?)\] SEZIONE: (.*)$", "\n[{0}] SECTION: {1}"),
+    (r"^\[(.+?)\] Riepilogo - Documentate: (\d+), arricchite via PyPI: (\d+), senza dati: (\d+), righe saltate: (\d+)$",
+     "[{0}] Summary - Documented: {1}, enriched via PyPI: {2}, without data: {3}, skipped lines: {4}"),
+    (r"^\[(.+?)\] Riepilogo - File eliminati: (.*),$", "[{0}] Summary - Deleted files: {1},"),
+    (r"^\[(.+?)\] Riepilogo - Voci mancanti in sorgente: (.*?) ?$", "[{0}] Summary - Entries missing in source: {1}"),
+    (r"^\[(.+?)\] Creati: (.+?), Avviati: (.*),$", "[{0}] Created: {1}, Started: {2},"),
+    (r"^\[(.+?)\] JOB (\d+)/(\d+): (.*)$", "[{0}] JOB {1}/{2}: {3}"),
+    (r"^\[(.+?)\] Elaboro ID: (.+?), file (.*)$", "[{0}] Processing ID: {1}, file {2}"),
+    (r"^\[(.+?)\] WRITE: Report generati con successo$", "[{0}] WRITE: Reports generated successfully"),
+    # --- sync / git ---
+    (r"^    Job (.+?): (.*)$", "    Job {0}: {1}"),
+    (r"^  \[ATTENZIONE\] Commit non eseguito: (.*)$", "  [WARNING] Commit not executed: {0}"),
+    (r"^  \[ATTENZIONE\] git add ha restituito: (.*)$", "  [WARNING] git add returned: {0}"),
+    (r"^  \[AVVISO\] File esistente rinominato in (.*)$", "  [NOTICE] Existing file renamed to {0}"),
+    (r"^  \[ERRORE\] Errore durante commit: (.*)$", "  [ERROR] Error during commit: {0}"),
+    (r"^  \[ERRORE\] Impossibile rinominare (.+?): (.*)$", "  [ERROR] Cannot rename {0}: {1}"),
+    (r"^  \[ERRORE\] Timeout durante il commit$", "  [ERROR] Timeout during commit"),
+    (r"^  \[INFO\] Procedo con il push dei commit esistenti$", "  [INFO] Proceeding with push of existing commits"),
+    (r"^  \[OK\] Commit creato: (.*)$", "  [OK] Commit created: {0}"),
+    (r"^  \[OK\] Pull completato con successo$", "  [OK] Pull completed successfully"),
+    (r"^  \[OK\] Push completato con successo$", "  [OK] Push completed successfully"),
+    (r"^  Chiavi trovate nel JSON: (.*)$", "  Keys found in JSON: {0}"),
+    (r"^  Nessuna chiave 'jobs' trovata, trattato come singolo job$", "  No 'jobs' key found, treated as single job"),
+    (r"^  ATTENZIONE: La chiave 'jobs' non contiene una lista$", "  WARNING: The 'jobs' key does not contain a list"),
+    (r"^  Rilevata chiave 'jobs' \(originale: '(.+?)'\)$", "  Detected 'jobs' key (original: '{0}')"),
+    (r"^  Trovati (\d+) job da eseguire$", "  Found {0} jobs to run"),
+    (r"^  Verifica esistenza cartella repository\.\.\. OK$", "  Checking repository folder exists... OK"),
+    (r"^  Verifica presenza file di log\.\.\. OK$", "  Checking log file exists... OK"),
+    (r"^  Comando: git (pull|push) (.*)$", "  Command: git {0} {1}"),
+    (r"^  Commit: non eseguito \(commit_message non specificato\)$", "  Commit: not executed (commit_message not specified)"),
+    (r"^  Esecuzione: git add \.$", "  Running: git add ."),
+    # --- rightlist / delfiles / reqdoc ---
+    (r"^\[(.+?)\]   (.+?): scansionate (\d+) voci\.\.\.$", "[{0}]   {1}: scanned {2} entries..."),
+    (r"^\[(.+?)\]   Trovate (\d+) librerie \((\d+) righe saltate\)$", "[{0}]   Found {1} libraries ({2} lines skipped)"),
+    (r"^\[(.+?)\]   Trovate (\d+) voci in lista$", "[{0}]   Found {1} entries in list"),
+    (r"^\[(.+?)\]   Trovate (\d+) voci in sorgente$", "[{0}]   Found {1} entries in source"),
+    (r"^\[(.+?)\]   Arricchite via PyPI: (.*)$", "[{0}]   Enriched via PyPI: {1}"),
+    (r"^\[(.+?)\]   Metadata locali ok, da arricchire online: (.*)$", "[{0}]   Local metadata ok, to enrich online: {1}"),
+    (r"^\[(.+?)\]   ATTENZIONE metadata locali per (.+?): (.*)$", "[{0}]   WARNING local metadata for {1}: {2}"),
+    (r"^\[(.+?)\]   ATTENZIONE scansione: (.*)$", "[{0}]   WARNING scan: {1}"),
+    (r"^\[(.+?)\]   SALTATO \(non trovato\): (.*)$", "[{0}]   SKIPPED (not found): {1}"),
+    (r"^\[(.+?)\]   ELIMINATA DIR: (.*)$", "[{0}]   DIR DELETED: {1}"),
+    (r"^\[(.+?)\]   ELIMINATO FILE: (.*)$", "[{0}]   FILE DELETED: {1}"),
+    # --- podman ---
+    (r"^\[(.+?)\]   SALTATO: command '(.+?)' non supportato \(solo cstart per ora\)\.$",
+     "[{0}]   SKIPPED: command '{1}' not supported (only cstart for now)."),
+    (r"^\[(.+?)\]   SALTATO: container già attivo \((.+?)\)\.$", "[{0}]   SKIPPED: container already running ({1})."),
+    (r"^\[(.+?)\]   Container esistente ma fermo, avvio\.\.\.$", "[{0}]   Existing container stopped, starting..."),
+    (r"^\[(.+?)\]   AVVIATO: (.*)$", "[{0}]   STARTED: {1}"),
+    (r"^\[(.+?)\]   CREATO: (.+?) \((.+?)\)$", "[{0}]   CREATED: {1} ({2})"),
+    (r"^\[(.+?)\]   Avvio macchina\.\.\.$", "[{0}]   Starting machine..."),
+    (r"^\[(.+?)\]   Macchina avviata\.$", "[{0}]   Machine started."),
+    (r"^\[(.+?)\]   Macchina creata e avviata\.$", "[{0}]   Machine created and started."),
+    (r"^\[(.+?)\]   Macchina già attiva\.$", "[{0}]   Machine already running."),
+    (r"^\[(.+?)\]   Macchina non trovata, creazione\.\.\.$", "[{0}]   Machine not found, creating..."),
+    (r"^\[(.+?)\]   ERRORE su (.+?): (.*)$", "[{0}]   ERROR on {1}: {2}"),
+    (r"^\[(.+?)\]   ERRORE su sezione '(.+?)': (.*)$", "[{0}]   ERROR on section '{1}': {2}"),
+    (r"^\[(.+?)\]   ERRORE: chiave 'image' obbligatoria\.$", "[{0}]   ERROR: required key 'image'."),
+    (r"^\[(.+?)\]   ERRORE: chiave 'name' obbligatoria\.$", "[{0}]   ERROR: required key 'name'."),
+    (r"^\[(.+?)\]   ERRORE: la sezione deve essere un oggetto JSON\.$", "[{0}]   ERROR: section must be a JSON object."),
+    # --- raise: file / cartelle / config ---
+    (r"^Sintassi errata\. Uso: rightlist <path_sorgente> <path_verifica> <listfile\.txt> \(su Windows evitare il backslash finale dentro le virgolette: usare h: e non \x22h:\\\x22\)$",
+     "Syntax error. Usage: rightlist <path_source> <path_check> <listfile.txt> (on Windows avoid the trailing backslash inside quotes: use h: not \x22h:\x22)"),
+    (r"^Sintassi errata\. Uso: (.*)$", "Syntax error. Usage: {0}"),
+    (r"^File di configurazione (.+?) non trovato\.$", "Configuration file {0} not found."),
+    (r"^File JSON (.+?) non trovato\.$", "JSON file {0} not found."),
+    (r"^File lista (.+?) non trovato\.$", "List file {0} not found."),
+    (r"^File requirements (.+?) non trovato\.$", "Requirements file {0} not found."),
+    (r"^File sorgente (.+?) non trovato\.$", "Source file {0} not found."),
+    (r"^File template (.+?) non trovato\.$", "Template file {0} not found."),
+    (r"^File form (.+?) non trovato\.$", "Form file {0} not found."),
+    (r"^File (.+?) non trovato\.$", "File {0} not found."),
+    (r"^Cartella da verificare (.+?) non trovata\.$", "Verification folder {0} not found."),
+    (r"^Cartella sorgente (.+?) non trovata\.$", "Source folder {0} not found."),
+    (r"^Cartella (.+?) non trovata\.$", "Folder {0} not found."),
+    (r"^Sorgente non esistente: (.*)$", "Source does not exist: {0}"),
+    (r"^Repository non trovato: (.*)$", "Repository not found: {0}"),
+    (r"^Array 'files' vuoto o mancante per azione '(.+?)'$", "Array 'files' empty or missing for action '{0}'"),
+    (r"^Chiave obbligatoria mancante nel JSON: (.*)$", "Required key missing in JSON: {0}"),
+    (r"^JSON malformato in (.+?): (.*)$", "Malformed JSON in {0}: {1}"),
+    (r"^JSON malformato: (.*)$", "Malformed JSON: {0}"),
+    (r"^Il JSON deve essere un oggetto con sezioni identificate da id\.$", "JSON must be an object with sections identified by id."),
+    (r"^Setting 'log' obbligatorio in 'settings'$", "Setting 'log' required in 'settings'"),
+    (r"^Sezione 'actions' obbligatoria nel JSON$", "'actions' section required in JSON"),
+    (r"^Sezione 'settings' obbligatoria nel JSON$", "'settings' section required in JSON"),
+    (r"^Nessun record trovato nella sezione 'records' del JSON$", "No records found in JSON 'records' section"),
+    (r"^Mode '(.+?)' non valido per azione '(.+?)'$", "Invalid mode '{0}' for action '{1}'"),
+    (r"^Valore 'mode' non valido\. Usare: mirror, new\.$", "Invalid 'mode' value. Use: mirror, new."),
+    (r"^Valore 'type' non valido\. Usare: file, filesync, ftp, ssh\.$", "Invalid 'type' value. Use: file, filesync, ftp, ssh."),
+    (r"^path_dest mancante per azione '(.+?)'$", "Missing path_dest for action '{0}'"),
+    (r"^path_source mancante per azione '(.+?)'$", "Missing path_source for action '{0}'"),
+    (r"^Il parametro 'git_path' deve puntare a un file \.exe su Windows$", "Parameter 'git_path' must point to a .exe file on Windows"),
+    (r"^Il parametro 'log' deve essere un percorso assoluto$", "Parameter 'log' must be an absolute path"),
+    (r"^Parametro 'git_path' obbligatorio su Windows$", "Parameter 'git_path' required on Windows"),
+    (r"^Parametro 'log' obbligatorio$", "Parameter 'log' required"),
+    (r"^Parametro 'repo_name' obbligatorio$", "Parameter 'repo_name' required"),
+    (r"^Parametro 'repo_path' obbligatorio$", "Parameter 'repo_path' required"),
+    (r"^Parametro 'token' obbligatorio$", "Parameter 'token' required"),
+    (r"^Parametro 'username' obbligatorio$", "Parameter 'username' required"),
+    (r"^Git eseguibile non trovato in: (.*)$", "Git executable not found at: {0}"),
+    (r"^Git non installato o non trovato nel PATH$", "Git not installed or not found in PATH"),
+    (r"^Errore durante git commit: (.*)$", "Error during git commit: {0}"),
+    (r"^Timeout durante git commit$", "Timeout during git commit"),
+    (r"^Impossibile creare destinazione (.+?): (.*)$", "Cannot create destination {0}: {1}"),
+    (r"^Impossibile creare file di log (.+?): (.*)$", "Cannot create log file {0}: {1}"),
+    (r"^Copia fallita: (.*)$", "Copy failed: {0}"),
+    (r"^Errore durante copia di (.+?): (.*)$", "Error copying {0}: {1}"),
+    (r"^Generazione fallita: (.*)$", "Generation failed: {0}"),
+    # --- raise: connessioni / eseguibili / librerie ---
+    (r"^Connessione FTP fallita: (.*)$", "FTP connection failed: {0}"),
+    (r"^Connessione SSH/SFTP fallita: (.*)$", "SSH/SFTP connection failed: {0}"),
+    (r"^Avvio container fallito: (.*)$", "Container start failed: {0}"),
+    (r"^Avvio macchina fallito: (.*)$", "Machine start failed: {0}"),
+    (r"^Creazione container fallita: (.*)$", "Container creation failed: {0}"),
+    (r"^Creazione macchina fallita: (.*)$", "Machine creation failed: {0}"),
+    (r"^Container WSL '(.+?)' non trovato\. Container disponibili: (.*)$", "WSL container '{0}' not found. Available containers: {1}"),
+    (r"^Errore API OpenRouter: (.+?) - (.*)$", "OpenRouter API error: {0} - {1}"),
+    (r"^Errore di connessione API OpenRouter: (.*)$", "OpenRouter API connection error: {0}"),
+    (r"^Errore durante la chiamata API: (.*)$", "Error during API call: {0}"),
+    (r"^Timeout durante la chiamata API OpenRouter$", "Timeout during OpenRouter API call"),
+    (r"^Errore durante la compressione 7z: (.*)$", "Error during 7z compression: {0}"),
+    (r"^Errore durante la conversione: (.*)$", "Error during conversion: {0}"),
+    (r"^Errore durante la lettura del file: (.*)$", "Error reading file: {0}"),
+    (r"^Errore durante la scrittura del file: (.*)$", "Error writing file: {0}"),
+    (r"^Eseguibile 7z (.+?) non trovato\.$", "7z executable {0} not found."),
+    (r"^Eseguibile 7z non trovato nel sistema\.$", "7z executable not found on system."),
+    (r"^qemu-img\.exe non trovato nel percorso: (.*)$", "qemu-img.exe not found at path: {0}"),
+    (r"^Libreria markdown non installata\. Installarla con: (.*)$", "markdown library not installed. Install it with: {0}"),
+    (r"^Libreria paramiko non installata\.$", "paramiko library not installed."),
+    (r"^Libreria pypandoc non installata\. Installarla con: (.*)$", "pypandoc library not installed. Install it with: {0}"),
+    (r"^Libreria pyt_form non installata\.$", "pyt_form library not installed."),
+    (r"^Libreria pyt_report non installata\. Installarla con: (.*)$", "pyt_report library not installed. Install it with: {0}"),
+    (r"^Libreria requests non installata\. Installarla con: (.*)$", "requests library not installed. Install it with: {0}"),
+    (r"^Variabile d'ambiente (.+?) non impostata o vuota$", "Environment variable {0} not set or empty"),
+    (r"^Variabile d'ambiente OPENROUTER_API non impostata\. Impostarla con: (.*)$", "Environment variable OPENROUTER_API not set. Set it with: {0}"),
+    (r"^porta_host malformata '(.+?)'\. Uso: host:container \(es\. 8080:80\)\.$", "Malformed porta_host '{0}'. Use: host:container (e.g. 8080:80)."),
+    (r"^La direttiva sync_script è utilizzabile solo su Windows \(richiede robocopy\)\.$", "Directive sync_script is only usable on Windows (requires robocopy)."),
+    (r"^La direttiva vhdx2vmdk è utilizzabile solo su Windows\.$", "Directive vhdx2vmdk is only usable on Windows."),
+    (r"^La direttiva wsl_export è utilizzabile solo su Windows\.$", "Directive wsl_export is only usable on Windows."),
+    # --- descrizioni fasi (usate dentro "[ts] Fase N: ..." via traduzione ricorsiva) ---
+    (r"^Lettura della lista (.*)$", "Reading list {0}"),
+    (r"^Lettura e parsing di (.*)$", "Reading and parsing of {0}"),
+    (r"^Lettura e validazione del file di configurazione JSON$", "Reading and validating the JSON configuration file"),
+    (r"^Lettura file markdown (.*)$", "Reading markdown file {0}"),
+    (r"^Lettura parametri e variabile d'ambiente SYNC_FOLDERS$", "Reading parameters and SYNC_FOLDERS environment variable"),
+    (r"^Lettura spazio totale disco e spazio libero$", "Reading total disk space and free space"),
+    (r"^Lettura template e file JSON completata\. Trovati (\d+) record\.$", "Reading template and JSON file completed. Found {0} records."),
+    (r"^Scansione della cartella sorgente (.*)$", "Scanning source folder {0}"),
+    (r"^Verifica parametri e prerequisiti$", "Checking parameters and prerequisites"),
+    (r"^Cancellazione di (\d+) FILE$", "Deleting {0} FILEs"),
+    (r"^Chiamata API OpenRouter per generare pagina HTML completa$", "Calling OpenRouter API to generate complete HTML page"),
+    (r"^Conversione markdown in html$", "Converting markdown to html"),
+    (r"^Costruzione dello script batch$", "Building the batch script"),
+    (r"^Esecuzione git pull$", "Running git pull"),
+    (r"^Esecuzione operazioni preliminari \(commit se richiesto\)$", "Running preliminary operations (commit if requested)"),
+    (r"^Lettura metadata locali \(importlib\.metadata\)$", "Reading local metadata (importlib.metadata)"),
+    (r"^Lettura spazio occupato per ogni singola cartella$", "Reading space used for each single folder"),
+    (r"^Preparazione per git push$", "Preparing for git push"),
+    (r"^Scansione di (.+?) e confronto$", "Scanning {0} and comparing"),
+    (r"^Verifica macchina '(.+?)'$", "Checking machine '{0}'"),
+    (r"^Arricchimento PyPI online per (\d+) librerie$", "Online PyPI enrichment for {0} libraries"),
+    (r"^Arricchimento PyPI saltato \(libreria requests non installata\)$", "PyPI enrichment skipped (requests library not installed)"),
+    (r"^Cancellazione di (\d+) DIR$", "Deleting {0} DIRs"),
+    (r"^Esecuzione git push$", "Running git push"),
+    (r"^Genera report$", "Generate report"),
+    (r"^Riepilogo finale$", "Final summary"),
+    (r"^Scrittura atomica del file di output$", "Atomic write of output file"),
+    (r"^Scrittura della lista in (.*)$", "Writing list to {0}"),
+    (r"^Scrittura file html (.*)$", "Writing html file {0}"),
+    (r"^Volume (.+?):(.+)$", "Volume {0}:{1}"),
+    (r"^Check occupazione rispetto a percentuale warning \((\d+)%\)$", "Checking usage against warning percentage ({0}%)"),
+    (r"^Porta (.+?):(.+)$", "Port {0}:{1}"),
+    (r"^Scrittura del Markdown in (.*)$", "Writing Markdown to {0}"),
+    (r"^Verifica container '(.+?)'$", "Checking container '{0}'"),
+    (r"^Creazione container '(.+?)' da '(.+?)'$", "Creating container '{0}' from '{1}'"),
+]
+
+for _it, _en in _PYT_MSG_LIST:
+    _pyt_AddMsg(_it, _en)
+del _PYT_MSG_LIST
+
+def pyt_Translate(msg):
+    """Se la lingua rilevata non e' italiano, traduce il messaggio IT->EN; altrimenti lo restituisce invariato."""
+    if PYT_LANG == "it" or not isinstance(msg, str) or not msg:
+        return msg
+    for rx, en in _PYT_MSG_EN:
+        m = rx.match(msg)
+        if m:
+            # traduce anche i valori dinamici catturati (es. messaggi di errore annidati)
+            groups = tuple(pyt_Translate(g) for g in m.groups())
+            try:
+                return en.format(*groups)
+            except Exception:
+                return en
+    return msg
 
 # ==============================================================================
 # FUNZIONI INTERNE
@@ -48,7 +346,8 @@ def pyt_Timestamp():
     return datetime.datetime.now().strftime("%Y%m%d:%H%M%S")
 
 def pyt_Print(stringa):
-    """Stampa la stringa su console e la aggiunge in coda al file pyt.log."""
+    """Stampa la stringa su console (tradotta IT/EN) e la aggiunge in coda al file pyt.log."""
+    stringa = pyt_Translate(stringa)
     print(stringa)
     try:
         with open(LOG_FILE, "a", encoding="utf-8") as f:
@@ -104,88 +403,183 @@ def parse_argv(argv):
 # FUNZIONI DIRETTIVE (app_*)
 # ==============================================================================
 def app_help():
-    """Stampa l'help. Non usa pyt_Print e non genera log START/END."""
-    help_text = f"""pyt v{PYT_VER} - Tool Python per eseguire comandi via command line
+    """Stampa l'help nella lingua rilevata (it/en). Non usa pyt_Print e non genera log START/END."""
+    if PYT_LANG == "it":
+        help_text = f"""pyt v{PYT_VER} - Tool Python per eseguire comandi via command line
 
 DIRETTIVE DISPONIBILI:
-    help, h
-       Mostra questo help. Non richiede parametri.
-    doc2md <f1>
-       Converte da docx a md il file f1, salvando file multimediali in resources/
-    md2html <f1> <f2>
-       Converte un file markdown f1 in html f2
-    md2page <f1> <f2>
-       Converte un file markdown f1 in una pagina html completa f2 usando OpenRouter API
-    wsl_export <f1> <f2>
-       Esporta il container WSL f1 nel file f2 (solo Windows)
-    vhdx2vmdk <f1> <f2>
-       Converte file vhdx in vmdk usando qemu-img (solo Windows)
-    7z_ts <pathsource> [path7z]
-       Comprime la cartella pathsource in un archivio .7z con timestamp (solo data)
-    disk_check <disk_name> <disk_report> <warning_pct>
-       Verifica spazio disco e occupazione cartelle, genera report ed eventuale flag di warning
-    sync <config.json>
-       Sincronizza cartelle secondo un file di configurazione JSON.
-       Supporta type: file, filesync, ftp, ssh.
-       Supporta sia JSON con singolo job sia JSON "catalogo" con array "jobs".
-    sync_script [path_source] [path_dest] [file_output]
-       Genera uno script batch per sincronizzazione mirror con robocopy (solo Windows).
-       Parametri opzionali: sorgente (default \\ntgdsnas), dest (default n:), output (default admin_sync_script.cmd).
-       Usa variabile d'ambiente SYNC_FOLDERS per lista cartelle.
-    robocopy <config.json>
-       Copia file specificati da sorgente a destinazione secondo JSON.
-       Supporta settings globali (log, err.exit) e actions multiple con path_source, path_dest, mode (overwrite|old),
-       files[].
-       Funziona su Windows e Linux (usa shutil, non robocopy.exe).
-     rightlist <path_sorgente> <path_verifica> <listfile.txt>
-        Elenca in listfile.txt (con path assoluti) i file e le cartelle
-        presenti in path_verifica ma assenti in path_sorgente.
-        Funziona su Windows e Linux.
-     delfiles <listfile.txt>
-        Cancella i file e le cartelle elencati in listfile.txt (output di rightlist),
-        usando i path assoluti scritti nelle voci. Prima i FILE, poi le DIR.
-        Le righe senza prefisso FILE/DIR vengono interpretate dal disco.
-        Funziona su Windows e Linux.
-    git.push <config.json>
-       Esegue git push su GitHub autenticato con token.
-       JSON: repo_path, username, token, repo_name, branch, git_path, log, commit_message (opz), commit_all (opz).
-       Supporta variabili d'ambiente: "$VAR_NAME" per token/username.
-       Windows: git_path obbligatorio (es. "X:\\_Applic\\Bash\\bin\\git.exe").
-       Se commit_message è presente, esegue git add e git commit prima del push.
+help, h
+   Mostra questo help. Non richiede parametri.
+7z_ts <pathsource> [path7z]
+   Comprime la cartella pathsource in un archivio .7z con timestamp (solo data)
+@ <nome_file>
+   Esegue le direttive contenute nel file specificato
+delfiles <listfile.txt>
+   Cancella i file e le cartelle elencati in listfile.txt (output di rightlist),
+   usando i path assoluti scritti nelle voci. Prima i FILE, poi le DIR.
+   Le righe senza prefisso FILE/DIR vengono interpretate dal disco.
+   Funziona su Windows e Linux.
+disk_check <disk_name> <disk_report> <warning_pct>
+   Verifica spazio disco e occupazione cartelle, genera report ed eventuale flag di warning
+doc2md <f1>
+   Converte da docx a md il file f1, salvando file multimediali in resources/
+form <fileform.json>
+   Mostra un form interattivo descritto nel JSON (libreria pyt_form).
+   Oggetti: THEME, WINDOW, LAYOUT, TEXT, LABEL, LIST, BUTTON, COMMAND.
+   Modalit\u00e0 config.mode: TUI (console), GUI (tkinter), WEB (pagina+browser).
+   Log in <fileform>.log, valori in <fileform>_results.json (o config.return.file).
 git.pull <config.json>
-       Esegue git pull da GitHub autenticato con token.
-       JSON: repo_path, username, token, repo_name, branch, git_path, log.
-       Supporta variabili d'ambiente: "$VAR_NAME" per token/username.
-     report <file_template> <file_json> <file_out_base>
-        Genera report da template e dati JSON (libreria pyt_report).
-        file_template: file template con segnaposto
-        file_json: file JSON con sezione "records" contenente ID e campi
-        file_out_base: base nome file output (verrà aggiunto ID + estensione)
-     reqdoc <requirements.txt>
-        Genera file Markdown con stesso nome che documenta le librerie:
-        nome, versione, scopo, dipendenze, home-page.
-        Dati locali (importlib.metadata) + arricchimento PyPI online se disponibile.
-        Funziona su Windows e Linux.
-     podman <config.json>
-        Gestisce container podman da JSON a sezioni con id.
-        Ogni sezione: command (solo cstart), volume (opz, creato se manca),
-        image, name, porta_host host:container (opz), machine (opz, avviata o creata).
-        Funziona su Windows e Linux (richiede podman installato).
-     form <fileform.json>
-        Mostra un form interattivo descritto nel JSON (libreria pyt_form).
-        Oggetti: THEME, WINDOW, LAYOUT, TEXT, LABEL, LIST, BUTTON, COMMAND.
-        Modalita config.mode: TUI (console), GUI (tkinter), WEB (pagina+browser).
-        Log in <fileform>.log, valori in <fileform>_results.json (o config.return.file).
-     grep [-i] [-v] [-r] [-p <path>] <pattern> [file|dir...]
-        Cerca un pattern (regex) in uno o piu' file o cartelle.
-        -i ignora maiuscole/minuscole; -v seleziona le righe NON corrispondenti;
-        -r ricerca ricorsiva nelle cartelle; -p <path> cartella base di ricerca
-        (senza file elencati cerca tutti i file di <path>, con file relativi li
-        risolve da lì; con -r scansiona anche le sottocartelle). Espande wildcard.
-        Stampa sopra i risultati il file di provenienza. Log GREP.START/GREP.END.
-        Funziona su Windows e Linux (spec: Prompt_pyt_grep.md).
-    @ <nome_file>
-       Esegue le direttive contenute nel file specificato
+   Esegue git pull da GitHub autenticato con token.
+   JSON: repo_path, username, token, repo_name, branch, git_path, log.
+   Supporta variabili d'ambiente: "$VAR_NAME" per token/username.
+git.push <config.json>
+   Esegue git push su GitHub autenticato con token.
+   JSON: repo_path, username, token, repo_name, branch, git_path, log, commit_message (opz), commit_all (opz).
+   Supporta variabili d'ambiente: "$VAR_NAME" per token/username.
+   Windows: git_path obbligatorio (es. "X:\\_Applic\\Bash\\bin\\git.exe").
+   Se commit_message \u00e8 presente, esegue git add e git commit prima del push.
+grep [-i] [-v] [-r] [-p <path>] [-s <REPLo>] [-sx <REPLo>] <pattern> [file|dir...]
+   Cerca un pattern (regex) in uno o piu' file o cartelle.
+   -i ignora maiuscole/minuscole; -v seleziona le righe NON corrispondenti;
+   -r ricerca ricorsiva nelle cartelle; -p <path> cartella base di ricerca
+   -s <REPLo> / --replace=<REPLo> sostituisce il pattern (REPLo fisso, niente regex)
+     con <REPLo> in tutti i file dove viene trovato; attende 1s dopo ogni file modificato.
+   -sx <REPLo> / --simulate=<REPLo> simula la sostituzione (dry-run): mostra cosa cambierebbe
+     senza modificare i file; attende 1s dopo ogni file simulato.
+   (senza file elencati cerca tutti i file di <path>, con file relativi li
+   risolve da l\u00ec; con -r scansiona anche le sottocartelle). Espande wildcard.
+   Stampa sopra i risultati il file di provenienza. Log GREP.START/GREP.END.
+   Funziona su Windows e Linux (spec: Prompt_pyt_grep.md).
+md2html <f1> <f2>
+   Converte un file markdown f1 in html f2
+md2page <f1> <f2>
+   Converte un file markdown f1 in una pagina html completa f2 usando OpenRouter API
+podman <config.json>
+   Gestisce container podman da JSON a sezioni con id.
+   Ogni sezione: command (solo cstart), volume (opz, creato se manca),
+   image, name, porta_host host:container (opz), machine (opz, avviata o creata).
+   Funziona su Windows e Linux (richiede podman installato).
+report <file_template> <file_json> <file_out_base>
+   Genera report da template e dati JSON (libreria pyt_report).
+   file_template: file template con segnaposto
+   file_json: file JSON con sezione "records" contenente ID e campi
+   file_out_base: base nome file output (verr\u00e0 aggiunto ID + estensione)
+reqdoc <requirements.txt>
+   Genera file Markdown con stesso nome che documenta le librerie:
+   nome, versione, scopo, dipendenze, home-page.
+   Dati locali (importlib.metadata) + arricchimento PyPI online se disponibile.
+   Funziona su Windows e Linux.
+rightlist <path_sorgente> <path_verifica> <listfile.txt>
+   Elenca in listfile.txt (con path assoluti) i file e le cartelle
+   presenti in path_verifica ma assenti in path_sorgente.
+   Funziona su Windows e Linux.
+robocopy <config.json>
+   Copia file specificati da sorgente a destinazione secondo JSON.
+   Supporta settings globali (log, err.exit) e actions multiple con path_source, path_dest, mode (overwrite|old),
+   files[].
+   Funziona su Windows e Linux (usa shutil, non robocopy.exe).
+sync <config.json>
+   Sincronizza cartelle secondo un file di configurazione JSON.
+   Supporta type: file, filesync, ftp, ssh.
+   Supporta sia JSON con singolo job sia JSON "catalogo" con array "jobs".
+sync_script [path_source] [path_dest] [file_output]
+   Genera uno script batch per sincronizzazione mirror con robocopy (solo Windows).
+   Parametri opzionali: sorgente (default \\ntgdsnas), dest (default n:), output (default admin_sync_script.cmd).
+   Usa variabile d'ambiente SYNC_FOLDERS per lista cartelle.
+vhdx2vmdk <f1> <f2>
+   Converte file vhdx in vmdk usando qemu-img (solo Windows)
+wsl_export <f1> <f2>
+   Esporta il container WSL f1 nel file f2 (solo Windows)
+"""
+    else:
+        help_text = f"""pyt v{PYT_VER} - Python tool to run commands via command line
+
+AVAILABLE DIRECTIVES:
+help, h
+   Shows this help. No parameters required.
+7z_ts <pathsource> [path7z]
+   Compresses the pathsource folder into a .7z archive with timestamp (date only)
+@ <file_name>
+   Runs the directives contained in the specified file
+delfiles <listfile.txt>
+   Deletes files and folders listed in listfile.txt (rightlist output),
+   using the absolute paths written in the entries. FILEs first, then DIRs.
+   Lines without FILE/DIR prefix are detected from the drive.
+   Works on Windows and Linux.
+disk_check <disk_name> <disk_report> <warning_pct>
+   Checks disk space and folder usage, generates report and optional warning flag
+doc2md <f1>
+   Converts file f1 from docx to md, saving media files in resources/
+form <fileform.json>
+   Shows an interactive form described in the JSON (pyt_form library).
+   Objects: THEME, WINDOW, LAYOUT, TEXT, LABEL, LIST, BUTTON, COMMAND.
+   config.mode modes: TUI (console), GUI (tkinter), WEB (page+browser).
+   Log in <fileform>.log, values in <fileform>_results.json (or config.return.file).
+git.pull <config.json>
+   Performs git pull from GitHub authenticated with token.
+   JSON: repo_path, username, token, repo_name, branch, git_path, log.
+   Supports environment variables: "$VAR_NAME" for token/username.
+git.push <config.json>
+   Performs git push to GitHub authenticated with token.
+   JSON: repo_path, username, token, repo_name, branch, git_path, log, commit_message (opt), commit_all (opt).
+   Supports environment variables: "$VAR_NAME" for token/username.
+   Windows: git_path required (e.g. "X:\\_Applic\\Bash\\bin\\git.exe").
+   If commit_message is present, runs git add and git commit before the push.
+grep [-i] [-v] [-r] [-p <path>] [-s <text>] [-sx <text>] <pattern> [file|dir...]
+   Searches a pattern (regex) in one or more files or folders.
+   -i ignores case; -v selects NON matching lines;
+   -r recursive search in folders; -p <path> base search folder
+   -s <text> / --replace=<text> replaces the pattern (fixed text, no regex)
+     with <text> in all files where found; waits 1s after each modified file.
+   -sx <text> / --simulate=<text> simulates replacement (dry-run): shows what would change
+     without modifying files; waits 1s after each simulated file.
+   (without listed files searches all files of <path>, relative files are
+   resolved from there; with -r also scans subfolders). Expands wildcards.
+   Prints the source file above the results. Logs GREP.START/GREP.END.
+   Works on Windows and Linux (spec: Prompt_pyt_grep.md).
+   resolved from there; with -r also scans subfolders). Expands wildcards.
+   Prints the source file above the results. Logs GREP.START/GREP.END.
+   Works on Windows and Linux (spec: Prompt_pyt_grep.md).
+md2html <f1> <f2>
+   Converts markdown file f1 into html file f2
+md2page <f1> <f2>
+   Converts markdown file f1 into a complete html page f2 using OpenRouter API
+podman <config.json>
+   Manages podman containers from JSON with sections keyed by id.
+   Each section: command (cstart only), volume (opt, created if missing),
+   image, name, porta_host host:container (opt), machine (opt, started or created).
+   Works on Windows and Linux (requires podman installed).
+report <file_template> <file_json> <file_out_base>
+   Generates reports from template and JSON data (pyt_report library).
+   file_template: template file with placeholders
+   file_json: JSON file with "records" section containing ID and fields
+   file_out_base: output file name base (ID + extension will be added)
+reqdoc <requirements.txt>
+   Generates a Markdown file with the same name documenting the libraries:
+   name, version, purpose, dependencies, home-page.
+   Local data (importlib.metadata) + online PyPI enrichment if available.
+   Works on Windows and Linux.
+rightlist <path_source> <path_check> <listfile.txt>
+   Lists in listfile.txt (absolute paths) the files and folders
+   present in path_check but missing in path_source.
+   Works on Windows and Linux.
+robocopy <config.json>
+   Copies files specified from source to destination according to JSON.
+   Supports global settings (log, err.exit) and multiple actions with path_source, path_dest, mode (overwrite|old),
+   files[].
+   Works on Windows and Linux (uses shutil, not robocopy.exe).
+sync <config.json>
+   Synchronizes folders according to a JSON configuration file.
+   Supports type: file, filesync, ftp, ssh.
+   Supports both single-job JSON and "catalog" JSON with "jobs" array.
+sync_script [path_source] [path_dest] [file_output]
+   Generates a batch script for mirror synchronization with robocopy (Windows only).
+   Optional parameters: source (default \\ntgdsnas), dest (default n:), output (default admin_sync_script.cmd).
+   Uses SYNC_FOLDERS environment variable for the folder list.
+vhdx2vmdk <f1> <f2>
+   Converts vhdx file into vmdk using qemu-img (Windows only)
+wsl_export <f1> <f2>
+   Exports WSL container f1 into file f2 (Windows only)
 """
     print(help_text)
 
@@ -287,7 +681,7 @@ La pagina deve includere:
 Contenuto markdown da convertire:
 {md_content}
 
-Restituisci SOLO il codice HTML completo, senza spiegazioni o testo aggiuntivo."""
+Restituisci SOLO il codice HTML completo, senza spiegazioni o REPLo aggiuntivo."""
     
     try:
         response = requests.post(
@@ -2022,7 +2416,7 @@ def app_reqdoc(params):
     out_file = os.path.splitext(req_file)[0] + ".md"
 
     def _md_cell(text):
-        """Pulisce un testo per l'uso in cella di tabella Markdown."""
+        """Pulisce un REPLo per l'uso in cella di tabella Markdown."""
         if not text:
             return ""
         return " ".join(str(text).split()).replace("|", "\\|")
@@ -2375,13 +2769,17 @@ def app_grep(params):
     corrispondenti), -r/--recursive (scansione ricorsiva delle cartelle),
     -p <path>/--path=<path> (cartella base di ricerca: senza file elencati cerca
     tutti i file di <path>, con file relativi li' risolve da <path>).
+    -s <REPLo>/--replace=<REPLo> Sostituisce il pattern (REPLo fisso) con <REPLo>
+    in tutti i file dove viene trovato. Attende 1 secondo dopo ogni file modificato.
     Espande le wildcard (*, ?, [..]). Stampa sopra i risultati il file di
     provenienza. Log GREP.START (con i file da cercare) e GREP.END.
-    Solo stdlib (os, glob, re). Funziona su Windows e Linux."""
+    Solo stdlib (os, glob, re, time). Funziona su Windows e Linux."""
     ignore_case = False
     invert = False
     recursive = False
     base_path = None
+    replace_text = None
+    simulate = False
     positional = []
     i = 0
     while i < len(params):
@@ -2400,6 +2798,31 @@ def app_grep(params):
             base_path = params[i].strip('"\'')
         elif low.startswith("--path="):
             base_path = low.split("=", 1)[1]
+        elif low in ("-s", "--replace"):
+            i += 1
+            if i >= len(params):
+                raise ValueError("L'opzione -s/--replace richiede il testo di sostituzione.")
+            replace_text = params[i].strip('"\'')
+        elif low in ("-sx", "--simulate"):
+            i += 1
+            if i >= len(params):
+                raise ValueError("L'opzione -sx/--simulate richiede il testo di sostituzione.")
+            replace_text = params[i].strip('"\'')
+            simulate = True
+        elif low.startswith("--replace="):
+            replace_text = low.split("=", 1)[1]
+        elif low.startswith("--simulate="):
+            replace_text = low.split("=", 1)[1]
+            simulate = True
+        elif arg.startswith("-") and len(arg) > 1:
+            raise ValueError(f"Opzione sconosciuta: {arg}")
+            replace_text = params[i].strip('"\'')
+            simulate = True
+        elif low.startswith("--replace="):
+            replace_text = low.split("=", 1)[1]
+        elif low.startswith("--simulate="):
+            replace_text = low.split("=", 1)[1]
+            simulate = True
         elif arg.startswith("-") and len(arg) > 1:
             raise ValueError(f"Opzione sconosciuta: {arg}")
         else:
@@ -2407,7 +2830,7 @@ def app_grep(params):
         i += 1
 
     if not positional:
-        raise ValueError("Sintassi errata. Uso: grep [-i] [-v] [-r] [-p <path>] <pattern> [file|dir...]")
+        raise ValueError("Sintassi errata. Uso: grep [-i] [-v] [-r] [-p <path>] [-s <REPLo>] <pattern> [file|dir...]")
     pattern = positional[0]
     file_args = positional[1:]
 
@@ -2416,9 +2839,20 @@ def app_grep(params):
     if not file_args and base_path is None:
         raise ValueError("Nessun file: indicare i file o -p/--path.")
 
+    # Se c'è -s o -sx, il pattern DEVE essere REPLo fisso (niente regex speciali)
+    if replace_text is not None:
+        import re as _re
+        # Verifica che il pattern non contenga caratteri regex speciali
+        if any(ch in pattern for ch in r".^$*+?{}[]\|()"):
+            raise ValueError("Con -s/--replace/-sx/--simulate il pattern deve essere REPLo fisso (niente metacaratteri regex: .^$*+?{}[]\\|()).")
+
     try:
         flags = re.IGNORECASE if ignore_case else 0
-        regex = re.compile(pattern, flags)
+        # Se -s: pattern letterale (escape), altrimenti regex
+        if replace_text is not None:
+            regex = re.compile(re.escape(pattern), flags)
+        else:
+            regex = re.compile(pattern, flags)
     except re.error as e:
         raise ValueError(f"Espressione regolare non valida: {e}")
 
@@ -2485,6 +2919,8 @@ def app_grep(params):
         opts += " -r"
     if base_abs:
         opts += f" -p \"{base_abs}\""
+    if replace_text is not None:
+        opts += f" -s \"{replace_text}\""
     spec_files = " ".join(file_args) if file_args else "*"
     pyt_Print(f"GREP.START: {pyt_Timestamp()} grep{opts} pattern=\"{pattern}\" file: {spec_files} ({len(files)} da cercare)")
 
@@ -2498,32 +2934,77 @@ def app_grep(params):
 
     total_matches = 0
     files_out = 0
+    modified_files = 0
+    import time
     for fpath_abs in files:
         if _is_binary(fpath_abs):
             continue
         count_file = 0
         try:
             with open(fpath_abs, "r", encoding="utf-8-sig", errors="replace") as f:
-                for line_num, line in enumerate(f, 1):
+                content = f.read()
+            # Conta le occorrenze
+            matches = list(regex.finditer(content))
+            count_file = len(matches)
+            if count_file == 0:
+                continue
+            total_matches += count_file
+            files_out += 1
+            if replace_text is not None:
+                # Modalità sostituzione o simulazione
+                new_content = regex.sub(replace_text, content)
+                if simulate:
+                    # Dry-run: mostra cosa cambierebbe senza scrivere
+                    modified_files += 1
+                    pyt_Print(f"SIMULAZIONE: {fpath_abs} - {count_file} sostituzioni")
+                    # Mostra anteprima diff (prime 3 righe modificate)
+                    old_lines = content.splitlines()
+                    new_lines = new_content.splitlines()
+                    diff_count = 0
+                    for i, (old, new) in enumerate(zip(old_lines, new_lines)):
+                        if old != new and diff_count < 3:
+                            pyt_Print(f"  - {old}")
+                            pyt_Print(f"  + {new}")
+                            diff_count += 1
+                    if diff_count == 3:
+                        pyt_Print(f"  ... e altre {count_file - 3} modifiche")
+                else:
+                    # Scrive realmente
+                    with open(fpath_abs, "w", encoding="utf-8-sig", errors="replace") as f:
+                        f.write(new_content)
+                    modified_files += 1
+                    pyt_Print(f"MODIFICATO: {fpath_abs} - {count_file} sostituzioni")
+                    time.sleep(1)  # Attende 1 secondo dopo ogni file modificato
+            else:
+                # Modalità ricerca: stampa le righe con match
+                pyt_Print(f"FILE: {fpath_abs}")
+                lines = content.splitlines()
+                for line_num, line in enumerate(lines, 1):
                     if bool(regex.search(line)) != invert:
-                        if count_file == 0:
-                            pyt_Print(f"FILE: {fpath_abs}")
-                            files_out += 1
                         pyt_Print(f"{line_num}: {line.rstrip()}")
-                        count_file += 1
-                        total_matches += 1
+                pyt_Print(f"{count_file} corrispondenze in {os.path.basename(fpath_abs)}")
         except OSError as e:
             errors.append(f"{fpath_abs}: {e}")
             continue
-        if count_file:
-            pyt_Print(f"{count_file} corrispondenze in {os.path.basename(fpath_abs)}")
 
     if total_matches == 0:
-        pyt_Print("Nessuna corrispondenza trovata")
+        if replace_text is not None:
+            if simulate:
+                pyt_Print("Nessuna sostituzione simulata")
+            else:
+                pyt_Print("Nessuna sostituzione effettuata")
+        else:
+            pyt_Print("Nessuna corrispondenza trovata")
     for err in errors:
         pyt_Print(f"grep: {err}")
-    pyt_Print(f"GREP.END: {pyt_Timestamp()} - corrispondenze: {total_matches}, "
-              f"file con match: {files_out}/{len(files)}, errori: {len(errors)}")
+    if replace_text is not None:
+        if simulate:
+            pyt_Print(f"GREP.END: {pyt_Timestamp()} - SIMULAZIONE: file da modificare: {modified_files}, sostituzioni totali: {total_matches}, file con match: {files_out}/{len(files)}, errori: {len(errors)}")
+        else:
+            pyt_Print(f"GREP.END: {pyt_Timestamp()} - file modificati: {modified_files}, sostituzioni totali: {total_matches}, file con match: {files_out}/{len(files)}, errori: {len(errors)}")
+    else:
+        pyt_Print(f"GREP.END: {pyt_Timestamp()} - corrispondenze: {total_matches}, "
+                  f"file con match: {files_out}/{len(files)}, errori: {len(errors)}")
 
 # ==============================================================================
 # MOTORE DI ESECUZIONE

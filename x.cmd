@@ -3,7 +3,7 @@ SETLOCAL EnableDelayedExpansion
 REM ============================================================================
 REM x.cmd - Esegue uno script cercandolo per nome nelle cartelle note
 REM Uso: x.cmd scriptname [parametri...]
-REM VERSIONE 20261014
+REM VERSIONE 20261114 - FOLDERS[0] = g:\il mio Drive\Scripts (prima) e FOLDERS[3] = K:\Tools (ultima)
 REM ============================================================================
 
 REM --- Array scriptsnames: nomi file riconosciuti (case-insensitive) ---
@@ -16,10 +16,10 @@ SET "SCRIPTNAMES[2]=pyt"
 SET "SCRIPTNAMES[3]=pyn"
 
 REM --- Array folders: cartelle dove cercare, in ordine di priorita' (vince la prima) ---
-SET "FOLDERS[0]=K:\Scripts"
-SET "FOLDERS[1]=K:\Tools"
+SET "FOLDERS[0]=g:\il mio Drive\Scripts"
+SET "FOLDERS[1]=K:\Scripts"
 SET "FOLDERS[2]=V:\Scripts"
-SET "FOLDERS[3]=g:\il mio Drive\Scripts"
+SET "FOLDERS[3]=K:\Tools"
 
 IF "%~1"=="" GOTO :HELP
 

@@ -1,11 +1,14 @@
 @ECHO OFF
+SETLOCAL ENABLEDELAYEDEXPANSION
+REM VERSIONE 20261111 - PY_CMD: venv %PY_PATH%\%PY_ENV%\Scripts\python.exe se esiste, altrimenti python base %PY_PATH%\App\Python\Python.exe (fallback python.exe in radice); normalizza PY_PATH senza backslash finale
 REM VERSIONE 20261102 - Tolto PY_BASETYPE: solo PY_TYPE (X32/X64/W64) per costruzione path PYTHON%PY_TYPE%; echo stato senza PY_BASETYPE
-REM ORIGINALE SU PC GOMERA - LAUNCHER PYTHON / PODMAN / ALTRO VIA CMD - BASH
 REM VERSIONE 20261031 - Lancio script: argomenti raccolti in loop, niente "" per parametri assenti (no apici vuoti finali)
-REM VERSIONE 20261010 - Rename x->py (test<-pytest, mod<-pymod), pip help in zona Python, stub x/pymod/pip in py
+REM VERSIONE 20261010 - Rename x->py (REPL<-pyREPL, mod<-pymod), pip help in zona Python, stub x/pymod/pip in py
 REM VERSIONE 20261011 - podman export <image> <file.tar> (save) e import <file.tar> (load)
 REM VERSIONE 20261022 - py envzero (ambiente nullo: python base App\Python\Python.exe, no venv) e py envmake (crea ambiente a livello di PYTHON%PY_TYPE%)
 REM VERSIONE 20261016 - Preflight PY_CMD in :RUN (venv con base mancante -> errore chiaro)
+REM VERSIONE 20261116 - Nuova direttiva npx: npx.cmd dal NODEJS_PATH di node/npm (stessa risoluzione, come npm); help IT+EN sotto npm; shell non piu' direttiva diretta: sottocomando podman shell (podman exec -it) con help nel sub-help podman; su Linux (pyn.sh) npx dal PATH predefinito
+REM VERSIONE 20261114 - b: D:\APPLIC\BASH sostituito da C:\Program Files\Git\bin (con fallback BASH.EXE); nuova direttiva git (V:\tools\Git\bin poi C:\Program Files\Git\bin); ocode start: opencode.json cercato in V:\Scripts poi G:\Il mio Drive\Scripts poi PATH_SCRIPTS
 REM VERSIONE 20261016 - Fix ricerca PY_PATH a due passate: strict (python.exe/App) su tutti i path prima del fallback *.* (che fermava la ricerca al primo path esistente senza python)
 REM VERSIONE 20261015 - ocode startdesk: avvia OpenCode Desktop da path fisso (Win) /opt/OpenCode (Linux, solo doc)
 REM VERSIONE 20261015 - help podtips: promemoria comandi podman frequenti
@@ -17,7 +20,7 @@ REM VERSIONE 20261010 - Refactor direttive: tolti pip passthrough e pys; x pip*/
 REM VERSIONE 20261010 - Convenzione CLI: rimossa riga dedicata Python Path; ogni esecuzione stampa CLI: + stringa comando (python, java, powershell, access, bash, chrome, podman, pandoc, ocode)
 REM VERSIONE 20261010 - Aggiunto dominio node (solo Windows): Node.js portable (array V:\Tools\nodejs, D:\APPLIC\NODEJS, C:\APPLIC\NODEJS o NODEJS_PATH) + npm.cmd dallo stesso path
 REM VERSIONE 20261009 - Aggiunto dominio pys: esegue script python (nomi semplici risolti in %~dp0) col python calcolato, senza richiamare pyn.cmd
-REM VERSIONE 20261008 - Variabile PATH_SCRIPTS (default Windows G:\Il mio Drive\Scripts, Linux /mnt/gdrive/scripts); ocode start usa opencode.json da PATH_SCRIPTS; nuovo x pytest (test_python.py da PATH_SCRIPTS)
+REM VERSIONE 20261008 - Variabile PATH_SCRIPTS (default Windows G:\Il mio Drive\Scripts, Linux /mnt/gdrive/scripts); ocode start usa opencode.json da PATH_SCRIPTS; nuovo x pyREPL (REPL_python.py da PATH_SCRIPTS)
 REM VERSIONE 20261007 - Aggiunto dominio ocode per avvio opencode (logica da opencode_start.cmd: cerca opencode_start_base.cmd nei possibili paths, cwd invariato)
 REM VERSIONE 20261007 - Aggiunto dominio a (1 carattere, solo Windows) per esecuzione Microsoft Access con parametri successivi
 REM VERSIONE 20260930 - Fix quoting: confronti dispatch con %~1/%~2 e argv :RUN con %~3-%~9 (path con spazi tra virgolette davano "<...> non atteso" e doppio-quoting)
@@ -46,7 +49,7 @@ REM VERSIONE 20250405 - CORREZIONI - INSTALLAZIONE CRYPTOGRAFY - FORSE PSUTIL
 REM VERSIONE 20250203 - DEFAULT X64
 REM VERSIONE 20250130 - GESTIONE MIGLIORE RUNTIME
 
-SET PYN_VER=20261102
+SET PYN_VER=20261116
 
 REM PER PRIMO
 :SETUP
@@ -59,13 +62,15 @@ SET "PAR2=%~2"
 IF "%PY_ENV%"=="" SET PY_ENV=myenv
 REM Cartella script condivisi (Windows default; su Linux /mnt/gdrive/Scripts): sovrascrivibile da esterno
 IF "%PATH_SCRIPTS%"=="" SET "PATH_SCRIPTS=G:\Il mio Drive\Scripts"
-REM Normalizza: senza backslash finale (tranne radici tipo G:\); le composizioni usano sempre \%SEP%
-IF NOT "%PATH_SCRIPTS:~3,1%"=="" IF "%PATH_SCRIPTS:~-1%"=="\" SET "PATH_SCRIPTS=%PATH_SCRIPTS:~0,-1%"
+
+REM Rileva lingua sistema (default IT per sistemi italiani, override con SET PYN_LANG=EN)
+SET "PYN_LANG=IT"
 
 REM ALTRI COMANDI ESTESI
 IF "%~1"=="podman" GOTO :PODMAN
 IF "%~1"=="pandoc" GOTO :PANDOC
 IF "%~1"=="b"      GOTO :BASH
+IF "%~1"=="git"    GOTO :GIT
 IF "%~1"=="j"      GOTO :JAVA
 IF "%~1"=="ps"     GOTO :PS
 IF "%~1"=="a"      GOTO :A
@@ -74,7 +79,7 @@ IF "%~1"==""       GOTO :SINTASSI
 IF "%~1"=="chrome" GOTO :CHROME
 IF "%~1"=="node" GOTO :NODE
 IF "%~1"=="npm" GOTO :NPM
-IF "%~1"=="shell" GOTO :SHELL
+IF "%~1"=="npx" GOTO :NPX
 IF "%~1"=="help" GOTO :HELP
 
 REM POSSIBILI PATH - ordine documentato: K: (se MACH0) > D: > C: > portableai > XX (TOOLS locale)
@@ -233,8 +238,15 @@ FOR %%A IN ("%PATHP_01%" "%PATHP_02%" "%PATHP_03%" "%PATHP_04%" "%PATHP_05%" "%P
 @ECHO LAUNCHER PYTHON PORTABLE NTGCORP %PYN_VER%: Tipo %PY_TYPE%: Path: %PY_PATH% Env: %PY_ENV%
 IF "%PY_PATH%"=="" GOTO :ERR
 
-REM PY_CMD
-SET PY_CMD=%PY_PATH%\%PY_ENV%\Scripts\PYTHON.EXE
+REM Normalizza PY_PATH: nessun backslash finale (evita \\ interno; il prefisso UNC \\ resta)
+IF NOT "%PY_PATH:~3,1%"=="" IF "%PY_PATH:~-1%"=="\" SET "PY_PATH=%PY_PATH:~0,-1%"
+
+REM PY_CMD: venv PY_ENV se esiste, altrimenti python base (App\Python, fallback radice)
+SET "PY_CMD="
+IF NOT "%PY_ENV%"=="" IF EXIST "%PY_PATH%\%PY_ENV%\Scripts\python.exe" SET "PY_CMD=%PY_PATH%\%PY_ENV%\Scripts\python.exe"
+IF NOT DEFINED PY_CMD IF EXIST "%PY_PATH%\App\Python\Python.exe" SET "PY_CMD=%PY_PATH%\App\Python\Python.exe"
+IF NOT DEFINED PY_CMD IF EXIST "%PY_PATH%\python.exe" SET "PY_CMD=%PY_PATH%\python.exe"
+IF NOT DEFINED PY_CMD SET "PY_CMD=%PY_PATH%\App\Python\Python.exe"
 SET PY_PIP=%PY_CMD% -m pip
 
 REM COMANDI ESTESI
@@ -251,7 +263,7 @@ IF NOT EXIST "%PY_CMD%" (
     GOTO :ERR
 )
 REM Preflight: il venv puo' esistere ma puntare a una base mancante (pyvenv.cfg: home)
-"%PY_CMD%" --version >nul 2>&1
+"%PY_CMD%" --version
 IF NOT ERRORLEVEL 1 GOTO :RUN_GO
 ECHO [ERRORE] Python non avviabile: %PY_CMD%
 ECHO   Controlla che PY_PATH esista e che il venv non punti a una base mancante (pyvenv.cfg, chiave home).
@@ -337,7 +349,7 @@ IF "%~2"=="envzero" GOTO :PY_ENVZERO
 IF "%~2"=="envmake" GOTO :PY_ENVMAKE
 IF "%~2"=="script" GOTO :ENV_SCRIPT
 IF "%~2"=="version" %PY_CMD% --version
-IF "%~2"=="test" GOTO :PYTEST
+IF "%~2"=="REPL" GOTO :PYTEST
 IF "%~2"=="mod" GOTO :PY_MOD
 IF "%~2"=="pip" GOTO :PY_PIPMOVED
 IF "%~2"=="" GOTO :PY_EMPTY
@@ -422,9 +434,9 @@ GOTO :END
 
 :PYTEST
 IF NOT EXIST "%PY_CMD%" GOTO :ERR
-SET "PYTEST_SCRIPT=%PATH_SCRIPTS%\test_python.py"
+SET "PYTEST_SCRIPT=%PATH_SCRIPTS%\REPL_python.py"
 IF EXIST "%PYTEST_SCRIPT%" GOTO :PYTEST_SHIFT
-ECHO [ERRORE] test_python.py non trovato in: "%PATH_SCRIPTS%"
+ECHO [ERRORE] REPL_python.py non trovato in: "%PATH_SCRIPTS%"
 GOTO :END
 :PYTEST_SHIFT
 SHIFT
@@ -462,7 +474,7 @@ IF "%~2"=="" GOTO :SINTASSI
 GOTO :END
 
 :PIP_DNA
-rmdir /s /q "%PY_PATH%\Lib\site-packages\~dna" 2>nul
+rmdir /s /q "%PY_PATH%\Lib\site-packages\~dna"
 GOTO :END
 
 :PIP_PC
@@ -636,10 +648,11 @@ REM ---------------------------------------------- BASH ------------------------
 @ECHO LAUNCHER BASH GIT-BASH %PYN_VER%
 SET "SH_EXEC="
 IF EXIST "C:\APPLIC\BASH\GIT-BASH.EXE" SET "SH_EXEC=C:\APPLIC\BASH\GIT-BASH.EXE"
-IF "%SH_EXEC%"=="" IF EXIST "D:\APPLIC\BASH\GIT-BASH.EXE" SET "SH_EXEC=D:\APPLIC\BASH\GIT-BASH.EXE"
+IF "%SH_EXEC%"=="" IF EXIST "C:\Program Files\Git\bin\GIT-BASH.EXE" SET "SH_EXEC=C:\Program Files\Git\bin\GIT-BASH.EXE"
+IF "%SH_EXEC%"=="" IF EXIST "C:\Program Files\Git\bin\BASH.EXE" SET "SH_EXEC=C:\Program Files\Git\bin\BASH.EXE"
 IF "%SH_EXEC%"=="" IF EXIST "V:\TOOLS\BASH\GIT-BASH.EXE" SET "SH_EXEC=V:\TOOLS\BASH\GIT-BASH.EXE"
 IF "%SH_EXEC%"=="" (
-    ECHO [ERRORE] GIT-BASH.EXE non trovato in C:\, D:\ o V:\
+    ECHO [ERRORE] GIT-BASH.EXE/BASH.EXE non trovato in C:\APPLIC\BASH, C:\Program Files\Git\bin o V:\TOOLS\BASH
     GOTO :END
 )
 
@@ -662,6 +675,30 @@ GOTO :BASH_COLLECT
 :BASH_RUN
 ECHO CLI: "%SH_EXEC%" "%SH_NAME%" %SH_PARAMS%
 "%SH_EXEC%" "%SH_NAME%" %SH_PARAMS%
+GOTO :END
+
+REM ------------------------------------------------ GIT -------------------------------
+:GIT
+@ECHO LAUNCHER GIT %PYN_VER%
+REM Cerca git.exe in V:\tools\Git\bin poi C:\Program Files\Git\bin (solo Windows)
+SET "GIT_EXE="
+IF EXIST "V:\tools\Git\bin\GIT.EXE" SET "GIT_EXE=V:\tools\Git\bin\GIT.EXE"
+IF "%GIT_EXE%"=="" IF EXIST "C:\Program Files\Git\bin\git.exe" SET "GIT_EXE=C:\Program Files\Git\bin\git.exe"
+IF "%GIT_EXE%"=="" (
+    ECHO [ERRORE] git.exe non trovato in V:\tools\Git\bin o C:\Program Files\Git\bin
+    GOTO :END
+)
+SHIFT
+REM Raccolta parametri virgolettati per preservare gli spazi
+SET "GIT_PARAMS="
+:GIT_COLLECT
+IF "%~1"=="" GOTO :GIT_RUN
+SET "GIT_PARAMS=%GIT_PARAMS% "%~1""
+SHIFT
+GOTO :GIT_COLLECT
+:GIT_RUN
+ECHO CLI: "%GIT_EXE%"%GIT_PARAMS%
+"%GIT_EXE%"%GIT_PARAMS%
 GOTO :END
 
 REM ----------------------------------------------- JAVA -------------------------------
@@ -855,24 +892,31 @@ ECHO CLI: CALL "%NPM_CMD%"%NPM_ARGS%
 CALL "%NPM_CMD%"%NPM_ARGS%
 GOTO :END
 
-REM ----------------------------------------------- SHELL (podman exec interattivo) -------------------------------
-:SHELL
-@ECHO LAUNCHER SHELL %PYN_VER%
-REM Esegue un comando in un container gia' attivo: podman exec -it <name> <shell> [args]
-IF "%~2"=="" GOTO :SINTASSI
-IF "%~3"=="" GOTO :SINTASSI
-SET "SHELL_CONTAINER=%~2"
+REM npx dedicato: usa npx.cmd dallo stesso path di node.exe (come npm)
+:NPX
+@ECHO LAUNCHER NPX %PYN_VER%
+IF DEFINED NODEJS_PATH IF EXIST "%NODEJS_PATH%\npx.cmd" GOTO :NPX_SET
+SET "NODEJS_PATH="
+IF EXIST "V:\Tools\nodejs\npx.cmd" SET "NODEJS_PATH=V:\Tools\nodejs"
+IF NOT DEFINED NODEJS_PATH IF EXIST "D:\APPLIC\NODEJS\npx.cmd" SET "NODEJS_PATH=D:\APPLIC\NODEJS"
+IF NOT DEFINED NODEJS_PATH IF EXIST "C:\APPLIC\NODEJS\npx.cmd" SET "NODEJS_PATH=C:\APPLIC\NODEJS"
+IF NOT DEFINED NODEJS_PATH GOTO :NPX_MISSING
+GOTO :NPX_SET
+:NPX_MISSING
+ECHO [ERRORE] npx.cmd non trovato (array V:\Tools\nodejs, D:\APPLIC\NODEJS, C:\APPLIC\NODEJS, o NODEJS_PATH).
+GOTO :END
+:NPX_SET
+SET "NPX_CMD=%NODEJS_PATH%\npx.cmd"
 SHIFT
+SET "NPX_ARGS="
+:NPX_LOOP
+IF "%~1"=="" GOTO :NPX_RUN
+SET "NPX_ARGS=%NPX_ARGS% "%~1""
 SHIFT
-SET "SHELL_ARGS="
-:SHELL_COLLECT
-IF "%~1"=="" GOTO :SHELL_RUN
-SET "SHELL_ARGS=%SHELL_ARGS% "%~1""
-SHIFT
-GOTO :SHELL_COLLECT
-:SHELL_RUN
-ECHO CLI: podman exec -it "%SHELL_CONTAINER%"%SHELL_ARGS%
-podman exec -it "%SHELL_CONTAINER%"%SHELL_ARGS%
+GOTO :NPX_LOOP
+:NPX_RUN
+ECHO CLI: CALL "%NPX_CMD%"%NPX_ARGS%
+CALL "%NPX_CMD%"%NPX_ARGS%
 GOTO :END
 
 REM ----------------------------------------------- OCODE (OpenCode) -------------------------------
@@ -923,12 +967,19 @@ GOTO :END
 ECHO Trovato script base in: !FOUND_SCRIPT!
 SET "OPENCODE_CONFIG_DIR=!OCODE_CWD!"
 ECHO OPENCODE_CONFIG_DIR=!OPENCODE_CONFIG_DIR!
-REM File di config dal folder PATH_SCRIPTS (esportato per lo script base)
-SET "OPENCODE_CONFIG_FILE=%PATH_SCRIPTS%\opencode.json"
-IF EXIST "!OPENCODE_CONFIG_FILE!" (
+REM File di config opencode.json: cerca prima in V:\Scripts, poi in G:\Il mio Drive\Scripts, infine in PATH_SCRIPTS (esportato per lo script base)
+SET "OCODE_CFG[0]=V:\Scripts"
+SET "OCODE_CFG[1]=G:\Il mio Drive\Scripts"
+SET "OCODE_CFG[2]=%PATH_SCRIPTS%"
+SET "OPENCODE_CONFIG_FILE="
+FOR /L %%i IN (0,1,2) DO (
+    IF NOT DEFINED OPENCODE_CONFIG_FILE IF EXIST "!OCODE_CFG[%%i]!\opencode.json" SET "OPENCODE_CONFIG_FILE=!OCODE_CFG[%%i]!\opencode.json"
+)
+IF DEFINED OPENCODE_CONFIG_FILE (
     ECHO OPENCODE_CONFIG_FILE=!OPENCODE_CONFIG_FILE!
 ) ELSE (
-    ECHO [ATTENZIONE] opencode.json non trovato in: "%PATH_SCRIPTS%"
+    SET "OPENCODE_CONFIG_FILE=%PATH_SCRIPTS%\opencode.json"
+    ECHO [ATTENZIONE] opencode.json non trovato in V:\Scripts, "G:\Il mio Drive\Scripts" o "%PATH_SCRIPTS%"
 )
 ECHO CLI: CALL "!FOUND_SCRIPT!"!OCODE_ARGS!
 CALL "!FOUND_SCRIPT!"!OCODE_ARGS!
@@ -996,9 +1047,29 @@ IF /I "%~2"=="import" GOTO :PODMAN_IMPORT
 IF /I "%~2"=="stop" GOTO :PODMAN_STOPALL
 IF /I "%~2"=="reset" GOTO :PODMAN_RESET
 IF /I "%~2"=="opt" GOTO :PODMAN_OPT
+IF /I "%~2"=="shell" GOTO :PODMAN_SHELL
 
 ECHO CLI: podman %2 %3 %4 %5 %6 %7 %8 %9
 podman %2 %3 %4 %5 %6 %7 %8 %9
+GOTO :END
+
+:PODMAN_SHELL
+REM podman shell <container> <comando> [args] = podman exec -it nel container attivo
+IF "%~3"=="" GOTO :SINTASSI
+IF "%~4"=="" GOTO :SINTASSI
+SET "PODSH_CONTAINER=%~3"
+SHIFT
+SHIFT
+SHIFT
+SET "PODSH_ARGS="
+:PODSH_COLLECT
+IF "%~1"=="" GOTO :PODSH_RUN
+SET "PODSH_ARGS=%PODSH_ARGS% "%~1""
+SHIFT
+GOTO :PODSH_COLLECT
+:PODSH_RUN
+ECHO CLI: podman exec -it "%PODSH_CONTAINER%"%PODSH_ARGS%
+podman exec -it "%PODSH_CONTAINER%"%PODSH_ARGS%
 GOTO :END
 
 :PODMAN_MACHINE
@@ -1101,7 +1172,7 @@ GOTO :END
 
 :PODMAN_OPT
 REM USCITA OS-SPECIFICA: Optimize-VHD richiede PowerShell e Hyper-V (Windows)
-where powershell >nul 2>&1
+where powershell
 if errorlevel 1 (
     echo [USCITA OS-SPECIFICA] PowerShell non trovato. Optimize-VHD è esclusivo di Windows/Hyper-V. Su Linux usa 'fstrim' o 'qemu-img'.
     exit /b 1
@@ -1166,6 +1237,7 @@ ECHO PYN.CMD podman image set nome_immagine. Imposta POD_IMAGE
 ECHO PYN.CMD podman list machines-images-containers. Elenca oggetti podman
 ECHO PYN.CMD podman export nome_immagine file.tar. Esporta immagine in file tar
 ECHO PYN.CMD podman import file.tar. Importa immagine da file tar
+ECHO PYN.CMD podman shell nome_container comando [args]. Esegue comando nel container attivo
 GOTO :END
 
 :HELP_PANDOC
@@ -1207,7 +1279,11 @@ GOTO :END
 
 :SINTASSI
 @ECHO OFF
-ECHO Launcher: PYTHON PIP/PODMAN/CHROME/BASH/PANDOC/JAVA/PS/OCODE/ACCESS/NODE/NPM/SHELL. R: %PYN_VER%
+IF "%PYN_LANG%"=="IT" GOTO :SINTASSI_IT
+GOTO :SINTASSI_EN
+
+:SINTASSI_IT
+ECHO Launcher: PYTHON PIP/PODMAN/CHROME/BASH/GIT/PANDOC/JAVA/PS/OCODE/ACCESS/NODE/NPM/NPX. R: %PYN_VER%
 ECHO Sintassi PYN.CMD script.py [parametri] oppure PYN.CMD dominio comando parametri
 ECHO ----- Comandi Estesi. Sintassi pyn dominio parametri_aggiuntivi
 ECHO PYN.CMD py [comando esteso]
@@ -1217,17 +1293,43 @@ ECHO PYN.CMD py envzero [args] - esegue col python base (ambiente nullo, no venv
 ECHO PYN.CMD py envmake nome - crea un nuovo ambiente a livello di PYTHON%PY_TYPE%
 ECHO PYN.CMD py version - Versione Python
 ECHO PYN.CMD py mod modulo [args] (python -m modulo)
-ECHO PYN.CMD py test esegue test_python.py da PATH_SCRIPTS con parametri successivi
+ECHO PYN.CMD py REPL esegue REPL_python.py da PATH_SCRIPTS con parametri successivi
 ECHO PYN.CMD help pip-podman-pandoc-podtips. Help mirato per direttiva
 ECHO PYN.CMD chrome auto. Esecuzione Chrome in modalità AUTO
 ECHO PYN.CMD b script.sh parametri (esegue uno script bash su Windows tramite Git-Bash)
+ECHO PYN.CMD git parametri (esegue git.exe da V:\tools\Git\bin o C:\Program Files\Git\bin, solo Windows)
 ECHO PYN.CMD j script.java/script.class/script.jar parametri (i .java vengono compilati con javac)
 ECHO PYN.CMD ps [script.ps1] parametri (senza .ps1 esegue ps_start.ps1 con tutti i parametri)
 ECHO PYN.CMD ocode start^|startdesk [parametri] (start=terminale, startdesk=desktop GUI)
 ECHO PYN.CMD a [parametri...] (esegue MSACCESS.EXE dai possibili paths, solo Windows)
 ECHO PYN.CMD node script.js parametri (Node.js portable, solo Windows)
 ECHO PYN.CMD npm ^<comando^> [args] (npm dallo stesso path di node.exe, solo Windows)
-ECHO PYN.CMD shell nome_container comando [args] (podman exec -it in container attivo)
+ECHO PYN.CMD npx ^<comando^|package^> [args] (npx dallo stesso path di node.exe, solo Windows)
+GOTO :END
+
+:SINTASSI_EN
+ECHO Launcher: PYTHON PIP/PODMAN/CHROME/BASH/GIT/PANDOC/JAVA/PS/OCODE/ACCESS/NODE/NPM/NPX. R: %PYN_VER%
+ECHO Syntax PYN.CMD script.py [params] or PYN.CMD domain command params
+ECHO ----- Extended Commands. Syntax pyn domain additional_params
+ECHO PYN.CMD py [extended command]
+ECHO PYN.CMD py script script_name(.exe) and subsequent params
+ECHO PYN.CMD py env env_name - Change or Activate Python ENV
+ECHO PYN.CMD py envzero [args] - runs with base python (no venv)
+ECHO PYN.CMD py envmake name - creates new environment at PYTHON%PY_TYPE% level
+ECHO PYN.CMD py version - Python Version
+ECHO PYN.CMD py mod module [args] (python -m module)
+ECHO PYN.CMD py REPL runs REPL_python.py from PATH_SCRIPTS with subsequent params
+ECHO PYN.CMD help pip-podman-pandoc-podtips. Targeted help for directive
+ECHO PYN.CMD chrome auto. Chrome execution in AUTO mode
+ECHO PYN.CMD b script.sh params (runs a bash script on Windows via Git-Bash)
+ECHO PYN.CMD git params (runs git.exe from V:\tools\Git\bin or C:\Program Files\Git\bin, Windows only)
+ECHO PYN.CMD j script.java/script.class/script.jar params (java files compiled with javac)
+ECHO PYN.CMD ps [script.ps1] params (without .ps1 runs ps_start.ps1 with all params)
+ECHO PYN.CMD ocode start^|startdesk [params] (start=terminal, startdesk=desktop GUI)
+ECHO PYN.CMD a [params...] (runs MSACCESS.EXE from possible paths, Windows only)
+ECHO PYN.CMD node script.js params (Node.js portable, Windows only)
+ECHO PYN.CMD npm ^<command^> [args] (npm from same path as node.exe, Windows only)
+ECHO PYN.CMD npx ^<command^|package^> [args] (npx from same path as node.exe, Windows only)
 GOTO :END
 
 :END

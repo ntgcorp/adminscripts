@@ -1,5 +1,7 @@
-#!/bin/bash
-# pyn.sh - Launcher Linux per Python / PODMAN / CHROME / BASH / PANDOC
+﻿#!/bin/bash
+# pyn.sh - Launcher Linux per Python / PODMAN / CHROME / BASH / PANDOC / GIT / NPX
+# VERSIONE 20261114 - Nuova direttiva git: esegue git dal PATH (gia' presente su Linux, niente ricerca); nuova direttiva npx: esegue npx dal PATH predefinito (come node e npm su Linux); CLI: prima dell'exec
+# VERSIONE 20261111 - PY_PATH (default /home/$USER): venv $PY_PATH/$PY_ENV/bin/python se esiste, altrimenti python di sistema (fallback python3); venv creato in PY_PATH
 # VERSIONE 20261102 - Tolto PY_TYPE e ricerca python portabile: lancia direttamente e solo python3 (venv $PY_ENV opzionale in SCRIPT_DIR); requirements.txt senza suffisso tipo
 # VERSIONE 20261011 - podman export <image> <file.tar> (save) e import <file.tar> (load)
 # VERSIONE 20261015 - podman stop (tutti) e reset (rm -f tutti); help mirato pip-podman-pandoc
@@ -12,10 +14,13 @@
 # VERSIONE 20260810 - REFACTOR bug critici (delayed expansion, doppia exec, path hardcoded) + uscite OS-specifiche
 set -e
 
-PYN_VER="20261102"
+PYN_VER="20261114"
 
 # --- SETUP ---
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# PY_PATH default /home/$USER se non specificato; niente slash finale (evita // interno)
+PY_PATH="${PY_PATH:-/home/$USER}"
+if [ "$PY_PATH" != "/" ]; then PY_PATH="${PY_PATH%/}"; fi
 PY_ENV="${PY_ENV:-myenv}"
 PATH_SCRIPTS="${PATH_SCRIPTS:-/mnt/gdrive/Scripts}"
 # Normalizza: senza slash finale (tranne radice /)
@@ -28,6 +33,8 @@ case "$1" in
     podman) POD_CMD="$2"; shift 2 || true; exec bash -c "source \"$SCRIPT_DIR/pyn.sh\" --pod-internal \"$POD_CMD\" \"\$@\"" -- "$@" ;;
     pandoc) PANDOC_CMD="$2"; shift 2 || true; exec bash -c "source \"$SCRIPT_DIR/pyn.sh\" --pandoc-internal \"\$@\"" -- "$@" ;;
     b)      shift; exec bash -c "source \"$SCRIPT_DIR/pyn.sh\" --bash-internal \"\$@\"" -- "$@" ;;
+    git)    shift; echo "CLI: git $*"; exec git "$@" ;;
+    npx)    shift; echo "CLI: npx $*"; exec npx "$@" ;;
     chrome) shift; exec bash -c "source \"$SCRIPT_DIR/pyn.sh\" --chrome-internal \"\$@\"" -- "$@" ;;
     help)
         case "$2" in
@@ -80,7 +87,7 @@ PYN.SH py script nome_script e parametri successivi
 PYN.SH py env ambiente - Cambio o Attivazione Python ENV
 PYN.SH py version - Versione Python
 PYN.SH py mod modulo [args] (python -m modulo)
-PYN.SH py test esegue test_python.py da PATH_SCRIPTS con parametri successivi
+PYN.SH py REPL esegue REPL_python.py da PATH_SCRIPTS con parametri successivi
 PYN.SH help pip-podman-pandoc. Help mirato per direttiva
 PYN.SH chrome auto
 PYN.SH b script.sh parametri (esegue uno script bash su Linux)
@@ -224,16 +231,22 @@ if [[ "$1" == --chrome-internal ]]; then
     exit 0
 fi
 
-# --- Python: niente PY_TYPE, si lancia direttamente e solo python3 ---
-# Eventuale venv $PY_ENV si cerca solo accanto allo script (SCRIPT_DIR/$PY_ENV); altrimenti python3 di sistema
-PY_CMD="$SCRIPT_DIR/$PY_ENV/bin/python3"
-if [ ! -x "$PY_CMD" ]; then PY_CMD="$SCRIPT_DIR/$PY_ENV/bin/python"; fi
-if [ ! -x "$PY_CMD" ]; then PY_CMD="python3"; fi
+# --- Python: venv $PY_PATH/$PY_ENV se esiste, altrimenti python di sistema ---
+# PY_PATH default /home/$USER; venv opzionale in $PY_PATH/$PY_ENV (bin/python, fallback bin/python3)
+PY_CMD=""
+if [ -n "$PY_ENV" ]; then
+    if [ -x "$PY_PATH/$PY_ENV/bin/python" ]; then PY_CMD="$PY_PATH/$PY_ENV/bin/python"
+    elif [ -x "$PY_PATH/$PY_ENV/bin/python3" ]; then PY_CMD="$PY_PATH/$PY_ENV/bin/python3"; fi
+fi
+# Python di sistema: 'python' con fallback 'python3'
+SYS_PY="python"
+if ! command -v "$SYS_PY" >/dev/null 2>&1; then SYS_PY="python3"; fi
+if [ -z "$PY_CMD" ]; then PY_CMD="$SYS_PY"; fi
 PY_PIP="$PY_CMD -m pip"
 
-echo "LAUNCHER PYTHON PORTABLE NTGCORP $PYN_VER: python3: $PY_CMD Env: $PY_ENV"
+echo "LAUNCHER PYTHON $PYN_VER: python: $PY_CMD Env: ${PY_ENV:-(nessuno)} Path: $PY_PATH"
 if [ ! -x "$PY_CMD" ] && ! command -v "$PY_CMD" >/dev/null 2>&1; then
-    echo "PYN: python3 non trovato" >&2
+    echo "PYN: python non trovato" >&2
     exit 1
 fi
 
@@ -244,7 +257,7 @@ if [[ "$1" == "pip" ]]; then
     SUB="$1"
     case "$SUB" in
         check) exec $PY_CMD -m pip check ;;
-        dna) rm -rf "$SCRIPT_DIR/$PY_ENV/lib/python"*/site-packages/~dna 2>/dev/null; exit 0 ;;
+        dna) rm -rf "$PY_PATH/$PY_ENV/lib/python"*/site-packages/~dna 2>/dev/null; exit 0 ;;
         pc) exec $PY_CMD -m pip cache purge ;;
         pu) exec $PY_CMD -m pip install --upgrade pip ;;
         i) shift; exec $PY_CMD -m pip install --upgrade --only-binary=:all: "$@" ;;
@@ -316,7 +329,7 @@ fi
 
 # File esistente -> RUN
 if [ -f "$1" ]; then
-    if [ ! -x "$PY_CMD" ]; then echo "PYN: python venv non trovato: $PY_CMD" >&2; exit 1; fi
+    if [ ! -x "$PY_CMD" ] && ! command -v "$PY_CMD" >/dev/null 2>&1; then echo "PYN: python non trovato: $PY_CMD" >&2; exit 1; fi
     echo "CLI: $PY_CMD $PAR1 $PAR2 $3 $4 $5 $6 $7 $8 $9"
     exec "$PY_CMD" "$PAR1" "$PAR2" "$3" "$4" "$5" "$6" "$7" "$8" "$9"
 fi
@@ -328,30 +341,30 @@ if [[ "$1" == "py" ]]; then
         env)
             if [ -z "$3" ]; then echo "Manca nome ambiente" >&2; exit 1; fi
             PY_ENV="$3"
-            ENV_DIR="$SCRIPT_DIR/$PY_ENV"
+            ENV_DIR="$PY_PATH/$PY_ENV"
             if [ -d "$ENV_DIR" ]; then echo "Ambiente $PY_ENV trovato."; exit 0; fi
             echo "Ambiente $PY_ENV non trovato. Creazione in corso..."
-            exec python3 -m venv "$ENV_DIR"
+            exec "$SYS_PY" -m venv "$ENV_DIR"
             ;;
         script)
             shift 2
             EXE="$1"; shift || true
             if [ -z "$EXE" ]; then echo "Manca exe" >&2; exit 1; fi
-            exec "$SCRIPT_DIR/$PY_ENV/bin/$EXE" "$@"
+            exec "$PY_PATH/$PY_ENV/bin/$EXE" "$@"
             ;;
         mod) shift 2; exec $PY_CMD -m "$@" ;;
         pip|pip_*) echo "[ERRORE] py $SUB spostato in pip: usa pip <sub> (es. pip check)" >&2; exit 1 ;;
-        test)
+        REPL)
             shift 2
-            PYTEST_SCRIPT="$PATH_SCRIPTS/test_python.py"
-            if [ ! -f "$PYTEST_SCRIPT" ]; then echo "[ERRORE] test_python.py non trovato in: $PATH_SCRIPTS" >&2; exit 1; fi
+            PYTEST_SCRIPT="$PATH_SCRIPTS/REPL_python.py"
+            if [ ! -f "$PYTEST_SCRIPT" ]; then echo "[ERRORE] REPL_python.py non trovato in: $PATH_SCRIPTS" >&2; exit 1; fi
             echo "CLI: $PY_CMD $PYTEST_SCRIPT $*"
             exec "$PY_CMD" "$PYTEST_SCRIPT" "$@"
             ;;
         pip) shift 2; exec $PY_CMD -m pip "$@" ;;
         version) exec $PY_CMD --version ;;
         pip_check) exec $PY_CMD -m pip check ;;
-        pip_dna) rm -rf "$SCRIPT_DIR/$PY_ENV/lib/python"*/site-packages/~dna 2>/dev/null; exit 0 ;;
+        pip_dna) rm -rf "$PY_PATH/$PY_ENV/lib/python"*/site-packages/~dna 2>/dev/null; exit 0 ;;
         pip_pc) exec $PY_CMD -m pip cache purge ;;
         pip_pu) exec $PY_CMD -m pip install --upgrade pip ;;
         pip_i) shift 2; exec $PY_CMD -m pip install --upgrade --only-binary=:all: "$@" ;;
