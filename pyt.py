@@ -11,6 +11,7 @@ import glob
 import re
 import importlib.metadata
 import locale
+import html as _html
 
 # Importazione opzionale per librerie di terze parti
 try:
@@ -33,10 +34,15 @@ try:
 except ImportError:
     markdown = None
 
+try:
+    import openpyxl
+except ImportError:
+    openpyxl = None
+
 # ==============================================================================
 # VARIABILI GLOBALI E COSTANTI
 # ==============================================================================
-PYT_VER = "20261116"
+PYT_VER = "20261118"
 QEMU_IMG = r"X:\_Applic\Qemu\qemu-img.exe"
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 LOG_FILE = os.path.join(SCRIPT_DIR, "pyt.log")
@@ -273,6 +279,7 @@ _PYT_MSG_LIST = [
     (r"^Libreria paramiko non installata\.$", "paramiko library not installed."),
     (r"^Libreria pypandoc non installata\. Installarla con: (.*)$", "pypandoc library not installed. Install it with: {0}"),
     (r"^Libreria pyt_form non installata\.$", "pyt_form library not installed."),
+    (r"^Libreria pyt_bkh non installata\.$", "pyt_bkh library not installed."),
     (r"^Libreria pyt_report non installata\. Installarla con: (.*)$", "pyt_report library not installed. Install it with: {0}"),
     (r"^Libreria requests non installata\. Installarla con: (.*)$", "requests library not installed. Install it with: {0}"),
     (r"^Variabile d'ambiente (.+?) non impostata o vuota$", "Environment variable {0} not set or empty"),
@@ -317,6 +324,17 @@ _PYT_MSG_LIST = [
     (r"^Scrittura del Markdown in (.*)$", "Writing Markdown to {0}"),
     (r"^Verifica container '(.+?)'$", "Checking container '{0}'"),
     (r"^Creazione container '(.+?)' da '(.+?)'$", "Creating container '{0}' from '{1}'"),
+    (r"^Lettura elenco modelli OpenRouter$", "Reading OpenRouter model list"),
+    (r"^Lettura modelli coding OpenRouter$", "Reading OpenRouter coding models"),
+    (r"^Generazione tabella HTML$", "Generating HTML table"),
+    (r"^Scrittura file HTML (.*)$", "Writing HTML file {0}"),
+    (r"^File HTML generato con successo: (.*)$", "HTML file successfully generated: {0}"),
+    (r"^Scrittura file Excel (.*)$", "Writing Excel file {0}"),
+    (r"^File Excel generato con successo: (.*)$", "Excel file successfully generated: {0}"),
+    (r"^Libreria openpyxl non installata\. Installarla con: (.*)$", "openpyxl library not installed. Install it with: {0}"),
+    (r"^Errore durante la scrittura del file Excel: (.*)$", "Error writing Excel file: {0}"),
+    (r"^Nessun modello ricevuto dall'API OpenRouter$", "No models received from OpenRouter API"),
+    (r"^Sottocomando orouter non riconosciuto: (.*?)\. Uso: orouter models <file\.html>\.$", "Unknown orouter subcommand: {0}. Usage: orouter models <file.html>."),
 ]
 
 for _it, _en in _PYT_MSG_LIST:
@@ -412,6 +430,10 @@ help, h
    Mostra questo help. Non richiede parametri.
 7z_ts <pathsource> [path7z]
    Comprime la cartella pathsource in un archivio .7z con timestamp (solo data)
+bkh <sottocomando> [parametri]
+   Gestisce i segnalibri (bookmark) di Chrome tramite la libreria esterna pyt_bkh.
+   Sottocomandi: export, url, order, homepage, check, merge, delete, help.
+   Esempi: bkh homepage examples/pyt_bkh_homepage.json; bkh help
 @ <nome_file>
    Esegue le direttive contenute nel file specificato
 delfiles <listfile.txt>
@@ -454,6 +476,13 @@ md2html <f1> <f2>
    Converte un file markdown f1 in html f2
 md2page <f1> <f2>
    Converte un file markdown f1 in una pagina html completa f2 usando OpenRouter API
+orouter models <file.html>
+   Genera un report HTML del catalogo modelli OpenRouter:
+   id, free, input, output, architecture, pricing, coding, moderated,
+   nome, costo input/output, context window (migliaia di token),
+   parametri (miliardi) e data di creazione.
+   Crea anche un file Excel (.xlsx) con lo stesso nome e le stesse colonne.
+   Scarica l'elenco da OpenRouter (richiede la libreria requests).
 podman <config.json>
    Gestisce container podman da JSON a sezioni con id.
    Ogni sezione: command (solo cstart), volume (opz, creato se manca),
@@ -490,6 +519,9 @@ vhdx2vmdk <f1> <f2>
    Converte file vhdx in vmdk usando qemu-img (solo Windows)
 wsl_export <f1> <f2>
    Esporta il container WSL f1 nel file f2 (solo Windows)
+
+help bkh
+   Mostra l'help dettagliato per la direttiva bkh (gestione bookmark Chrome)
 """
     else:
         help_text = f"""pyt v{PYT_VER} - Python tool to run commands via command line
@@ -499,6 +531,10 @@ help, h
    Shows this help. No parameters required.
 7z_ts <pathsource> [path7z]
    Compresses the pathsource folder into a .7z archive with timestamp (date only)
+bkh <subcommand> [parameters]
+   Manages Chrome bookmarks through the external pyt_bkh library.
+   Subcommands: export, url, order, homepage, check, merge, delete, help.
+   Examples: bkh homepage examples/pyt_bkh_homepage.json; bkh help
 @ <file_name>
    Runs the directives contained in the specified file
 delfiles <listfile.txt>
@@ -544,6 +580,13 @@ md2html <f1> <f2>
    Converts markdown file f1 into html file f2
 md2page <f1> <f2>
    Converts markdown file f1 into a complete html page f2 using OpenRouter API
+orouter models <file.html>
+   Generates an HTML report of the OpenRouter model catalog:
+   id, free, input, output, architecture, pricing, coding, moderated,
+   name, input/output cost, context window (thousands of tokens),
+   parameters (billions) and creation date.
+   Also creates an Excel file (.xlsx) with the same name and columns.
+   Downloads the list from OpenRouter (requires the requests library).
 podman <config.json>
    Manages podman containers from JSON with sections keyed by id.
    Each section: command (cstart only), volume (opt, created if missing),
@@ -580,6 +623,9 @@ vhdx2vmdk <f1> <f2>
    Converts vhdx file into vmdk using qemu-img (Windows only)
 wsl_export <f1> <f2>
    Exports WSL container f1 into file f2 (Windows only)
+
+help bkh
+   Shows detailed help for the bkh directive (Chrome bookmarks management)
 """
     print(help_text)
 
@@ -732,6 +778,483 @@ Restituisci SOLO il codice HTML completo, senza spiegazioni o REPLo aggiuntivo."
         pyt_Print(f"Pagina HTML generata con successo: {f2}")
     except Exception as e:
         raise RuntimeError(f"Errore durante la scrittura del file: {e}")
+
+def _orouter_price_value(pricing, key):
+    """Restituisce il prezzo per token come float, oppure None se non disponibile."""
+    try:
+        return float(pricing.get(key))
+    except (TypeError, ValueError):
+        return None
+
+def _orouter_price_per_million(value):
+    """Formatta un prezzo per token come stringa USD per 1M di token."""
+    if value is None:
+        return "N/D"
+    if value < 0:
+        return "Dinamico"
+    return f"${value * 1_000_000:.2f}"
+
+def _orouter_pricing_mode(price_in, price_out):
+    """Classifica la modalita' di pricing: Gratis, Per token, Dinamico o N/D."""
+    if price_in is None or price_out is None:
+        return "N/D"
+    if price_in < 0 or price_out < 0:
+        return "Dinamico"
+    if price_in == 0 and price_out == 0:
+        return "Gratis"
+    return "Per token"
+
+def _orouter_params_from_text(text):
+    """Estrae i miliardi di parametri da una stringa (es. 70b, 8x7b)."""
+    moe = re.search(r"(\d+(?:\.\d+)?)\s*[x\u00d7]\s*(\d+(?:\.\d+)?)\s*b\b", text, re.IGNORECASE)
+    if moe:
+        try:
+            return float(moe.group(1)) * float(moe.group(2))
+        except (TypeError, ValueError):
+            pass
+    single = re.search(r"(\d+(?:\.\d+)?)\s*b\b", text, re.IGNORECASE)
+    if single:
+        try:
+            return float(single.group(1))
+        except (TypeError, ValueError):
+            pass
+    return None
+
+def _orouter_params_billions(model):
+    """Stima i parametri in miliardi da hugging_face_id/id/name, oppure 'N/D'."""
+    for key in ("hugging_face_id", "id", "name"):
+        text = model.get(key)
+        if not text:
+            continue
+        value = _orouter_params_from_text(str(text))
+        if value is not None:
+            return f"{value:g}"
+    return "N/D"
+
+def _orouter_context_thousands(model):
+    """Restituisce la context window in migliaia di token, oppure 'N/D'."""
+    value = model.get("context_length")
+    if value is None:
+        top = model.get("top_provider") or {}
+        value = top.get("context_length")
+    try:
+        value = int(value)
+    except (TypeError, ValueError):
+        return "N/D"
+    if value <= 0:
+        return "N/D"
+    return f"{round(value / 1000):d}"
+
+def _orouter_created_date(value):
+    """Converte il timestamp Unix 'created' in data gg/mm/aaaa, oppure 'N/D'."""
+    try:
+        timestamp = int(value)
+    except (TypeError, ValueError):
+        return "N/D"
+    if timestamp <= 0:
+        return "N/D"
+    return datetime.datetime.fromtimestamp(timestamp).strftime("%d/%m/%Y")
+
+def _orouter_build_html(models, coding_ids):
+    """Costruisce il documento HTML e restituisce (documento, righe) del report."""
+    updated = datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
+    free_count = sum(
+        1 for m in models
+        if (_orouter_price_value(m.get("pricing") or {}, "prompt") == 0
+            and _orouter_price_value(m.get("pricing") or {}, "completion") == 0)
+    )
+
+    rows = []
+    for m in models:
+        model_id = str(m.get("id", ""))
+        name = str(m.get("name", model_id))
+        arch = m.get("architecture") or {}
+        in_mod = ", ".join(arch.get("input_modalities") or ["text"])
+        out_mod = ", ".join(arch.get("output_modalities") or ["text"])
+        modality = str(arch.get("modality") or "") or "N/D"
+        top = m.get("top_provider") or {}
+        moderated = top.get("is_moderated")
+        pricing = m.get("pricing") or {}
+        price_in = _orouter_price_value(pricing, "prompt")
+        price_out = _orouter_price_value(pricing, "completion")
+        is_free = price_in == 0 and price_out == 0
+        is_coding = model_id in coding_ids
+        rows.append({
+            "model_id": model_id,
+            "name": name,
+            "in_mod": in_mod,
+            "out_mod": out_mod,
+            "architecture": modality,
+            "moderated": moderated,
+            "created": _orouter_created_date(m.get("created")),
+            "pricing": _orouter_pricing_mode(price_in, price_out),
+            "coding": is_coding,
+            "free": is_free,
+            "cost_in": _orouter_price_per_million(price_in),
+            "cost_out": _orouter_price_per_million(price_out),
+            "context": _orouter_context_thousands(m),
+            "parb": _orouter_params_billions(m),
+        })
+
+    rows.sort(key=lambda r: (0 if r["free"] else 1, r["name"].lower(), r["model_id"].lower()))
+
+    body_rows = []
+    for r in rows:
+        free_badge = '<span class="badge badge-free">Si</span>' if r["free"] else '<span class="badge badge-no">No</span>'
+        coding_badge = '<span class="badge badge-coding">Si</span>' if r["coding"] else '<span class="badge badge-no">No</span>'
+        if r["moderated"] is True:
+            moderated_badge = '<span class="badge badge-coding">Si</span>'
+        elif r["moderated"] is False:
+            moderated_badge = '<span class="badge badge-no">No</span>'
+        else:
+            moderated_badge = '<span class="badge badge-no">N/D</span>'
+        body_rows.append(
+            "<tr>"
+            f"<td class=\"modelid\"><code title=\"{_html.escape(r['model_id'])}\">{_html.escape(r['model_id'])}</code></td>"
+            f"<td>{free_badge}</td>"
+            f"<td>{_html.escape(r['in_mod'])}</td>"
+            f"<td>{_html.escape(r['out_mod'])}</td>"
+            f"<td class=\"arch\">{_html.escape(r['architecture'])}</td>"
+            f"<td>{_html.escape(r['pricing'])}</td>"
+            f"<td>{coding_badge}</td>"
+            f"<td>{moderated_badge}</td>"
+            f"<td>{_html.escape(r['name'])}</td>"
+            f"<td class=\"num\">{_html.escape(r['cost_in'])}</td>"
+            f"<td class=\"num\">{_html.escape(r['cost_out'])}</td>"
+            f"<td class=\"num\">{_html.escape(r['context'])}</td>"
+            f"<td class=\"num\">{_html.escape(r['parb'])}</td>"
+            f"<td class=\"created\">{_html.escape(r['created'])}</td>"
+            "</tr>"
+        )
+
+    return f"""<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Catalogo Modelli OpenRouter</title>
+<style>
+:root {{
+  --bg: #f6f8fb;
+  --panel: #ffffff;
+  --ink: #1b2430;
+  --muted: #5b6b7c;
+  --line: #dbe3ec;
+  --accent: #1f6feb;
+  --free-bg: #d8f5e3;
+  --free-ink: #116329;
+  --code-bg: #eef2f7;
+}}
+* {{ box-sizing: border-box; }}
+body {{
+  margin: 0;
+  padding: 32px 20px;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  line-height: 1.45;
+}}
+header {{ max-width: 1400px; margin: 0 auto 20px; }}
+h1 {{ margin: 0 0 6px; font-size: 1.7rem; letter-spacing: -0.02em; }}
+.meta {{ margin: 0 0 4px; color: var(--muted); font-size: 0.95rem; }}
+.meta strong {{ color: var(--ink); }}
+.made {{ margin: 0 0 8px; color: var(--muted); font-size: 0.85rem; }}
+.made a {{ color: var(--accent); text-decoration: none; }}
+.made a:hover {{ text-decoration: underline; }}
+.note {{ margin: 8px 0 0; color: var(--muted); font-size: 0.86rem; }}
+main {{ max-width: 1400px; margin: 0 auto; }}
+.table-wrap {{
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: auto;
+  box-shadow: 0 6px 22px rgba(20, 40, 70, 0.06);
+}}
+table {{ width: 100%; border-collapse: collapse; font-size: 0.89rem; }}
+thead th {{
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #eef3f9;
+  color: #28384a;
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}}
+tbody td {{ padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }}
+tbody tr:nth-child(even) {{ background: #fbfcfe; }}
+tbody tr:hover {{ background: #eff6ff; }}
+tbody tr:last-child td {{ border-bottom: 0; }}
+code {{
+  background: var(--code-bg);
+  border-radius: 5px;
+  padding: 1px 5px;
+  font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-size: 0.84rem;
+  white-space: nowrap;
+}}
+.badge {{
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}}
+.badge-free {{ background: var(--free-bg); color: var(--free-ink); }}
+.badge-coding {{ background: #e4ecff; color: #1c4fd8; }}
+.badge-no {{ background: #eef1f5; color: #6b7785; }}
+td.num {{ text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }}
+th.modelid, td.modelid {{ width: 130px; max-width: 130px; padding-left: 8px; padding-right: 8px; }}
+td.modelid code {{ white-space: normal; overflow-wrap: anywhere; word-break: break-word; }}
+td.arch {{ max-width: 200px; overflow-wrap: anywhere; word-break: break-word; }}
+td.created {{ white-space: nowrap; }}
+footer {{ max-width: 1400px; margin: 18px auto 0; color: var(--muted); font-size: 0.8rem; }}
+@media (max-width: 720px) {{
+  body {{ padding: 18px 10px; }}
+  h1 {{ font-size: 1.35rem; }}
+  table {{ font-size: 0.82rem; }}
+}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Catalogo Modelli OpenRouter</h1>
+  <p class="made">Made from <a href="https://github.com/ntgcorp/adminscripts" target="_blank" rel="noopener">ntgcorp\\adminscripts\\pyt</a></p>
+  <p class="meta">Aggiornato il <strong>{updated}</strong> &middot; Totale modelli: <strong>{len(models)}</strong> &middot; Gratuiti: <strong>{free_count}</strong></p>
+  <p class="note">Prezzi in USD per 1 milione di token (Input / Output). La colonna <strong>Pricing</strong> indica la modalita' tariffaria; <strong>Coding</strong> segnala i modelli della categoria Programming di OpenRouter; <strong>Architecture</strong> riporta la modalita' I/O compatta; <strong>Moderated</strong> il flag del provider; <strong>Created</strong> la data di inserimento in OpenRouter. <strong>Context</strong> = context window in migliaia di token; <strong>Parb</strong> = parametri in miliardi (dedotti da nome/id quando non forniti dall'API).</p>
+</header>
+<main>
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+<th class="modelid">ModelId</th>
+<th>Free</th>
+<th>Input</th>
+<th>Output</th>
+<th>Architecture</th>
+<th>Pricing</th>
+<th>Coding</th>
+<th>Moderated</th>
+<th>Model Name</th>
+<th>Costo Input (/1M)</th>
+<th>Costo Output (/1M)</th>
+<th>Context (k)</th>
+<th>Parb (B)</th>
+<th>Created</th>
+</tr>
+</thead>
+<tbody>
+{chr(10).join(body_rows)}
+</tbody>
+</table>
+</div>
+</main>
+<footer>Report generato da pyt orouter models &middot; {updated}</footer>
+</body>
+</html>
+""", rows
+
+def _orouter_write_xlsx(rows, xlsx_file):
+    """Scrive le righe del report in un file XLSX (solo tabella, senza intestazioni)."""
+    workbook = openpyxl.Workbook()
+    sheet = workbook.active
+    sheet.title = "Modelli"
+    sheet.append([
+        "ModelId", "Free", "Input", "Output", "Architecture", "Pricing",
+        "Coding", "Moderated", "Model Name", "Costo Input (/1M)",
+        "Costo Output (/1M)", "Context (k)", "Parb (B)", "Created",
+    ])
+    for r in rows:
+        if r["moderated"] is True:
+            moderated = "Si"
+        elif r["moderated"] is False:
+            moderated = "No"
+        else:
+            moderated = "N/D"
+        sheet.append([
+            r["model_id"],
+            "Si" if r["free"] else "No",
+            r["in_mod"],
+            r["out_mod"],
+            r["architecture"],
+            r["pricing"],
+            "Si" if r["coding"] else "No",
+            moderated,
+            r["name"],
+            r["cost_in"],
+            r["cost_out"],
+            r["context"],
+            r["parb"],
+            r["created"],
+        ])
+    workbook.save(xlsx_file)
+
+def app_orouter(params):
+    """Genera un report HTML e un file Excel del catalogo modelli OpenRouter (sottocomando models)."""
+    if len(params) != 2:
+        raise ValueError("Sintassi errata. Uso: orouter models <file.html>")
+
+    subcommand = params[0].strip('"\'').lower()
+    if subcommand != "models":
+        raise ValueError(f"Sottocomando orouter non riconosciuto: {subcommand}. Uso: orouter models <file.html>.")
+
+    out_file = params[1].strip('"\'')
+    if not out_file:
+        raise ValueError("Sintassi errata. Uso: orouter models <file.html>")
+
+    if requests is None:
+        raise ImportError("Libreria requests non installata. Installarla con: pip install requests")
+    if openpyxl is None:
+        raise ImportError("Libreria openpyxl non installata. Installarla con: pip install openpyxl")
+
+    # Fase 1: elenco completo dei modelli (testo, immagini, audio, ecc.)
+    pyt_Print(f"[{pyt_Timestamp()}] Fase 1: Lettura elenco modelli OpenRouter")
+    try:
+        response = requests.get(
+            "https://openrouter.ai/api/v1/models?output_modalities=all",
+            timeout=30
+        )
+        if response.status_code != 200:
+            raise RuntimeError(f"Errore API OpenRouter: {response.status_code} - {response.text}")
+        models = response.json().get("data", [])
+    except requests.exceptions.Timeout:
+        raise RuntimeError("Timeout durante la chiamata API OpenRouter")
+    except requests.exceptions.RequestException as e:
+        raise RuntimeError(f"Errore di connessione API OpenRouter: {e}")
+    except (ValueError, AttributeError) as e:
+        raise RuntimeError(f"Risposta API OpenRouter non valida: {e}")
+
+    if not models:
+        raise RuntimeError("Nessun modello ricevuto dall'API OpenRouter")
+
+    # Fase 2: modelli della categoria programming (facoltativa)
+    pyt_Print(f"[{pyt_Timestamp()}] Fase 2: Lettura modelli coding OpenRouter")
+    coding_ids = set()
+    try:
+        coding_response = requests.get(
+            "https://openrouter.ai/api/v1/models?category=programming",
+            timeout=30
+        )
+        if coding_response.status_code == 200:
+            coding_ids = {m.get("id") for m in coding_response.json().get("data", [])}
+    except requests.exceptions.RequestException:
+        # La colonna Coding e' informativa: un errore non blocca il report.
+        coding_ids = set()
+
+    # Fase 3: costruzione tabella HTML
+    pyt_Print(f"[{pyt_Timestamp()}] Fase 3: Generazione tabella HTML")
+    document, rows = _orouter_build_html(models, coding_ids)
+    xlsx_file = os.path.splitext(out_file)[0] + ".xlsx"
+
+    # Fase 4: scrittura file
+    pyt_Print(f"[{pyt_Timestamp()}] Fase 4: Scrittura file HTML {out_file}")
+    try:
+        with open(out_file, "w", encoding="utf-8") as f:
+            f.write(document)
+    except Exception as e:
+        raise RuntimeError(f"Errore durante la scrittura del file: {e}")
+
+    # Fase 5: scrittura file Excel
+    pyt_Print(f"[{pyt_Timestamp()}] Fase 5: Scrittura file Excel {xlsx_file}")
+    try:
+        _orouter_write_xlsx(rows, xlsx_file)
+    except Exception as e:
+        raise RuntimeError(f"Errore durante la scrittura del file Excel: {e}")
+
+    pyt_Print(f"File HTML generato con successo: {out_file} ({len(models)} modelli)")
+    pyt_Print(f"File Excel generato con successo: {xlsx_file} ({len(models)} modelli)")
+
+def _bkh_fallback_help():
+    """Help essenziale di bkh quando la libreria pyt_bkh non e' disponibile."""
+    if PYT_LANG == "it":
+        return (
+            "bkh <sottocomando> [parametri]\n"
+            "  export [file.html]           esporta i bookmark di Chrome in HTML\n"
+            "  url <file.html> <cartella>   converte i link in file .url\n"
+            "  order <config.json>          ordina i bookmark (normal/smart)\n"
+            "  homepage <config.json>       pagina HTML multicolonne con icone\n"
+            "  check <in.html> <out.html>   verifica URL e scrive i non accessibili\n"
+            "  merge <in> <add> <new>       unisce bookmark rinominando i duplicati\n"
+            "  delete <in> <del> <out>      rimuove da <in> gli URL presenti in <del>\n"
+            "  help                         questo aiuto\n"
+            "  (richiede la libreria esterna pyt_bkh.py)"
+        )
+    return (
+        "bkh <subcommand> [parameters]\n"
+        "  export [file.html]           export Chrome bookmarks to HTML\n"
+        "  url <file.html> <folder>     convert links to .url files\n"
+        "  order <config.json>          sort bookmarks (normal/smart)\n"
+        "  homepage <config.json>       multi-column HTML page with icons\n"
+        "  check <in.html> <out.html>   check URLs and write unreachable ones\n"
+        "  merge <in> <add> <new>       merge bookmarks, renaming duplicates\n"
+        "  delete <in> <del> <out>      remove from <in> the URLs in <del>\n"
+        "  help                         this help\n"
+        "  (requires the external pyt_bkh.py library)"
+    )
+
+def app_bkh(params):
+    """Gestisce i segnalibri (bookmark) di Chrome tramite la libreria esterna pyt_bkh.
+
+    Sottocomandi:
+      bkh export [file.html]          esporta i bookmark Chrome in un file HTML
+      bkh url <file.html> <cartella>  converte i link in file .url nella cartella
+      bkh order <config.json>         ordina i bookmark (normal/smart)
+      bkh homepage <config.json>      crea una pagina HTML multicolonne con icone
+      bkh check <in.html> <out.html>  verifica gli URL e scrive i non accessibili
+      bkh merge <in> <add> <new>      unisce 2 bookmark rinominando i duplicati
+      bkh delete <in> <del> <out>     rimuove da <in> gli URL presenti in <del>
+      bkh help                        aiuto dettagliato con esempi
+    """
+    if not params:
+        raise ValueError(
+            "Sintassi errata. Uso: bkh <sottocomando> [parametri]. "
+            "Sottocomandi: export, url, order, homepage, check, merge, delete, help"
+        )
+
+    subcmd = params[0].strip('"\'').lower()
+
+    if subcmd in ("help", "h", "-h", "--help"):
+        try:
+            import pyt_bkh
+        except ImportError:
+            print(_bkh_fallback_help())
+            return
+        print(pyt_bkh.help_text(PYT_LANG))
+        return
+
+    try:
+        import pyt_bkh
+    except ImportError:
+        raise ImportError("Libreria pyt_bkh non installata.")
+
+    if subcmd not in ("export", "url", "order", "homepage", "check", "merge", "delete"):
+        raise ValueError(
+            f"Sottocomando bkh sconosciuto: {subcmd}. "
+            "Usare: export, url, order, homepage, check, merge, delete, help"
+        )
+
+    pyt_Print(f"[{pyt_Timestamp()}] START: bkh {subcmd}")
+    pyt_Print(f"[{pyt_Timestamp()}] ARGS: {' '.join(params[1:])}")
+
+    if subcmd == "export":
+        result = pyt_bkh.run_export(params[1:], pyt_Print, pyt_Timestamp)
+    elif subcmd == "url":
+        result = pyt_bkh.run_url(params[1:], pyt_Print, pyt_Timestamp)
+    elif subcmd == "order":
+        result = pyt_bkh.run_order(params[1:], pyt_Print, pyt_Timestamp)
+    elif subcmd == "homepage":
+        result = pyt_bkh.run_homepage(params[1:], pyt_Print, pyt_Timestamp)
+    elif subcmd == "check":
+        result = pyt_bkh.run_check(params[1:], pyt_Print, pyt_Timestamp)
+    elif subcmd == "merge":
+        result = pyt_bkh.run_merge(params[1:], pyt_Print, pyt_Timestamp)
+    else:
+        result = pyt_bkh.run_delete(params[1:], pyt_Print, pyt_Timestamp)
+
+    if result:
+        pyt_Print(f"[{pyt_Timestamp()}] WRITE: {result}")
 
 def app_wsl_export(params):
     if os.name != 'nt':
